@@ -1,5 +1,17 @@
 # Changelog
 
+## 10.27.0 - 2026-06-10
+
+Premium UI pass: a fourth presentation layer (`css/04-premium.css`) plus a small visual-interaction module (`src/app/UiPolish.ts`). **278 unit tests; full cross-browser e2e at baseline parity (103/104, the one failure being a pre-existing environment-dependent webkit audio case that fails identically on the unmodified baseline); typecheck/build green.**
+
+- **Gradient & material finish**: richer page mesh (recoloured at identical layer count — see the performance note), gradient-ink title, glossy gradient buttons with a sliding-gradient primary, glass selects with a custom chevron, springy checkbox check-pop, refined diagnostics chips and toast (spring entrance).
+- **Progress-filled sliders**: every range input paints its filled fraction as a cyan→violet gradient (`--sp` custom property kept in sync by `UiPolish`), with a luminous thumb that scales on hover/drag; the row's value readout flashes when its slider moves.
+- **Click ripple**: a pointer-anchored ripple on buttons (JS-inserted span; rail/tooltip buttons excluded so their CSS tooltips are never clipped).
+- **Smooth panel collapse/expand**: the right control panel now glides — the grid track animates to zero width while the panel fades/slides, with `display:none` deferred to transition end via `transition-behavior:allow-discrete` and the entrance driven by `@starting-style` (browsers without these keep the old instant behavior; end state identical, so persistence/tests are untouched).
+- **Animated accordions**: `interpolate-size:allow-keywords` + `::details-content` height transition gives settings groups a real open/close glide where supported.
+- **Tab-switch motion**: refined panel entrance curve; reduced-motion guards on every new animation.
+- **Performance discipline (measured, not assumed)**: three regressions were found and fixed during this pass on WebKit's software compositor (headless e2e), where the simulation loop shares the thread with paint — (1) an enriched aurora (conic sheen, heavier blur, more fields) starved rAF and froze the sim: reverted, ambience now comes from an equal-layer-count mesh recolour; (2) an always-running box-shadow "breathing" animation on the active rail tab forced continuous repaints: now a static glow; (3) the value-readout flash restarted its animation with a forced synchronous reflow per slider event, turning preset loads (input+change per slider) into a layout-thrash burst: now restarted via the Web Animations API, with no-op `--sp` style writes skipped.
+
 ## 10.26.0 - 2026-06-10
 
 Period-doubling branch switching, a figure-rich research notebook generator, the TCAD career-mapping document, and the repository's first git commit. **278 unit tests; 26 chromium e2e; typecheck/build green.**

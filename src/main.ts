@@ -11,6 +11,7 @@ import { workerBridge } from './runtime/WorkerBridge';
 import { installPendulumRuntime } from './runtime/PendulumRuntime';
 import { maybeMountModernAnalysisTabs, maybeMountModernLab, maybeMountModernLabProbe, maybeMountModernShell } from './app';
 import { installFeatureParityLayer, currentSnapshot } from './app/FeatureParityLayer';
+import { installUiPolish } from './app/UiPolish';
 
 function installIndexCommands(): void {
   commandRegistry.upsert({
@@ -53,7 +54,7 @@ function installRuntimeApi(): void {
   installDefaultCommands();
   stateStore.syncFromLegacy();
   window.PendulumLabIndex = Object.freeze({
-    version: '10.25.0',
+    version: '10.27.0',
     commands: commandRegistry,
     events: eventBus,
     state: stateStore,
@@ -83,6 +84,9 @@ function boot(): void {
   installFeatureParityLayer();
   // Stage 4: modern shell owns tab navigation.
   maybeMountModernShell();
+  // Visual-only interaction polish (slider progress fill, ripples) — installed
+  // last so it observes the fully-built DOM.
+  installUiPolish();
 }
 
 if (document.readyState === 'loading') {

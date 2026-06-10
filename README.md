@@ -61,7 +61,7 @@ npm test
 ## Structure
 
 - `index.html`: full simulator shell plus CSP and TypeScript runtime bridge.
-- `css/`: hand-written stylesheets (base shell + `03-liquid-glass.css` presentation layer).
+- `css/`: hand-written stylesheets (base shell + `03-liquid-glass.css` / `04-premium.css` presentation layers).
 - `src/physics/`: typed equations, energy helpers, and integrator registry.
 - `src/physics/canonical.ts`: canonical theta/p Hamiltonian helpers and residual-reporting implicit midpoint.
 - `src/state/`: strict StateStore and JSON-safe runtime snapshots.
@@ -96,4 +96,4 @@ Chaotic pendulum simulation is a compact way to show numerical stability, state 
 
 ## Compatibility Notes
 
-The app is **100% TypeScript**: the dev/HMR shell `app.html` loads only `src/main.ts` (plus the hand-written CSS that styles the static shell, including the `03-liquid-glass.css` presentation layer). The legacy `js/` runtime (≈8,080 lines) has been fully removed and archived under `archive/` — the legacy-risk audit now reports **0** (from a 482 baseline). Every tab (Lab + the seven analysis tabs) runs on `src/`. Two ways to view: the self-contained project-root `index.html` opens directly via `file://` (double-click), and `npm run dev` serves the live `app.html` with hot reload.
+The app is **100% TypeScript**: the dev/HMR shell `app.html` loads only `src/main.ts` (plus the hand-written CSS that styles the static shell, including the `03-liquid-glass.css` and `04-premium.css` presentation layers). The legacy `js/` runtime (≈8,080 lines) has been fully removed and archived under `archive/` — the legacy-risk audit now reports **0** (from a 482 baseline). Every tab (Lab + the seven analysis tabs) runs on `src/`. Two ways to view: the self-contained project-root `index.html` opens directly via `file://` (double-click), and `npm run dev` serves the live `app.html` with hot reload.

@@ -31,6 +31,9 @@ export type { FtleOptions, FlowMapGradient, FtleFieldOptions, FtleField } from '
 export { eigenvalues2x2, monodromyMatrix, floquetAnalysis, drivenPeriodicOrbit } from './floquet';
 export type { FloquetMultiplier, FloquetResult, DrivenOrbitOptions, DrivenOrbitResult } from './floquet';
 
+export { drivenPeriodicOrbitN, switchPeriodDoubling, realEigenvector2x2 } from './branchSwitching';
+export type { PeriodNOrbitResult, BranchSwitchOptions, BranchSwitchResult } from './branchSwitching';
+
 export { classifyBifurcation, continueDrivenPeriodicOrbit } from './continuation';
 export type {
   BifurcationType, ContinuationPoint, ContinuationBifurcation, ContinuationResult, ContinuationOptions

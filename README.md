@@ -50,7 +50,8 @@ npm test
 | `npm run benchmark` | FPS, physics ms/frame, memory, and worker latency report |
 | `npm run validate:reference` | Cross-validate every integrator → `reports/validation-reference.{md,json}` |
 | `npm run validate:cross` | **External** cross-validation vs an independent SciPy DOP853 reference → `reports/cross-validation.{md,json}` (needs python + scipy) |
-| `npm run research -- <cmd>` | Headless research CLI: `lyapunov`, `spectrum`, `zeroone`, `rqa`, `ftle`, `basin`, `wada`, `studypoint`, `orbit`, `continue` |
+| `npm run research -- <cmd>` | Headless research CLI: `lyapunov`, `spectrum`, `zeroone`, `rqa`, `ftle`, `basin`, `wada`, `studypoint`, `orbit`, `continue`, `switch` |
+| `npm run notebook` | Generate `reports/research-notebook.html` — a figure-rich research report (numbers from the shared job handler + figures captured from the live app) |
 | `npm run benchmark:energy` | Long-run energy-drift ranking → `reports/energy-benchmark.{md,json}` |
 | `npm run export:repro` | Build + verify reproducibility packages → `reports/reproducibility/` |
 | `npm run reports` | Validation report generation |
@@ -91,7 +92,7 @@ Symplectic claims require canonical theta/p coordinates, `gamma = 0`, and conver
 
 ## Why This Matters
 
-Chaotic pendulum simulation is a compact way to show numerical stability, state reproducibility, and validation discipline. The same habits matter in semiconductor and device-physics work: small integration errors, parameter drift, and unreported solver assumptions can become large interpretation errors.
+Chaotic pendulum simulation is a compact way to show numerical stability, state reproducibility, and validation discipline. The same habits matter in semiconductor and device-physics work: small integration errors, parameter drift, and unreported solver assumptions can become large interpretation errors. A capability-by-capability mapping onto TCAD / device-simulation problems (mesh convergence, analytic Newton Jacobians, TR-BDF2 stiff stepping, branch continuation through folds, simulator-to-simulator benchmarking) is in [`docs/device-simulation-mapping.md`](docs/device-simulation-mapping.md).
 
 ## Compatibility Notes
 

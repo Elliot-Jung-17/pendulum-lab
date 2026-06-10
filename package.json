@@ -1,6 +1,6 @@
 {
   "name": "pendulum-lab-v10",
-  "version": "10.25.0",
+  "version": "10.26.0",
   "private": true,
   "type": "module",
   "description": "Typed, modular Pendulum Lab V10 project with legacy runtime compatibility.",
@@ -21,6 +21,7 @@
     "validate:cross": "tsx scripts/cross-validate.ts",
     "export:repro": "tsx scripts/export-repro.ts",
     "research": "tsx scripts/research-cli.ts",
+    "notebook": "tsx scripts/research-notebook.ts",
     "reports": "tsx scripts/generate-validation-report.ts",
     "audit:legacy": "tsx scripts/audit-legacy.ts",
     "audit:worldclass": "tsx scripts/worldclass-scorecard.ts"

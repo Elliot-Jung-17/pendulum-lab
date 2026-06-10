@@ -119,13 +119,19 @@ export interface DrivenOrbitResult extends FloquetResult {
   iterations: number;
 }
 
-/** Strobe map: integrate [θ, ω, φ=0] over one drive period and return (θ, ω). */
+/**
+ * Strobe map: integrate [θ, ω, φ=0] over one drive period and return (θ, ω).
+ * The step is snapped so steps·dt equals the period *exactly* — otherwise the
+ * map is a strobe at a slightly wrong period and the fixed point lands ~1e-3
+ * off the true orbit for typical dt.
+ */
 function strobe(rhs: Derivative, theta: number, omega: number, period: number, dt: number): [number, number] {
   const steps = Math.max(1, Math.round(period / dt));
+  const dtEff = period / steps;
   const cur = new Float64Array([theta, omega, 0]);
   const nxt = new Float64Array(3);
   for (let s = 0; s < steps; s += 1) {
-    rk4Step(cur, dt, rhs, nxt);
+    rk4Step(cur, dtEff, rhs, nxt);
     cur.set(nxt);
   }
   return [cur[0] ?? 0, cur[1] ?? 0];
@@ -143,7 +149,9 @@ export function drivenPeriodicOrbit(
   options: DrivenOrbitOptions = {}
 ): DrivenOrbitResult {
   const period = (2 * Math.PI) / params.driveFrequency;
-  const dt = options.dt ?? 0.005;
+  const dtRaw = options.dt ?? 0.005;
+  // Snap dt so the monodromy is computed over *exactly* one period, matching the strobe.
+  const dt = period / Math.max(1, Math.round(period / dtRaw));
   const tol = options.tolerance ?? 1e-9;
   const maxIterations = options.maxIterations ?? 60;
   const rhs: Derivative = (s, o) => {

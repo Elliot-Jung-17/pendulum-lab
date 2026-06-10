@@ -1,5 +1,15 @@
 # Changelog
 
+## 10.26.0 - 2026-06-10
+
+Period-doubling branch switching, a figure-rich research notebook generator, the TCAD career-mapping document, and the repository's first git commit. **278 unit tests; 26 chromium e2e; typecheck/build green.**
+
+- **Branch switching at period-doubling** (`src/chaos/branchSwitching.ts`): `drivenPeriodicOrbitN` finds fixed points of the n-fold stroboscopic map (Newton with the n-period monodromy as Jacobian), and `switchPeriodDoubling` switches onto the period-2 branch by seeding along the critical eigenvector of the multiplier nearest −1, with a separation check that rejects Newton falling back onto the period-1 point. Verified on the classic γ = 0.5, ω = 2/3 driven pendulum: μ crosses −1 between A = 1.065/1.07 (literature A_PD ≈ 1.0663), the switched period-2 orbit is **stable** (residual ~3e-12) and matches the direct-simulation attractor; the P2 point is confirmed *not* period-1. CLI command `npm run research -- switch`.
+- **Fix — strobe period rounding**: the period-1 solver's strobe and monodromy used raw `dt` with a rounded step count, so the map strobed at a slightly wrong period and the fixed point sat ~1e-3 off the true orbit; the step is now snapped so steps·dt = T exactly (all Floquet/continuation tests still pass).
+- **Research notebook generator** (`npm run notebook`): writes a self-contained, print-to-PDF-friendly `reports/research-notebook.html` — abstract, headline diagnostics (spectrum ± block SE + consistency gate, 0–1 K, RQA, FTLE, basin entropy/box-dimension/Wada fraction, PD cascade incl. the branch switch, measured convergence orders, SciPy cross-validation table) with **15 figures captured from the live application** (each analysis tab driven to completion headlessly over `file://`; every number comes from the same `runChaosJob` handler the worker/CLI/tests share).
+- **Device-simulation mapping** (`docs/device-simulation-mapping.md`): capability-by-capability mapping of this project onto TCAD problems — mesh-convergence ↔ measured order, analytic Newton Jacobians, TR-BDF2 stiff stepping, periodic steady state/Floquet ↔ RF analysis, pseudo-arclength ↔ snapback/NDR I–V tracing, SciPy cross-check ↔ simulator-to-simulator benchmarking. Linked from the README.
+- **Repository initialized**: first commit (v10.25.0, 233 files) with the existing CI + Pages workflows ready for the first push.
+
 ## 10.25.0 - 2026-06-10
 
 Research-workbench automation, external SciPy cross-validation, a headless research CLI, Wada-boundary candidacy, a periodic-orbit finder UI, and a liquid-glass v2 UI pass. **274 unit tests; 26 chromium e2e (plus firefox/webkit/mobile-chrome projects); typecheck/build green.**

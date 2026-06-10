@@ -24,7 +24,8 @@ import {
   doublePendulumFlipBasin,
   wadaCandidate,
   drivenPeriodicOrbit,
-  continueDrivenPeriodicOrbit
+  continueDrivenPeriodicOrbit,
+  switchPeriodDoubling
 } from '../src/chaos';
 import type { SystemSpec } from '../src/physics/systemSpec';
 
@@ -151,6 +152,37 @@ function run(args: CliArgs): unknown {
       });
       return { base, ...result };
     }
+    case 'switch': {
+      // Period-doubling branch switch. Defaults target the classic cascade:
+      // γ=0.5, ω=2/3, A=1.07 (just past A_PD ≈ 1.066), oscillating branch.
+      const base = {
+        g: flagNum(flags, 'g', 1),
+        length: flagNum(flags, 'l', 1),
+        damping: flagNum(flags, 'damping', 0.5),
+        driveAmplitude: flagNum(flags, 'amplitude', 1.07),
+        driveFrequency: flagNum(flags, 'frequency', 2 / 3)
+      };
+      const p1 = drivenPeriodicOrbit(base, [flagNum(flags, 'th0', -0.29), flagNum(flags, 'w0', 1.97)], {
+        dt: flagNum(flags, 'dt', 0.005),
+        tolerance: 1e-10
+      });
+      if (!p1.converged) throw new Error('period-1 Newton did not converge — adjust --th0/--w0');
+      const sw = switchPeriodDoubling(base, p1.orbit, { dt: flagNum(flags, 'dt', 0.005), tolerance: 1e-10 });
+      return {
+        base,
+        period1: { orbit: p1.orbit, multipliers: p1.multipliers, stable: p1.stable },
+        switched: sw.switched,
+        criticalMultiplier: sw.criticalMultiplier,
+        separation: sw.separation,
+        period2: {
+          orbit: sw.doubled.orbit,
+          cycle: sw.doubled.cycle,
+          multipliers: sw.doubled.multipliers,
+          stable: sw.doubled.stable,
+          residual: sw.doubled.residual
+        }
+      };
+    }
     case 'continue': {
       const base = {
         g: flagNum(flags, 'g', 1),
@@ -169,7 +201,7 @@ function run(args: CliArgs): unknown {
     default:
       return {
         usage: 'npx tsx scripts/research-cli.ts <command> [--flags]',
-        commands: ['lyapunov', 'spectrum', 'zeroone', 'rqa', 'ftle', 'basin', 'wada', 'studypoint', 'orbit', 'continue'],
+        commands: ['lyapunov', 'spectrum', 'zeroone', 'rqa', 'ftle', 'basin', 'wada', 'studypoint', 'orbit', 'continue', 'switch'],
         sharedFlags: ['--m1 --m2 --l1 --l2 --g', '--state th1,th2,w1,w2', '--out file.json', '--full (keep raster arrays)'],
         examples: [
           'npx tsx scripts/research-cli.ts lyapunov --state 2,2.5,0,0',

@@ -1,0 +1,914 @@
+{
+  "generatedAt": "2026-06-10T03:13:34.704Z",
+  "totals": {
+    "done": 4,
+    "partial": 4,
+    "gap": 0
+  },
+  "legacyRisk": {
+    "generatedAt": "2026-06-10T03:13:18.848Z",
+    "pass": true,
+    "counts": {
+      "innerHTML": 0,
+      "onclick": 0,
+      "inlineWorkerBlob": 0,
+      "evalLike": 0,
+      "dynamicScript": 0,
+      "globalRuntimeExports": 0
+    },
+    "weights": {
+      "innerHTML": 2,
+      "onclick": 2,
+      "inlineWorkerBlob": 8,
+      "evalLike": 20,
+      "dynamicScript": 12,
+      "globalRuntimeExports": 5
+    },
+    "weightedScore": 0,
+    "baselineScore": 482,
+    "delta": -482,
+    "files": {
+      "src\\app\\AudioSonifier.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\BasinTab.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\BifurcationTab.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\canvasQuality.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\ClvTab.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\CompareTab.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\DensityTab.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\domTakeover.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\FeatureParityLayer.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\fft.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\FtleTab.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\index.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\LabApp.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\LabController.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\labExport.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\labPlots.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\LabRenderer.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\LabSimulation.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\LyapunovEstimator.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\LyapunovTab.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\phase3d.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\Phase3DTab.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\PoincareAccumulator.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\railNavigation.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\RqaTab.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\Shell.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\sweepColor.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\SweepTab.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\systemControls.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\ValidationTab.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\app\\ZeroOneTab.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\chaos\\arclength.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\chaos\\basin.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\chaos\\clv.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\chaos\\continuation.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\chaos\\floquet.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\chaos\\ftle.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\chaos\\index.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\chaos\\indicators.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\chaos\\lyapunov.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\chaos\\poincare.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\chaos\\rqa.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\chaos\\shadowing.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\chaos\\spectrumConsistency.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\chaos\\variational.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\chaos\\zeroOneTest.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\demo\\systems.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\export\\manifest.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\main.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\physics\\adaptive.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\physics\\canonical.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\physics\\double.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\physics\\driven.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\physics\\energy.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\physics\\events.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\physics\\index.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\physics\\integrators.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\physics\\nPendulum.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\physics\\spring.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\physics\\stiff.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\physics\\systemSpec.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\physics\\triple.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\physics\\types.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\render\\performance.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\research\\convergenceOrder.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\research\\reproPackage.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\runtime\\ChaosClient.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\runtime\\CommandRegistry.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\runtime\\EventBus.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\runtime\\IndexPhysicsBridge.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\runtime\\LegacyBridge.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\runtime\\PendulumRuntime.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\runtime\\ServiceContainer.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\runtime\\WorkerBridge.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\state\\StateStore.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\types\\domain.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\types\\globals.d.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\ui\\accessibility.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\ui\\safeDom.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\validation\\doubleDouble.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\validation\\doubleDoublePendulum.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\validation\\importSchema.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\validation\\referenceSuite.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\validation\\validationSuite.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\viz\\bifurcation.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\viz\\energyPlot.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\viz\\index.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\viz\\lyapunovPlot.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\viz\\palette.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\viz\\poincare.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\viz\\scales.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\viz\\trace.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\viz\\types.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\worker\\sim.worker.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\workers\\chaos.worker.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\workers\\chaosProtocol.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\workers\\physics.worker.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      }
+    }
+  },
+  "artifacts": {
+    "benchmark": true,
+    "energy": true,
+    "validation": true,
+    "reference": true,
+    "architecture": true,
+    "numerics": true,
+    "limitations": true,
+    "ci": true,
+    "index": true
+  },
+  "items": [
+    {
+      "area": "TypeScript and modular architecture",
+      "status": "done",
+      "evidence": [
+        "src/ contains physics, chaos, viz, app, render, state, runtime, validation, export, workers modules",
+        "npm run typecheck passes (strict)",
+        "legacy js/ runtime fully removed (archived); index.html loads only src/main.ts",
+        "legacy-risk audit score is 0"
+      ],
+      "remaining": [
+        "LegacyBridge/IndexPhysicsBridge remain as inert compatibility shims that can be deleted"
+      ]
+    },
+    {
+      "area": "Index simulator UI/UX",
+      "status": "partial",
+      "evidence": [
+        "index.html is the single user-facing simulator with lab, comparison, Lyapunov, sweep, bifurcation, phase-space, density, and validation tabs"
+      ],
+      "remaining": [
+        "Panel layout persistence, project workspace lists, and a stronger beginner/expert mode still need index-page implementation"
+      ]
+    },
+    {
+      "area": "Numerics and physics depth",
+      "status": "partial",
+      "evidence": [
+        "RKF45, Dormand-Prince 5(4), DOP853-adjacent GBS extrapolation, Gauss-Legendre 4/6, TR-BDF2, canonical midpoint, N-pendulum, driven, spring systems are present in src"
+      ],
+      "remaining": [
+        "Floquet multipliers, CLV, AUTO-style continuation, WebGPU ensemble simulation, and external SciPy/MATLAB/Julia comparison remain future work"
+      ]
+    },
+    {
+      "area": "Chaos analysis",
+      "status": "partial",
+      "evidence": [
+        "Maximal Lyapunov convergence, full spectrum, Kaplan-Yorke dimension, SALI/FLI, Poincare, bifurcation modules exist and are tested"
+      ],
+      "remaining": [
+        "Full spectrum is CPU-side; GPU acceleration and covariant vectors are not implemented"
+      ]
+    },
+    {
+      "area": "Testing and browser coverage",
+      "status": "done",
+      "evidence": [
+        "unit tests cover integrators, energy drift, determinism, JSON import validation, edge cases, chaos, visualization, repro packages",
+        "Playwright config includes Chromium, Firefox, WebKit, and mobile Chrome"
+      ],
+      "remaining": [
+        "Visual regression, memory leak, and long-runtime soak tests are not yet first-class CI jobs"
+      ]
+    },
+    {
+      "area": "Performance and benchmark reporting",
+      "status": "done",
+      "evidence": [
+        "benchmark-report.md captures FPS, physics ms/frame, memory, worker latency",
+        "energy-benchmark.md compares long-run drift by integrator"
+      ],
+      "remaining": [
+        "True original-vs-candidate comparison needs distinct ORIGINAL_URL and CANDIDATE_URL inputs"
+      ]
+    },
+    {
+      "area": "Security hardening",
+      "status": "partial",
+      "evidence": [
+        "CSP is present",
+        "JSON import validation is tested",
+        "eval/new Function count is zero",
+        "legacy risk score is 0 (-482 vs baseline)"
+      ],
+      "remaining": [
+        "innerHTML=0",
+        "onclick=0",
+        "inlineWorkerBlob=0",
+        "dynamicScript=0",
+        "globalRuntimeExports=0"
+      ]
+    },
+    {
+      "area": "Documentation and portfolio readiness",
+      "status": "done",
+      "evidence": [
+        "README, architecture, numerics, security, validation, energy benchmark, changelog, roadmap, and portfolio summary artifacts exist"
+      ],
+      "remaining": [
+        "Project introduction video, GitHub Pages deployment, npm package release, and full English API docs remain packaging tasks"
+      ]
+    }
+  ]
+}

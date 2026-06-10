@@ -1,0 +1,261 @@
+# Changelog
+
+## 10.25.0 - 2026-06-10
+
+Research-workbench automation, external SciPy cross-validation, a headless research CLI, Wada-boundary candidacy, a periodic-orbit finder UI, and a liquid-glass v2 UI pass. **274 unit tests; 26 chromium e2e (plus firefox/webkit/mobile-chrome projects); typecheck/build green.**
+
+- **Parameter-study batch queue**: a new `studyPoint` chaos-worker job computes maximal Lyapunov (± batched-means SE), RQA determinism/divergence, and a per-point FTLE in one round-trip; the Research workbench "Run Batch" button executes every study point sequentially (progress + cancel), persists results with the plan, renders them as a table, and includes them in the study export.
+- **External cross-validation (SciPy)**: `npm run validate:cross` runs `scripts/scipy_reference.py` — an *independently derived* double-pendulum RHS integrated by `solve_ivp` DOP853 at 1e-13 tolerances — against the TS engine. Regular orbit: agreement ~4e-14 over 20 s; chaotic orbit: ~6e-11 at T = 10 s (tolerance floor × e^{λ₁t}). Report at `reports/cross-validation.{md,json}`; wired as a CI job.
+- **Headless research CLI**: `npm run research -- <lyapunov|spectrum|zeroone|rqa|ftle|basin|wada|studypoint|orbit|continue>` runs the same pure `runChaosJob` handler the app's worker uses (plus Floquet/continuation), printing or writing JSON.
+- **Wada-boundary candidate test**: `wadaCandidate` (grid method of Daza–Wagemakers–Sanjuán) reports the fraction of boundary cells touching ≥ 3 basins; pinned on synthetic grids (half-plane 0, three-sector pie < 0.3, fine interleaving = 1) and surfaced in the Basin tab status and the basin worker response.
+- **Periodic-orbit finder UI**: a Research-workbench card finds the driven-pendulum period-1 orbit at user-set amplitude/frequency/damping (Newton on the stroboscopic map; Floquet multipliers + stability) and traces the branch over amplitude, reporting the first bifurcation and its classification.
+- **Figure pack export**: "Export Figures" captures every *drawn* analysis canvas (20 captioned ids; blank canvases skipped) into a self-contained, print-to-PDF-friendly HTML gallery stamped with the run's snapshot hash; figure PNGs also ride along in the paper-pack JSON.
+- **Liquid-glass v2**: collapsible right control panel (header toggle + `\` shortcut, persisted; canvas gets full width), calmer at-rest panel opacity, jewel-polish rail (hover lift, gradient group labels, refined active state), glass tables/scrollbars/badges, soft photographic grain over the aurora, tactile button press — with reduced-motion guards.
+- **Fix — integrity badge stretched down the whole right edge**: conflicting `top`/`bottom` anchors left `#figBadge` covering (and intercepting clicks over) the entire right side; it is now a compact bottom-right chip that expands on hover/focus.
+- **Fix — Space was a no-op**: the inert `LegacyBridge` registered a second Space/R handler alongside the modern shell's, so pause was toggled twice per keypress. `LegacyBridge`/`IndexPhysicsBridge` are deleted (archived); `window.PendulumLabIndex` and the default commands now install from `main.ts`.
+- **Mobile e2e**: a phone-viewport spec drives Govern → Research (rail reachability, single-column workbench, no horizontal overflow, study generation). Plus new e2e for the batch queue, orbit finder, figure export, and panel toggle.
+- **CI**: new `cross-validate` job (Python 3.12 + scipy) and a GitHub Pages deploy workflow (`.github/workflows/pages.yml`).
+
+## 10.23.0 - 2026-06-09
+
+Double-click-to-open standalone build + a substantial Lab rendering performance pass. 174 unit tests pass; 13 chromium e2e pass; typecheck/build/audit(0) green.
+
+- **Standalone build for `file://`**: `npm run build:standalone` produces a single self-contained `standalone/index.html` (all JS/CSS inlined, classic loading via `vite-plugin-singlefile`, CSP relaxed for inline) that opens by **double-clicking** — no server. Verified in a real browser over `file://`: the Lab renders and animates with zero console errors. (The Lyapunov/Bifurcation chaos worker stays a sibling file and falls back to the main thread if a browser blocks `file://` workers.)
+- **Performance — incremental trail**: the Lab trail is now drawn incrementally (fade the canvas + stroke only the *new* tip segment) instead of redrawing the whole 1.5k–3k-point trail every frame. This is O(1) per frame instead of O(trail length) — the dominant frame cost — and reproduces the legacy long-exposure look. `viz/renderTrajectoryTrace` was also optimized (quantised colour LUT cached across frames + batched strokes) for any remaining callers.
+- **Performance — throttling & gating**: the expensive diagnostic side plots (FFT, scatter/line redraws) and the header/diagnostics DOM writes now run at a reduced cadence (every 3rd frame) while the pendulum renders every frame; and the Lab skips all drawing entirely while its tab is hidden (the sim keeps advancing), so the active analysis tab stays smooth.
+- **Functionality restored**: trail **colour modes** (rainbow hue-cycling + heat/ice/plasma/white/phosphor) are wired again, and the **trail-length** slider is meaningful once more (it maps to the fade/persistence). Removed dead `window.App`-mirroring code from the Lab.
+
+## 10.22.1 - 2026-06-09
+
+Post-removal fixes: the app could appear blank, and a few references to the removed legacy were stale.
+
+- **Blank page when opened from `file://`**: this is an ES-module app — browsers block module scripts over `file://`, so it must be **served** (`npm run dev`, or `npm run build && npm run preview`, then open the printed `http://` URL). Documented prominently in the README; previously the legacy classic scripts ran over `file://`, which is why double-clicking used to work.
+- **`vite.config.ts` `base: './'`**: the production build now uses **relative** asset paths, so it works when served from any sub-path (e.g. a GitHub Pages project site), not only the web root. Verified the built app renders when served — including the chaos-worker-backed Lyapunov tab.
+- **Fix: `?lab=legacy` blanked the page** — the removed escape hatch still suppressed the modern mount. The modern app now always mounts (the query param is ignored); verified by e2e.
+- **Cleanups**: removed the ignored `frame-ancestors` directive from the `<meta>` CSP (valid only as an HTTP header); updated stale `?lab=legacy`/`index-loader` references in tab doc-comments and `docs/architecture.md`; pointed `scripts/benchmark.ts` and `scripts/worldclass-scorecard.ts` at the modern metrics (`__modernLab.diagnostics()` now also reports `fps` and `physicsMsPerFrame`) and refreshed the scorecard's architecture item to "done".
+
+## 10.22.0 - 2026-06-09
+
+**Stage 4 complete — the legacy `js/` runtime is removed; the app is now 100% TypeScript.** Legacy-risk score **482 → 0** (every metric zero). 173 unit tests pass; 13 chromium e2e pass with no legacy runtime present; typecheck + build green.
+
+- **Removed**: all `js/00`–`js/11` legacy scripts (≈8,080 lines) and the `direct-file-runtime.js`/`index-loader.js` shims — moved to `archive/`. `index.html` now loads only `src/main.ts` (plus the hand-written CSS that styles the static shell). The `?lab=legacy` escape hatch is gone.
+- **`src/app/Shell.ts`** now owns every shell duty the legacy runtime used to provide: tab navigation, slider value-display updates (matching the legacy formats), presets (sets the controls; the Lab/analysis modules rebuild), and keyboard shortcuts (Space/R/C/P + 1–8 for tabs).
+- **`LabApp`** fills the header/diagnostics chrome directly (fps, time, θ/ω, energy, drift with status class, λ, Poincaré count, mode) — previously driven by the legacy frame loop.
+- **Build/audit scripts** updated: `copy-legacy-assets.mjs` ships CSS only; `audit-legacy.ts` tolerates the archived `js/`.
+- **Tests**: `smoke.spec.ts` rewritten onto the modern surface (`__modernLab.diagnostics()`, modern validation, `PendulumRuntime`); the legacy-only `modern-lab-takeover` and `legacy-lab` specs removed; the probe and shell specs no longer assert on `window.App`.
+- **Dropped (documented in known-limitations)**: interpolated render and trail color-mode selection (cosmetic), the NaN-recovery overlay, some dev-hub-only actions, and the submission manifest now reflects control defaults rather than a live legacy snapshot.
+
+## 10.21.0 - 2026-06-09
+
+Stage 4 continues — audio sonification ported to the modern Lab (the last *functional* legacy-only feature). 173 unit tests pass; 15 chromium e2e pass; typecheck + build green; legacy-risk 122.
+
+- **`src/app/AudioSonifier.ts`**: two Web Audio oscillators whose pitch/loudness track |ω₁|/|ω₂| (the legacy sonification law). The frequency/gain mappings (`sonifyFrequency`/`sonifyGain`) are pure and unit-tested; the audio graph is created lazily on enable so nothing touches `AudioContext` in Node. Wired into `LabApp` (per-frame `update`), with the audio controls taken over (clone-to-strip-legacy) so no double `AudioContext` is created.
+- `tests/audio-sonifier.test.ts` (3): the clamp/scale laws for both voices. `e2e/modern-audio.spec.ts`: toggling audio + changing volume raises no errors and the sim keeps running.
+- With audio ported, the remaining blockers to deleting `js/` are shell-chrome duties (slider value displays, presets slider-setting, keyboard shortcuts, header/diagnostics, `CanvasMgr` sizing, `NaNGuard`, dev-hub) and the `?lab=legacy` escape-hatch decision — interpolated render is cosmetic and can be dropped.
+
+## 10.20.0 - 2026-06-09
+
+Stage 4 begins — a modern shell starts taking over the legacy runtime's responsibilities, beginning with tab navigation. Plus a correctness fix. 170 unit tests pass; 14 chromium e2e pass; typecheck + build green; legacy-risk 122.
+
+- **Fix (double-draw)**: the legacy `Render.all` guard now suppresses the phase3d/density legacy renderers too (not just the lab side plots) when the modern app is active, so legacy and modern no longer both draw to `#p3dCanvas`/`#gpuCanvas`. `?lab=legacy` still renders everything the classic way.
+- **`src/app/Shell.ts`**: the modern application shell. It owns tab navigation — takes over the `.tab` buttons (clone-to-strip-legacy) and toggles the active `.tabpanel` exactly as the legacy `switchTab` did (aria-selected + `active` class), keeping `window.App.activeTab` in sync for legacy-chrome coherence. Mounted via `maybeMountModernShell()`, gated by `?lab=legacy`.
+- `e2e/modern-shell.spec.ts`: navigates several tabs via the rail buttons and asserts the right panel/aria activate and exactly one panel is active; the smoke test's tab switching now also exercises the modern nav.
+- This is the first step toward removing `js/`; sliders, presets, keyboard shortcuts, header diagnostics, `CanvasMgr`, and `NaNGuard` remain on the legacy runtime until ported.
+
+## 10.19.0 - 2026-06-09
+
+Stage 3 tab-ports complete — the last three analysis tabs (Bifurcation, 3D phase, density) are on the modern stack. Every lab/analysis tab now runs on `src/`. 170 unit tests pass; 13 chromium e2e pass; typecheck + build green; legacy-risk 122.
+
+- **`src/app/BifurcationTab.ts`**: sweeps gravity g and records θ₂ at the θ₁=0 (θ̇₁>0) Poincaré section (reusing the tested `poincareSection`), one column per g in time-budgeted chunks, rendered with `viz/renderBifurcation`.
+- **`src/app/Phase3DTab.ts`** + pure `src/app/phase3d.ts`: rotatable orthographic (θ1, θ2, ω2) point cloud with drag-to-rotate and depth fade; `rotateProject` is unit-tested (identity, axis swaps, norm preservation).
+- **`src/app/DensityTab.ts`**: (θ1, ω1) phase-density via Canvas2D additive blending (`globalCompositeOperation='lighter'`) — the portable, headless-testable equivalent of the legacy WebGL density with its Canvas2D fallback.
+- Both visual tabs render only while their tab panel is active. New tests: `tests/phase3d.test.ts` (4); e2e `modern-bifurcation-tab`, `modern-phase3d-density`.
+
+## 10.18.0 - 2026-06-09
+
+Stage 3 continues — the Sweep (chaos map) and Compare (integrator) tabs are ported. 166 unit tests pass; 10 chromium e2e pass; typecheck + build green; legacy-risk 122.
+
+- **`src/app/SweepTab.ts`**: chaos-map tab. Computes maximal Lyapunov over a grid of (θ1, θ2) initial conditions (reusing the tested `maximalLyapunov`) in **time-budgeted animation-loop chunks** — responsive, cancellable, with a progress bar — and paints a heatmap via the pure `src/app/sweepColor.ts` ramp. Click-to-set initial angles, PNG/CSV export.
+- **`src/app/CompareTab.ts`**: integrator-comparison tab. Runs RK4 / Leapfrog / RKF45 / Yoshida-4 from one initial condition simultaneously (each a `LabSimulation`), overlays them on #cmpCanvas, and plots live energy drift and divergence-from-RK4 (new `renderMultiLine` in `labPlots`). The benchmark button measures steps/ms for all eight registered methods and fills the result fields + a bar chart.
+- New tests: `tests/sweep-and-plots.test.ts` (6: colormap monotonicity/clamping, `renderMultiLine`, `renderSpectrumBars`). New e2e `modern-sweep-compare.spec.ts` (sweep paints + exports; compare animates + benchmarks).
+
+## 10.17.0 - 2026-06-09
+
+Stage 3 continues — the Validation tab is ported to the modern stack. 160 unit tests pass; 8 chromium e2e pass; typecheck + build green; legacy-risk 122.
+
+- **`src/app/ValidationTab.ts`**: modern port of the Validation tab. It takes over the five buttons (clone-to-strip-legacy pattern, via the new shared `src/app/domTakeover.ts`) and drives the tested `src/validation` suites — `runAllValidationChecks` (energy drift, replay determinism, JSON-import rejection, dt-halving, canonical residual), the flagship `runReferenceValidation` integrator-order cross-validation (one row per method) for Convergence, replay determinism, and a 200k-step RK4 energy-drift stress test. Results render into `#validateResults` and the `#testPassed`/`#testFailed`/`#testTime` counters with safe element-by-element DOM construction (no markup strings). Gated by `?lab=legacy`.
+- **`src/app/domTakeover.ts`**: shared `takeOverButton` / `setText` / `clearChildren` helpers; `LyapunovTab` refactored onto them.
+- `e2e/modern-validation-tab.spec.ts`: open tab → run-all renders 5 passing cases + counters; Convergence renders one row per integrator (≥12). The smoke test (which clicks Run-All) now exercises the modern Validation path.
+
+## 10.16.0 - 2026-06-09
+
+Legacy-removal Stage 3 begins — the Lyapunov-spectrum analysis tab is ported to the modern stack. 160 unit tests pass; 7 chromium e2e pass; typecheck + build green; legacy-risk 122.
+
+- **Chaos worker protocol** gains a `lyapunovSpectrum` job (`src/workers/chaosProtocol.ts`): it runs the tested `lyapunovSpectrum` for any `SystemSpec` and returns the descending spectrum, its sum (≈0 for Hamiltonian systems), and the Kaplan-Yorke dimension. Exposed on `ChaosClient.lyapunovSpectrum(...)` with the existing worker + transparent main-thread fallback.
+- **`src/app/LyapunovTab.ts`**: modern port of the λ tab. It takes over the tab controls by *cloning the buttons to strip the legacy handlers* (a clean, surgical takeover that needs no edits to the legacy JS), builds the current system spec from the on-page controls, computes the full spectrum off the main thread, fills `#L1…#KY`, and draws a spectrum bar chart (`renderSpectrumBars` in `labPlots`). Export writes a spectrum CSV. Gated by the same `?lab=legacy` escape hatch.
+- `tests/lyapunov-spectrum-job.test.ts` (3): descending/positive-λ1/≈0-sum/KY-in-range for the conservative double pendulum, main-thread fallback resolution, and error propagation. `e2e/modern-lyapunov-tab.spec.ts`: open tab → Start → results populate and the canvas renders.
+
+## 10.15.0 - 2026-06-09
+
+Legacy-removal Stage 2 complete — the modern Lab is now the **default** lab experience. 157 unit tests pass; 6 chromium e2e pass; typecheck + build green; legacy-risk 122.
+
+- **Default flip**: `src/app` mounts the modern Lab by default; `?lab=legacy` is the escape hatch that keeps the classic lab (covered by `e2e/legacy-lab.spec.ts`). The legacy lab render is guarded off via `App.__modernLabActive` and legacy state is mirrored for chrome coherence.
+- **Parity features wired into the modern Lab**:
+  - **Presets** — the existing preset buttons reconfigure the modern sim (`e2e/modern-lab-parity.spec.ts`).
+  - **Ensemble** — N perturbed copies (from `ensN`/`ensEps`) integrated alongside the reference and drawn as faint tips (chaos-divergence view).
+  - **Visual FX** — glow / long-exposure checkboxes drive the renderer fade.
+  - **Drag-to-set** — pointer drag on `#main` repositions a bob (legacy atan2 mapping) and restarts.
+  - **Export** — `src/app/labExport.ts` builds trajectory CSV, Poincaré CSV, and a reproducible run JSON; the toolbar buttons download them, plus PNG via `canvas.toDataURL` (`tests/lab-export.test.ts`, 5 tests).
+  - **Replay/scrubber** — frames are recorded into a capped ring; the scrubber renders a recorded frame; rewind jumps to the start; dragging to the end resumes live.
+- **Deferred (use `?lab=legacy` meanwhile)**: audio sonification (Web Audio, not headless-testable) and interpolated render (cosmetic) are not yet ported to the modern Lab. These plus the analysis tabs (Stage 3) gate deleting the legacy lab code (Stage 4).
+- New tests: `tests/lab-export.test.ts`; new e2e `legacy-lab`, `modern-lab-parity`.
+
+## 10.14.0 - 2026-06-09
+
+Legacy-removal Stage 2 — full modern Lab tab takes over the real lab canvases behind `?lab=modern`. 153 unit tests pass; 4 chromium e2e (smoke, accessibility, probe, takeover) pass; typecheck + build green; legacy-risk score unchanged at 122.
+
+- **`src/app/LabApp.ts`**: the complete modern Lab — simulation loop plus every side plot (energy/drift, Lyapunov convergence, phase portrait, Poincaré section, FFT) — reading the on-page controls and driving the real `#main`/`#energy`/`#lyap`/`#phase`/`#poincare`/`#fft` canvases. On mount it sets `App.__modernLabActive` (the legacy lab render stands down, guarded in `Render.all`), pauses legacy stepping, and mirrors its state into `window.App` so the legacy chrome (diagnostics, hash, drift/λ badges, export) stays coherent. Controls and Reset/Pause/Clear buttons are wired; changing any control restarts the modern sim.
+- **`src/app/fft.ts`**: dependency-free radix-2 Cooley-Tukey FFT + Hann-windowed real magnitude spectrum (`magnitudeSpectrum`, `dominantBin`). Unit-tested: a pure sinusoid peaks in the matching bin.
+- **`src/app/PoincareAccumulator.ts`**: rising θ₁=0 (θ̇₁>0) section detector with linear interpolation to the crossing instant, recording (θ₂, ω₂). Unit-tested.
+- **`src/app/LyapunovEstimator.ts`**: incremental Benettin maximal-exponent estimator (running value + convergence curve). Unit-tested: positive for the chaotic double pendulum.
+- **`src/app/labPlots.ts`**: `renderPhasePortrait` and `renderSpectrum` (Ctx2D, Node-testable).
+- **Feature flag** `?lab=modern` mounts the takeover; `e2e/modern-lab-takeover.spec.ts` verifies (real Chromium) that #main animates under modern control, the legacy lab stands down, side plots draw, energy stays conserved (drift < 1e-2), `App.simTime` is mirrored, and other tabs (validation) still work.
+- New tests: `tests/lab-analysis.test.ts` (8), `tests/lab-plots.test.ts` (4).
+
+Not yet at full parity (so `?lab=modern` is opt-in, not the default): ensemble members, audio sonification, glow/long-exposure FX, interpolated render, scrubber/replay, drag-to-set bobs, preset wiring, and CSV/PNG/JSON export of the modern trajectory remain to be ported before the legacy lab code can be deleted.
+
+## 10.13.0 - 2026-06-09
+
+Legacy-removal Stage 2 — the modern Lab simulation/render loop. 141 unit tests pass; chromium smoke (legacy, unchanged) + new modern-lab e2e + full typecheck + build all pass.
+
+- **`src/app/LabSimulation.ts`**: headless integration core for the Lab tab. Drives the shared typed `physicsAdapter` (same tested integrators used everywhere) for double/triple systems, with energy, relative drift, solver residual, deterministic stepping, and Cartesian bob positions in metres. A unit test asserts it reproduces a hand-rolled `rk4Step`+`rhsDouble` loop **bit-for-bit**, proving it uses the engine faithfully rather than reimplementing physics.
+- **`src/app/LabRenderer.ts`**: canvas pendulum renderer targeting the structural `Ctx2D` (so it unit-tests in Node like the `viz/` renderers). Reproduces the legacy `#main` geometry for visual parity (pivot `w/2, h·0.38`, 110 px/m), with gradient trail (`viz/trace`), rods, pivot, and Okabe-Ito bobs.
+- **`src/app/LabController.ts`**: `mountModernLab(canvas, config)` — a self-contained rAF loop wiring simulation→renderer with a trail ring buffer and an injectable scheduler (for tests). It never reads `window.App`, so it is independently mountable and parity-testable before the legacy lab is removed.
+- **Feature flag**: `?modernLabProbe` mounts the modern Lab onto a dedicated probe canvas without disturbing the legacy `#main`. `e2e/modern-lab.spec.ts` verifies (in real Chromium) that it animates, advances time, conserves energy (γ=0 RK4 drift < 1e-2), and leaves the legacy app working.
+- `tests/lab-simulation.test.ts` (8) + `tests/lab-renderer.test.ts` (5): engine fidelity, determinism, conservation/dissipation, geometry-to-pixel parity, controller stepping/trail/scheduler.
+- Docs: `architecture.md` module boundaries + Stage-2 staging updated.
+
+## 10.12.0 - 2026-06-09
+
+Runtime unification — Stage 1 of the legacy-removal program. 128 unit tests pass; chromium smoke + full typecheck pass; legacy-risk score 156 → 122.
+
+- **`src/runtime/ServiceContainer.ts`**: zero-dependency typed DI container (lazy singletons, optional transients, throwing `resolve` + non-throwing `tryResolve`, typed service map, lifecycle `reset`/`invalidate`). `tests/service-container.test.ts` (7 tests).
+- **`src/runtime/PendulumRuntime.ts`**: the single canonical runtime surface `window.PendulumRuntime`, backed by the container. Registers `events`, `commands`, `state`, `physics`, `worker`, and *adopts* the legacy app/physics as `legacyApp`/`legacyPhysics` instead of reading ambient globals. Booted first in `src/main.ts`.
+- **`js/01-core-app.js`**: the five scattered globals (`App`, `Physics`, `NaNGuard`, `CanvasMgr`, `UI`) collapsed into one `window.PendulumLabLegacyRuntime` namespace; the historical names are now **read-only, non-reassignable** accessors backed by it. Removed both dynamic `<script>` injections (decorative metadata nothing read). Legacy-risk metrics `globalRuntimeExports` and `dynamicScript` are now **0**.
+- **`src/render/performance.ts`**: resolves the legacy app through the container (with a safe fallback), demonstrating modern code consuming the DI surface rather than a bare global.
+- **`docs/architecture.md`**: added the layered (domain/application/infrastructure/legacy) dependency table, the DI-container description, the minimized public-API-surface section, and the four-stage Legacy Removal Staging plan.
+- **`e2e/smoke.spec.ts`**: now also asserts `window.PendulumRuntime` is installed, adopted the legacy app via the container, and that `window.App` rejects external reassignment.
+
+## 10.11.0 - 2026-06-09
+
+Portfolio landing page and documentation. 121 unit tests pass; landing + modern Playwright smoke specs pass on chromium.
+
+- **`landing.html`**: framework-free, colorblind-safe (Okabe-Ito), mobile-responsive landing page with a hero, a live double-pendulum mini-canvas (`src/landing.ts`, reusing the tested physics core and the viz gradient trace), a stats row, an eight-card feature grid covering the seven layers, and links to the lab, docs, and generated reports. Wired into `vite.config.ts` rollup inputs.
+- **`docs/engine-overview.md`**: English overview with the layer map, the **measured** integrator-order table (12/12 within envelope), and representative chaos-diagnostic results (Lyapunov, SALI, FLI; Hamiltonian spectrum pairing).
+- **`README.md`**: added a "What's inside" feature summary and a full `npm run` script catalog.
+- **`e2e/landing-smoke.spec.ts`**: asserts the page mounts, the hero canvas animates (changing pixels), the feature grid and CTA are present, and there are no console errors.
+
+## 10.10.0 - 2026-06-09
+
+Reproducibility-package exporter for machine-checkable run provenance. 121 unit tests pass.
+
+- **`src/research/reproPackage.ts`** builds a self-contained JSON manifest for a run (system spec, integrator, dt, steps, initial state, seed) with a dependency-free content hash of the inputs (`canonicalJson` + `cyrb53`), the resulting final state, and key diagnostics (energy drift, maximal Lyapunov estimate), plus library version and timestamp.
+- **`verifyReproPackage`** re-runs the manifest and confirms the final state reproduces (the integration is fully deterministic, so round-trip Δstate is 0) and the input hash matches — detecting tampering of either the recorded state or the hash.
+- **`reproMethodsText`** emits a Markdown methods paragraph + citation line for inclusion in write-ups.
+- `tests/repro-package.test.ts` (10 tests): build → verify round-trip, hash stability and key-order independence, JSON serializability, and tamper detection (corrupted state and corrupted hash both fail).
+- **`npm run export:repro`** (`scripts/export-repro.ts`) builds, verifies, and writes packages to `reports/reproducibility/` — e.g. a double pendulum (`gbs`, drift 1.3e-12) and the driven chaos preset (`dopri5`, λ ≈ 0.134), both verifying with Δstate = 0.
+
+## 10.9.0 - 2026-06-09
+
+Integrator reference-validation suite proving each method matches trusted references. 111 unit tests pass.
+
+- **`src/validation/referenceSuite.ts`** validates every registered integrator three ways: (1) **theoretical convergence order** on the harmonic oscillator (closed form) — every method hits its order (euler 1.03, rk2/leapfrog/hmidpoint/bdf2 2.00, rk4/yoshida4/gauss2 4.00, rkf45/dopri5 5.00, gbs round-off-limited); (2) **energy-conservation envelope** on the conservative double pendulum; (3) **agreement** with the highest-accuracy method (`gbs`) as a numerical reference, reported as max state divergence. Result: **12 / 12 integrators within their expected envelopes.**
+- Grading is done by pure helpers (`gradeOrder`, `gradeBelow`) that are unit-tested directly (`tests/reference-validation.test.ts`, 10 tests), alongside structural assertions on the full run (orders met, gbs self-agreement is exactly 0, higher-order methods beat Euler, no NaN/Inf blow-ups).
+- **`npm run validate:reference`** (`scripts/validate-reference.ts`, pure Node/tsx) writes `reports/validation-reference.{md,json}` and exits non-zero if any integrator falls outside its envelope.
+
+## 10.8.0 - 2026-06-09
+
+Moved the heavy chaos computations off the main thread behind a typed worker protocol. 101 unit tests pass; the `modern.html` Playwright specs pass on chromium with the worker path confirmed active in-browser.
+
+- **Serializable system descriptor** (`src/physics/systemSpec.ts`): a data-only `SystemSpec` union plus `buildRhs(spec)` that reconstructs the `Derivative` on the far side of the worker boundary (a function can't be posted to a worker). `tests/chaos-protocol.test.ts` checks `buildRhs` matches the direct physics RHS to machine epsilon. `src/demo/systems.ts` now derives every system's RHS from its spec, so the main thread and worker run identical math.
+- **Typed message protocol** (`src/workers/chaosProtocol.ts`): discriminated-union `ChaosRequest`/`ChaosResponse` and a pure `runChaosJob` handler used both inside the worker and as the synchronous fallback — the two paths cannot diverge.
+- **Worker** (`src/workers/chaos.worker.ts`): a trivial `postMessage(runChaosJob(data))` wrapper.
+- **Promise client** (`src/runtime/ChaosClient.ts`): `lyapunov(...)` / `bifurcation(...)` returning Promises, with an injectable worker factory and a graceful main-thread fallback when workers are unavailable. `tests/chaos-client.test.ts` covers the worker path (via a fake worker), the fallback path, worker/fallback result parity, and error-response rejection.
+- **UI**: the `modern.html` Lyapunov and bifurcation buttons now call the client; the status bar reports whether the chaos backend is the worker or the fallback. `e2e/modern-smoke.spec.ts` asserts the worker backend is active and the panels fill with no console errors.
+
+## 10.7.0 - 2026-06-09
+
+Three-panel interactive workspace in `modern.html` (left settings / center canvas / right analysis), wiring the chaos/numerics/viz layers together. 91 unit tests pass; Playwright smoke specs for `modern.html` pass on chromium.
+
+- **Demo system registry** (`src/demo/systems.ts`): a thin, DOM-free, unit-tested abstraction (`tests/demo-systems.test.ts`, 22 tests) wrapping double / triple / N=5 chain / driven / spring with an initial state, parameter-bound RHS, energy scalar, body positions, and a per-system Poincaré-crossing rule.
+- **Three-panel responsive layout**: left settings (system + integrator selectors, dt/speed, toggles), center animated canvas, right analysis (status + four diagnostic canvases). Collapses to a single column under 820px.
+- **Integrator selector** populated from `integratorRegistry`, with each method's `stabilityNotes` surfaced in a live note box and the `<select>` title (tooltip).
+- **Live + on-demand panels**: live energy/drift and Poincaré section; on-demand Lyapunov-convergence (`maximalLyapunov`) and bifurcation sweep (`bifurcationDiagram`, driven only), computed off the render path with a "Computing…" state.
+- **Colorblind-mode toggle** swaps the Okabe-Ito safe theme for a deliberately non-safe red/green theme across all renderers and the scatter colors.
+- **Gradient trajectory trace** of the tip via `renderTrajectoryTrace`, stored in physical units so it stays correct across canvas resizes.
+- **E2E**: new `e2e/modern-smoke.spec.ts` (panels mount, animation advances, system switch, canonical toggle, Lyapunov compute, zero console/page errors). Removed the obsolete modern-core test from `e2e/smoke.spec.ts`.
+
+## 10.6.0 - 2026-06-09
+
+Visualization layer (`src/viz/`) surfacing the chaos/numerics engine in the browser. Framework-free, pure `render(ctx, data, opts)` functions that unit-test against a recording 2D-context stub (`tests/viz.test.ts`, 14 tests); 69 unit tests pass overall.
+
+- **Colorblind-safe palette** (`palette.ts`): the Okabe-Ito categorical set plus dark/light themes and hex interpolation helpers.
+- **Pure scale/axis helpers** (`scales.ts`): `makeScale`/`invert`, 1/2/5-snapped `niceTicks`, and a reusable `drawFrame` (gridlines, ticks, axis box) — all DOM-independent.
+- **Renderers**: `renderEnergyPlot` + `renderDriftGauge`, `renderLyapunovConvergence` (pairs with `maximalLyapunov(...).convergence`), `renderPoincareSection` (with pure `autoViewport`/`zoomViewport` for pan/zoom), `renderBifurcation` raster, and `renderTrajectoryTrace` (gradient fade with a head marker). All are empty-data safe (tested).
+- **Testable canvas seam** (`types.ts` `Ctx2D`): the minimal `CanvasRenderingContext2D` subset the renderers use, so they render in Node against a stub and in the browser against the real context.
+- **Live wiring**: `modern.html` now hosts an energy/drift plot and a live Poincaré section (θ₂ = 0, θ̇₂ > 0) fed by the running double pendulum, verified rendering headlessly with zero code-originated console errors.
+
+## 10.5.0 - 2026-06-09
+
+Chaos Analysis layer (`src/chaos/`), built on the v10.4.0 physics/numerics core. All diagnostics are test-covered (`tests/chaos.test.ts`, 11 tests); 55 unit tests pass overall.
+
+- **Shared variational machinery** (`variational.ts`): finite-difference Jacobian, an augmented "reference + tangent vectors" RHS that propagates deviation vectors under the linearized flow, modified Gram-Schmidt, and a reproducible (mulberry32-seeded) orthonormal frame.
+- **Lyapunov exponents** (`lyapunov.ts`):
+  - `maximalLyapunov` — Benettin two-trajectory method (Jacobian-free). Gives ≈0.10 for the damped-driven chaos preset and ≈0 for the harmonic oscillator.
+  - `lyapunovSpectrum` — full spectrum via Gram-Schmidt of the variational flow. The conservative double pendulum reproduces the Hamiltonian pairing (λ₁ ≈ −λ₄, sum ≈ 0).
+  - `kaplanYorkeDimension` — Lyapunov dimension from the spectrum.
+- **Fast chaos indicators** (`indicators.ts`): `saliIndicator` (SALI → 0 exponentially for chaos, O(1) for regular motion) and `fliIndicator` (overflow-safe via accumulated log).
+- **Poincaré sections & bifurcation** (`poincare.ts`): `poincareSection` (wraps `detectEvents`, so points lie exactly on the section), `bifurcationDiagram` over a parameter sweep, and `distinctValueCount` for period classification.
+- Every result object carries the transient/renormalization settings it was computed with, per the project's reproducibility discipline.
+
+## 10.4.0 - 2026-06-09
+
+Numerics and physics-engine expansion (all additions test-covered; 44 unit tests pass).
+
+- **New physical systems** (`src/physics/`):
+  - `nPendulum.ts` — generalized N-link chain pendulum (`rhsChain`/`energyChain`). Reduces exactly to `rhsDouble` (N=2) and `rhsTriple` (N=3) to machine epsilon, verified in `tests/n-pendulum.test.ts`; the quadruple pendulum (N=4) is covered there too.
+  - `driven.ts` — sinusoidally driven, damped pendulum made autonomous via a drive-phase coordinate, with the classic `DAMPED_DRIVEN_CHAOS_PRESET` (A=1.15, ω=2/3, q=2). Sensitive-dependence and dissipation are asserted in tests.
+  - `spring.ts` — elastic (spring) pendulum in (r, θ); energy conservation under leapfrog is asserted.
+- **New integrators** (wired into `IntegratorId`, `integratorRegistry`, and `step()`):
+  - `dopri5` — Dormand-Prince 5(4).
+  - `gbs` — Gragg-Bulirsch-Stoer modified-midpoint extrapolation (DOP853-class accuracy; weights are computed from substep ratios, not transcribed, so there is no large hand-written tableau to get wrong). Reaches machine-precision energy conservation in the benchmark.
+  - `bdf2` — one-step, self-starting, L-stable TR-BDF2 stiff solver (`src/physics/stiff.ts`) with Newton iteration and a finite-difference Jacobian. L-stability verified on a stiff decay where explicit Euler diverges.
+- **Event-detection solver** (`src/physics/events.ts`, `detectEvents`): integrates while bisecting to locate zero-crossings of user predicates, with direction filtering — the primitive behind Poincaré sections and period detection. A double-pendulum Poincaré section test is included.
+- **Adaptive framework additions** (`src/physics/adaptive.ts`): `bulirschStoerStep` extrapolation step.
+- **Long-term energy benchmark** (`scripts/energy-benchmark.ts`, `npm run benchmark:energy`): ranks every integrator by relative energy drift over 100k steps; writes `reports/energy-benchmark.{md,json}`.
+
+## 10.3.0 - 2026-06-09
+
+- Implemented the previously-advertised integrators that silently fell back to RK4 in `step()`:
+  - `symplectic` now runs true semi-implicit (symplectic) Euler.
+  - `leapfrog` now runs a velocity-Verlet kick-drift-kick step.
+  - `yoshida4` now runs a fourth-order Yoshida triple composition of leapfrog.
+  - `rkf45` now runs a real embedded Runge-Kutta-Fehlberg 4(5) pair that exports a local error estimate.
+- Upgraded `gauss2` from a 1-stage implicit midpoint to the genuine 2-stage Gauss-Legendre (order 4) collocation method, and added a 3-stage Gauss-Legendre (order 6) stepper (`gaussLegendre6Step`).
+- Added `src/physics/adaptive.ts`: Dormand-Prince 5(4) embedded step, an error-per-step adaptive controller (`adaptiveStep`, `integrateAdaptive`), and Richardson extrapolation (`richardsonStep`).
+- Added `tests/numerics.test.ts` (11 tests) verifying empirical convergence orders, symplectic energy boundedness, embedded error scaling, adaptive accept/reject behavior, and Richardson error reduction.
+
+## 10.2.0 - 2026-06-09
+
+- Fixed direct `index.html` execution so blocked or unavailable workers fall back to main-thread physics and the pendulum keeps moving.
+- Removed clipped left-rail English tooltip labels while preserving title and ARIA labels.
+- Added `src/runtime/ModernPhysicsBridge.ts` so served legacy execution uses the TypeScript double-pendulum RHS, energy, and RK/Euler core paths.
+- Moved the module worker entry to `src/workers/physics.worker.ts` and hardened `WorkerBridge` fallback.
+- Added canonical theta/p Hamiltonian helpers, residual-reporting implicit midpoint, and TypeScript triple RHS tests.
+- Expanded `modern.html` into a working TypeScript physics demo page.
+- Added legacy risk audit reports with weighted risk reduction tracking.
+- Added unit/E2E coverage for motion, canonical residuals, JSON guards, extreme parameters, and import/export round-trip.
+
+## 10.1.0
+
+- Introduced Vite, TypeScript, Vitest, Playwright, benchmark scripts, validation reports, CSP notes, and CI.

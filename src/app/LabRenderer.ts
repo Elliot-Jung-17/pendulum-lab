@@ -1,0 +1,264 @@
+import type { Ctx2D } from '../viz/types';
+import type { Point2D } from '../viz/poincare';
+import type { BobPosition } from './LabSimulation';
+
+/**
+ * Canvas renderer for the Lab pendulum. Geometry reproduces the legacy `#main`
+ * view: pivot at (width/2, height*0.38), 110 px/m by default, and theta=0
+ * hanging straight down. The visual treatment intentionally mirrors the
+ * original single-file renderer: long colored trail buckets, cyan ensemble
+ * traces, translucent rods, and glowing bobs.
+ */
+
+export interface LabRenderOptions {
+  width: number;
+  height: number;
+  /** Pixels per metre. Default 110 matches the legacy runtime (CONSTS.SCALE). */
+  scale?: number;
+  /** Vertical pivot position as a fraction of height. Default 0.38 (legacy). */
+  pivotYFraction?: number;
+  background?: string;
+  /** Per-frame background fade alpha (motion-blur trail). Default 0.12. */
+  fade?: number;
+  trailColorOld?: string;
+  trailColorNew?: string;
+  rodColor?: string;
+}
+
+export interface LabDrawExtras {
+  fade?: number;
+  ensembleTips?: readonly Point2D[];
+  trailColor?: string;
+  trailMode?: string;
+  trailLength?: number;
+  skipTrail?: boolean;
+  glow?: boolean;
+}
+
+interface TrailBuffer {
+  buf: Float32Array;
+  idx: number;
+  filled: number;
+}
+
+const BOB_COLORS = ['#60a0d0', '#00d4ff', '#00d4ff'];
+const TRIPLE_BOB_COLORS = ['#90a0b8', '#60c0ff', '#00d4ff'];
+const ENSEMBLE_TRAIL_CAP = 200;
+const FULL_CIRCLE = Math.PI * 2;
+
+export class LabRenderer {
+  private readonly ctx: Ctx2D;
+  private readonly opts: Required<LabRenderOptions>;
+  private trail: TrailBuffer = { buf: new Float32Array(0), idx: 0, filled: 0 };
+  private ensembleTrails: TrailBuffer[] = [];
+
+  constructor(ctx: Ctx2D, options: LabRenderOptions) {
+    this.ctx = ctx;
+    this.opts = {
+      scale: 110,
+      pivotYFraction: 0.38,
+      background: '#07090d',
+      fade: 0.12,
+      trailColorOld: '#13243a',
+      trailColorNew: '#00d4ff',
+      rodColor: 'rgba(160,185,220,0.5)',
+      ...options
+    };
+  }
+
+  /** Logical canvas size in CSS pixels, not the high-DPI backing-store size. */
+  size(): { width: number; height: number } {
+    return { width: this.opts.width, height: this.opts.height };
+  }
+
+  /** Pivot pixel position. */
+  pivot(): Point2D {
+    return { x: this.opts.width / 2, y: this.opts.height * this.opts.pivotYFraction };
+  }
+
+  /** Map a bob position in metres to canvas pixels. */
+  toPixels(bob: BobPosition): Point2D {
+    const pivot = this.pivot();
+    return { x: pivot.x + bob.x * this.opts.scale, y: pivot.y + bob.y * this.opts.scale };
+  }
+
+  /** Clear to the background colour (used for a hard reset, e.g. on trail clear). */
+  clear(): void {
+    this.ctx.save();
+    this.ctx.fillStyle = this.opts.background;
+    this.ctx.fillRect(0, 0, this.opts.width, this.opts.height);
+    this.ctx.restore();
+    this.trail = { buf: new Float32Array(0), idx: 0, filled: 0 };
+    this.ensembleTrails = [];
+  }
+
+  draw(bobsMeters: readonly BobPosition[], extras: LabDrawExtras = {}): void {
+    const ctx = this.ctx;
+    const { width, height } = this.opts;
+    const fade = extras.skipTrail ? 1 : extras.fade ?? this.opts.fade;
+
+    ctx.save();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = this.opts.background;
+    ctx.globalAlpha = fade;
+    ctx.fillRect(0, 0, width, height);
+    ctx.globalAlpha = 1;
+    ctx.restore();
+
+    const pivot = this.pivot();
+    const pixels = bobsMeters.map((b) => this.toPixels(b));
+    const tip = pixels[pixels.length - 1];
+
+    if (!extras.skipTrail && tip) {
+      this.pushTrail(this.trail, tip.x, tip.y, Math.max(2, Math.round(extras.trailLength ?? 1500)));
+      this.drawMainTrail(extras.trailMode ?? 'rainbow', extras.trailColor);
+    } else if (extras.skipTrail) {
+      this.trail.idx = 0;
+      this.trail.filled = 0;
+    }
+
+    if (extras.ensembleTips && extras.ensembleTips.length > 0) {
+      this.drawEnsemble(extras.ensembleTips);
+    }
+
+    ctx.save();
+    ctx.strokeStyle = this.opts.rodColor;
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(pivot.x, pivot.y);
+    for (const p of pixels) ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(144,160,184,0.6)';
+    ctx.beginPath();
+    ctx.arc(pivot.x, pivot.y, 4, 0, FULL_CIRCLE);
+    ctx.fill();
+    ctx.restore();
+
+    const colors = pixels.length >= 3 ? TRIPLE_BOB_COLORS : BOB_COLORS;
+    pixels.forEach((p, i) => {
+      ctx.save();
+      const color = colors[i] ?? '#00d4ff';
+      this.setShadow(color, extras.glow ? 24 : 0);
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, this.bobRadius(i, pixels.length), 0, FULL_CIRCLE);
+      ctx.fill();
+      ctx.restore();
+    });
+  }
+
+  private bobRadius(index: number, count: number): number {
+    if (count >= 3) return [5, 5, 6][index] ?? 5;
+    return index === 0 ? 4.5 : 5;
+  }
+
+  private setShadow(color: string, blur: number): void {
+    const fx = this.ctx as Ctx2D & { shadowColor?: string; shadowBlur?: number };
+    fx.shadowColor = color;
+    fx.shadowBlur = blur;
+  }
+
+  private trailColor(frac: number, mode: string, alpha = 1): string {
+    const h = Math.floor(frac * 360);
+    const a = alpha.toFixed(2);
+    switch (mode) {
+      case 'rainbow':
+        return `hsla(${h},90%,58%,${a})`;
+      case 'heat': {
+        const r = Math.min(255, Math.floor(frac * 2 * 255));
+        const g = Math.max(0, Math.floor((frac - 0.5) * 2 * 255));
+        return `rgba(${r},${g},0,${a})`;
+      }
+      case 'ice':
+        return `hsla(${200 + frac * 60},80%,${50 + frac * 30}%,${a})`;
+      case 'plasma':
+        return `hsla(${280 - frac * 200},80%,${40 + frac * 30}%,${a})`;
+      case 'white':
+        return `rgba(255,255,255,${(frac * 0.7 + 0.1).toFixed(2)})`;
+      case 'green':
+        return `hsla(135,80%,${35 + frac * 35}%,${a})`;
+      default:
+        return alpha < 1 ? `hsla(${h},85%,55%,${a})` : this.opts.trailColorNew;
+    }
+  }
+
+  private pushTrail(target: TrailBuffer, x: number, y: number, cap: number): void {
+    if (target.buf.length !== cap * 2) {
+      target.buf = new Float32Array(cap * 2);
+      target.idx = 0;
+      target.filled = 0;
+    }
+    target.buf[target.idx * 2] = x;
+    target.buf[target.idx * 2 + 1] = y;
+    target.idx = (target.idx + 1) % cap;
+    if (target.filled < cap) target.filled += 1;
+  }
+
+  private drawMainTrail(mode: string, fallbackColor?: string): void {
+    const { buf, filled } = this.trail;
+    if (filled < 2) return;
+    const ctx = this.ctx;
+    const cap = buf.length / 2;
+    const start = (this.trail.idx - filled + cap) % cap;
+    const buckets = 8;
+
+    ctx.save();
+    ctx.lineWidth = 1.4;
+    ctx.lineCap = 'round';
+    for (let b = 0; b < buckets; b += 1) {
+      const f0 = b / buckets;
+      const f1 = (b + 1) / buckets;
+      const fmid = (f0 + f1) / 2;
+      ctx.strokeStyle = fallbackColor && mode === 'fixed' ? fallbackColor : this.trailColor(fmid, mode, fmid * 0.85 + 0.1);
+      ctx.beginPath();
+      const first = Math.max(1, Math.floor(f0 * filled));
+      const last = Math.min(filled - 1, Math.max(first, Math.ceil(f1 * filled) - 1));
+      for (let i = first; i <= last; i += 1) {
+        const i0 = (start + i - 1) % cap;
+        const i1 = (start + i) % cap;
+        if (i === first) ctx.moveTo(buf[i0 * 2]!, buf[i0 * 2 + 1]!);
+        ctx.lineTo(buf[i1 * 2]!, buf[i1 * 2 + 1]!);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  private drawEnsemble(tips: readonly Point2D[]): void {
+    const ctx = this.ctx;
+    if (this.ensembleTrails.length !== tips.length) {
+      this.ensembleTrails = Array.from({ length: tips.length }, () => ({ buf: new Float32Array(0), idx: 0, filled: 0 }));
+    }
+
+    ctx.save();
+    for (let n = 0; n < tips.length; n += 1) {
+      const p = tips[n]!;
+      const trail = this.ensembleTrails[n]!;
+      this.pushTrail(trail, p.x, p.y, ENSEMBLE_TRAIL_CAP);
+      if (trail.filled > 1) {
+        const cap = trail.buf.length / 2;
+        const start = (trail.idx - trail.filled + cap) % cap;
+        ctx.strokeStyle = 'rgba(0,212,255,0.25)';
+        ctx.lineWidth = 0.8;
+        ctx.beginPath();
+        for (let i = 0; i < trail.filled; i += 1) {
+          const ix = (start + i) % cap;
+          const x = trail.buf[ix * 2]!;
+          const y = trail.buf[ix * 2 + 1]!;
+          if (i) ctx.lineTo(x, y);
+          else ctx.moveTo(x, y);
+        }
+        ctx.stroke();
+      }
+      ctx.fillStyle = 'rgba(0,212,255,0.4)';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 3, 0, FULL_CIRCLE);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+}

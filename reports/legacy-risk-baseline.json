@@ -1,0 +1,13 @@
+{
+  "label": "pre-runtime-stability-pass",
+  "capturedAt": "2026-06-09T00:00:00.000Z",
+  "counts": {
+    "innerHTML": 103,
+    "onclick": 117,
+    "inlineWorkerBlob": 1,
+    "evalLike": 0,
+    "dynamicScript": 2,
+    "globalRuntimeExports": 2
+  },
+  "weightedScore": 482
+}

@@ -1,0 +1,37 @@
+{
+  "name": "pendulum-lab-v10",
+  "version": "10.25.0",
+  "private": true,
+  "type": "module",
+  "description": "Typed, modular Pendulum Lab V10 project with legacy runtime compatibility.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build && node scripts/copy-legacy-assets.mjs",
+    "build:standalone": "vite build --config vite.config.standalone.ts && node scripts/copy-css-into-standalone.mjs",
+    "preview": "vite preview --host 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "smoke": "playwright test e2e/smoke.spec.ts --project=chromium",
+    "benchmark": "tsx scripts/benchmark.ts",
+    "benchmark:energy": "tsx scripts/energy-benchmark.ts",
+    "validate:reference": "tsx scripts/validate-reference.ts",
+    "validate:cross": "tsx scripts/cross-validate.ts",
+    "export:repro": "tsx scripts/export-repro.ts",
+    "research": "tsx scripts/research-cli.ts",
+    "reports": "tsx scripts/generate-validation-report.ts",
+    "audit:legacy": "tsx scripts/audit-legacy.ts",
+    "audit:worldclass": "tsx scripts/worldclass-scorecard.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "@types/node": "^20.12.12",
+    "tsx": "^4.11.0",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11",
+    "vite-plugin-singlefile": "^2.3.3",
+    "vitest": "^1.6.0"
+  }
+}

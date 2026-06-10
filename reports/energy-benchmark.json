@@ -1,0 +1,122 @@
+{
+  "generatedAt": "2026-06-09T07:08:47.108Z",
+  "parameters": {
+    "m1": 1,
+    "m2": 1,
+    "l1": 1,
+    "l2": 1,
+    "g": 9.81
+  },
+  "dt": 0.002,
+  "steps": 100000,
+  "rows": [
+    {
+      "id": "gbs",
+      "name": "Gragg-Bulirsch-Stoer",
+      "order": "adaptive",
+      "maxRelDrift": 8.974070677127805e-13,
+      "finalRelDrift": 3.710185950345992e-13,
+      "wallMs": 383.61439999999993,
+      "blewUp": false
+    },
+    {
+      "id": "dopri5",
+      "name": "Dormand-Prince 5(4)",
+      "order": "5",
+      "maxRelDrift": 3.793105569030346e-10,
+      "finalRelDrift": 3.8151225320675533e-10,
+      "wallMs": 99.39229999999998,
+      "blewUp": false
+    },
+    {
+      "id": "gauss2",
+      "name": "Gauss-Legendre 4 (2-stage)",
+      "order": "implicit",
+      "maxRelDrift": 9.344328777498148e-10,
+      "finalRelDrift": 4.618812358697035e-10,
+      "wallMs": 118.82659999999998,
+      "blewUp": false
+    },
+    {
+      "id": "rkf45",
+      "name": "RKF45 Adaptive",
+      "order": "adaptive",
+      "maxRelDrift": 8.292864766017602e-9,
+      "finalRelDrift": 8.350665397806893e-9,
+      "wallMs": 76.18060000000003,
+      "blewUp": false
+    },
+    {
+      "id": "rk4",
+      "name": "Runge-Kutta 4",
+      "order": "4",
+      "maxRelDrift": 5.447442742183149e-8,
+      "finalRelDrift": 5.43505831437369e-8,
+      "wallMs": 54.0034,
+      "blewUp": false
+    },
+    {
+      "id": "hmidpoint",
+      "name": "Implicit Midpoint",
+      "order": "implicit",
+      "maxRelDrift": 0.00004336731096288303,
+      "finalRelDrift": 1.3059506446600296e-7,
+      "wallMs": 64.85460000000006,
+      "blewUp": false
+    },
+    {
+      "id": "bdf2",
+      "name": "TR-BDF2 (stiff, L-stable)",
+      "order": "implicit",
+      "maxRelDrift": 0.000065512373532857,
+      "finalRelDrift": 7.584242545637609e-7,
+      "wallMs": 254.82369999999992,
+      "blewUp": false
+    },
+    {
+      "id": "rk2",
+      "name": "Midpoint RK2",
+      "order": "2",
+      "maxRelDrift": 0.00033478632213105957,
+      "finalRelDrift": 0.00026450377460319417,
+      "wallMs": 44.58980000000001,
+      "blewUp": false
+    },
+    {
+      "id": "yoshida4",
+      "name": "Yoshida 4 Composition",
+      "order": "4",
+      "maxRelDrift": 0.5390990754912687,
+      "finalRelDrift": 0.346458963726784,
+      "wallMs": 207.08820000000003,
+      "blewUp": false
+    },
+    {
+      "id": "leapfrog",
+      "name": "Leapfrog Approximation",
+      "order": "2",
+      "maxRelDrift": 0.544779332907903,
+      "finalRelDrift": 0.5448385176223696,
+      "wallMs": 53.07989999999998,
+      "blewUp": false
+    },
+    {
+      "id": "symplectic",
+      "name": "Semi-Implicit Euler",
+      "order": "1",
+      "maxRelDrift": 0.5777911911220786,
+      "finalRelDrift": 0.5731628126692367,
+      "wallMs": 44.258399999999995,
+      "blewUp": false
+    },
+    {
+      "id": "euler",
+      "name": "Explicit Euler",
+      "order": "1",
+      "maxRelDrift": 9.921571027177423,
+      "finalRelDrift": 9.759320164752548,
+      "wallMs": 43.040800000000004,
+      "blewUp": false
+    }
+  ]
+}

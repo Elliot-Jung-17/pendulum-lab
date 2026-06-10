@@ -1,0 +1,36 @@
+{
+  "ok": true,
+  "value": [
+    {
+      "id": "energy-drift-rk4-double",
+      "status": "PASS",
+      "measured": "6.452e-16",
+      "threshold": "< 1e-5"
+    },
+    {
+      "id": "replay-determinism-rk4",
+      "status": "PASS",
+      "measured": "identical",
+      "threshold": "bitwise-equivalent string serialization"
+    },
+    {
+      "id": "json-import-rejects-non-finite",
+      "status": "PASS",
+      "measured": "state contains non-finite or extreme values",
+      "threshold": "reject"
+    },
+    {
+      "id": "dt-halving-rk4-double",
+      "status": "PASS",
+      "measured": "4.783e-10",
+      "threshold": "< 1e-6"
+    },
+    {
+      "id": "canonical-midpoint-residual",
+      "status": "PASS",
+      "measured": "1.599e-11 in 4 iterations",
+      "threshold": "< 1e-8"
+    }
+  ],
+  "problems": []
+}

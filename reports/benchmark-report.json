@@ -1,0 +1,21 @@
+{
+  "generatedAt": "2026-06-09T07:08:51.152Z",
+  "results": [
+    {
+      "label": "original",
+      "url": "http://127.0.0.1:5173/",
+      "fps": 31.30543671084211,
+      "physicsMsPerFrame": 0.10000000149011612,
+      "memoryBytes": 10000000,
+      "workerLatencyMs": 0
+    },
+    {
+      "label": "candidate",
+      "url": "http://127.0.0.1:5173/",
+      "fps": 31.033412640943403,
+      "physicsMsPerFrame": 0.10000000149011612,
+      "memoryBytes": 10000000,
+      "workerLatencyMs": 0.10000000149011612
+    }
+  ]
+}

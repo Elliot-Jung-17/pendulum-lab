@@ -1,0 +1,262 @@
+{
+  "generatedAt": "2026-06-09T04:09:58.457Z",
+  "referenceMethod": "gbs",
+  "checks": [
+    {
+      "id": "euler",
+      "name": "Explicit Euler",
+      "order": {
+        "measured": 1.03320661665904,
+        "expected": 1,
+        "roundOffLimited": false,
+        "pass": true
+      },
+      "energy": {
+        "value": 1.1174591656306094,
+        "threshold": 20,
+        "pass": true
+      },
+      "agreement": {
+        "value": 0.2624725235871357,
+        "threshold": 2,
+        "pass": true
+      },
+      "pass": true
+    },
+    {
+      "id": "rk2",
+      "name": "Midpoint RK2",
+      "order": {
+        "measured": 1.9999458442254505,
+        "expected": 2,
+        "roundOffLimited": false,
+        "pass": true
+      },
+      "energy": {
+        "value": 0.00012139509455034848,
+        "threshold": 1,
+        "pass": true
+      },
+      "agreement": {
+        "value": 0.001892599326930977,
+        "threshold": 0.2,
+        "pass": true
+      },
+      "pass": true
+    },
+    {
+      "id": "rk4",
+      "name": "Runge-Kutta 4",
+      "order": {
+        "measured": 3.9998925651990818,
+        "expected": 4,
+        "roundOffLimited": false,
+        "pass": true
+      },
+      "energy": {
+        "value": 1.0885700764844534e-8,
+        "threshold": 0.01,
+        "pass": true
+      },
+      "agreement": {
+        "value": 7.333192031389046e-8,
+        "threshold": 0.01,
+        "pass": true
+      },
+      "pass": true
+    },
+    {
+      "id": "leapfrog",
+      "name": "Leapfrog Approximation",
+      "order": {
+        "measured": 2.0007783928982694,
+        "expected": 2,
+        "roundOffLimited": false,
+        "pass": true
+      },
+      "energy": {
+        "value": 0.23316304024106696,
+        "threshold": 5,
+        "pass": true
+      },
+      "agreement": {
+        "value": 0.0044217005730287084,
+        "threshold": 0.2,
+        "pass": true
+      },
+      "pass": true
+    },
+    {
+      "id": "symplectic",
+      "name": "Semi-Implicit Euler",
+      "order": {
+        "measured": 1.0129735049035444,
+        "expected": 1,
+        "roundOffLimited": false,
+        "pass": true
+      },
+      "energy": {
+        "value": 0.37737312744364687,
+        "threshold": 5,
+        "pass": true
+      },
+      "agreement": {
+        "value": 0.008365867183461662,
+        "threshold": 2,
+        "pass": true
+      },
+      "pass": true
+    },
+    {
+      "id": "yoshida4",
+      "name": "Yoshida 4 Composition",
+      "order": {
+        "measured": 4.002663122544375,
+        "expected": 4,
+        "roundOffLimited": false,
+        "pass": true
+      },
+      "energy": {
+        "value": 0.5369835621287095,
+        "threshold": 5,
+        "pass": true
+      },
+      "agreement": {
+        "value": 0.026804043064961536,
+        "threshold": 0.1,
+        "pass": true
+      },
+      "pass": true
+    },
+    {
+      "id": "hmidpoint",
+      "name": "Implicit Midpoint",
+      "order": {
+        "measured": 1.9983789786143813,
+        "expected": 2,
+        "roundOffLimited": false,
+        "pass": true
+      },
+      "energy": {
+        "value": 0.00004108924249592595,
+        "threshold": 0.1,
+        "pass": true
+      },
+      "agreement": {
+        "value": 0.0009209852546914754,
+        "threshold": 0.2,
+        "pass": true
+      },
+      "pass": true
+    },
+    {
+      "id": "gauss2",
+      "name": "Gauss-Legendre 4 (2-stage)",
+      "order": {
+        "measured": 3.999355705313942,
+        "expected": 4,
+        "roundOffLimited": false,
+        "pass": true
+      },
+      "energy": {
+        "value": 8.233702837097349e-10,
+        "threshold": 0.01,
+        "pass": true
+      },
+      "agreement": {
+        "value": 1.1494107110543439e-8,
+        "threshold": 0.01,
+        "pass": true
+      },
+      "pass": true
+    },
+    {
+      "id": "rkf45",
+      "name": "RKF45 Adaptive",
+      "order": {
+        "measured": 4.9999622583271055,
+        "expected": 5,
+        "roundOffLimited": false,
+        "pass": true
+      },
+      "energy": {
+        "value": 1.6721350145938436e-9,
+        "threshold": 0.01,
+        "pass": true
+      },
+      "agreement": {
+        "value": 3.291606986977058e-10,
+        "threshold": 0.001,
+        "pass": true
+      },
+      "pass": true
+    },
+    {
+      "id": "dopri5",
+      "name": "Dormand-Prince 5(4)",
+      "order": {
+        "measured": 5.0037102177280985,
+        "expected": 5,
+        "roundOffLimited": false,
+        "pass": true
+      },
+      "energy": {
+        "value": 7.639828932377121e-11,
+        "threshold": 0.01,
+        "pass": true
+      },
+      "agreement": {
+        "value": 8.724909683621718e-11,
+        "threshold": 0.001,
+        "pass": true
+      },
+      "pass": true
+    },
+    {
+      "id": "gbs",
+      "name": "Gragg-Bulirsch-Stoer",
+      "order": {
+        "measured": null,
+        "expected": 6,
+        "roundOffLimited": true,
+        "pass": true
+      },
+      "energy": {
+        "value": 2.3025114950037626e-13,
+        "threshold": 0.01,
+        "pass": true
+      },
+      "agreement": {
+        "value": 0,
+        "threshold": 1e-9,
+        "pass": true
+      },
+      "pass": true
+    },
+    {
+      "id": "bdf2",
+      "name": "TR-BDF2 (stiff, L-stable)",
+      "order": {
+        "measured": 1.9991575605725582,
+        "expected": 2,
+        "roundOffLimited": false,
+        "pass": true
+      },
+      "energy": {
+        "value": 0.00005974156106137305,
+        "threshold": 5,
+        "pass": true
+      },
+      "agreement": {
+        "value": 0.00047857989581845395,
+        "threshold": 2,
+        "pass": true
+      },
+      "pass": true
+    }
+  ],
+  "summary": {
+    "integrators": 12,
+    "passed": 12
+  }
+}

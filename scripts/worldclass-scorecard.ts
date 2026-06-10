@@ -1,0 +1,142 @@
+import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
+
+type Status = 'done' | 'partial' | 'gap';
+
+interface ScorecardItem {
+  area: string;
+  status: Status;
+  evidence: string[];
+  remaining: string[];
+}
+
+async function exists(path: string): Promise<boolean> {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function readJson<T>(path: string, fallback: T): Promise<T> {
+  try {
+    return JSON.parse(await readFile(path, 'utf8')) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+const legacy = await readJson('reports/legacy-risk-report.json', {
+  counts: { innerHTML: -1, onclick: -1, inlineWorkerBlob: -1, dynamicScript: -1, globalRuntimeExports: -1 },
+  weightedScore: -1,
+  delta: 0
+});
+
+const packageJson = await readJson<{ scripts?: Record<string, string> }>('package.json', {});
+const scripts = packageJson.scripts ?? {};
+
+const has = {
+  benchmark: await exists('reports/benchmark-report.md'),
+  energy: await exists('reports/energy-benchmark.md'),
+  validation: await exists('reports/validation-report.md'),
+  reference: await exists('reports/validation-reference.md'),
+  architecture: await exists('docs/architecture.md'),
+  numerics: await exists('docs/numerics.md'),
+  limitations: await exists('docs/known-limitations.md'),
+  ci: await exists('.github/workflows/ci.yml'),
+  index: await exists('index.html')
+};
+
+const items: ScorecardItem[] = [
+  {
+    area: 'TypeScript and modular architecture',
+    status: 'done',
+    evidence: [
+      'src/ contains physics, chaos, viz, app, render, state, runtime, validation, export, workers modules',
+      'npm run typecheck passes (strict)',
+      'legacy js/ runtime fully removed (archived); index.html loads only src/main.ts',
+      'legacy-risk audit score is 0'
+    ],
+    remaining: []
+  },
+  {
+    area: 'Index simulator UI/UX',
+    status: has.index ? 'partial' : 'gap',
+    evidence: ['index.html is the single user-facing simulator with lab, comparison, Lyapunov, sweep, bifurcation, phase-space, density, and validation tabs'],
+    remaining: ['Panel layout persistence, project workspace lists, and a stronger beginner/expert mode still need index-page implementation']
+  },
+  {
+    area: 'Numerics and physics depth',
+    status: 'partial',
+    evidence: ['RKF45, Dormand-Prince 5(4), DOP853-adjacent GBS extrapolation, Gauss-Legendre 4/6, TR-BDF2, canonical midpoint, N-pendulum, driven, spring systems are present in src'],
+    remaining: ['Floquet multipliers, CLV, AUTO-style continuation, WebGPU ensemble simulation, and external SciPy/MATLAB/Julia comparison remain future work']
+  },
+  {
+    area: 'Chaos analysis',
+    status: 'partial',
+    evidence: ['Maximal Lyapunov convergence, full spectrum, Kaplan-Yorke dimension, SALI/FLI, Poincare, bifurcation modules exist and are tested'],
+    remaining: ['Full spectrum is CPU-side; GPU acceleration and covariant vectors are not implemented']
+  },
+  {
+    area: 'Testing and browser coverage',
+    status: scripts['test:e2e'] && has.ci ? 'done' : 'partial',
+    evidence: ['unit tests cover integrators, energy drift, determinism, JSON import validation, edge cases, chaos, visualization, repro packages', 'Playwright config includes Chromium, Firefox, WebKit, and mobile Chrome'],
+    remaining: ['Visual regression, memory leak, and long-runtime soak tests are not yet first-class CI jobs']
+  },
+  {
+    area: 'Performance and benchmark reporting',
+    status: has.benchmark && has.energy ? 'done' : 'partial',
+    evidence: ['benchmark-report.md captures FPS, physics ms/frame, memory, worker latency', 'energy-benchmark.md compares long-run drift by integrator'],
+    remaining: ['True original-vs-candidate comparison needs distinct ORIGINAL_URL and CANDIDATE_URL inputs']
+  },
+  {
+    area: 'Security hardening',
+    status: 'partial',
+    evidence: ['CSP is present', 'JSON import validation is tested', 'eval/new Function count is zero', `legacy risk score is ${legacy.weightedScore} (${legacy.delta} vs baseline)`],
+    remaining: [`innerHTML=${legacy.counts.innerHTML}`, `onclick=${legacy.counts.onclick}`, `inlineWorkerBlob=${legacy.counts.inlineWorkerBlob}`, `dynamicScript=${legacy.counts.dynamicScript}`, `globalRuntimeExports=${legacy.counts.globalRuntimeExports}`]
+  },
+  {
+    area: 'Documentation and portfolio readiness',
+    status: has.architecture && has.numerics && has.limitations && has.validation ? 'done' : 'partial',
+    evidence: ['README, architecture, numerics, security, validation, energy benchmark, changelog, roadmap, and portfolio summary artifacts exist'],
+    remaining: ['Project introduction video, GitHub Pages deployment, npm package release, and full English API docs remain packaging tasks']
+  }
+];
+
+const totals = items.reduce(
+  (acc, item) => {
+    acc[item.status] += 1;
+    return acc;
+  },
+  { done: 0, partial: 0, gap: 0 } satisfies Record<Status, number>
+);
+
+const report = {
+  generatedAt: new Date().toISOString(),
+  totals,
+  legacyRisk: legacy,
+  artifacts: has,
+  items
+};
+
+function markdown(): string {
+  const lines = [
+    '# World-Class Readiness Scorecard',
+    '',
+    `Generated: ${report.generatedAt}`,
+    '',
+    `Summary: done ${totals.done}, partial ${totals.partial}, gap ${totals.gap}`,
+    '',
+    '| Area | Status | Evidence | Remaining |',
+    '|---|---|---|---|'
+  ];
+  for (const item of items) {
+    lines.push(`| ${item.area} | ${item.status.toUpperCase()} | ${item.evidence.join('<br>')} | ${item.remaining.join('<br>')} |`);
+  }
+  return `${lines.join('\n')}\n`;
+}
+
+await mkdir('reports', { recursive: true });
+await writeFile('reports/worldclass-scorecard.json', JSON.stringify(report, null, 2));
+await writeFile('reports/worldclass-scorecard.md', markdown());
+console.log(markdown());

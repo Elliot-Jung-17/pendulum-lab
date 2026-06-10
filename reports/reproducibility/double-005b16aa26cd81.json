@@ -1,0 +1,51 @@
+{
+  "package": {
+    "schemaVersion": "1.0.0",
+    "generatedAt": "2026-06-09T05:02:21.816Z",
+    "library": {
+      "name": "pendulum-lab",
+      "version": "10.9.0"
+    },
+    "run": {
+      "spec": {
+        "kind": "double",
+        "m1": 1,
+        "m2": 1,
+        "l1": 1,
+        "l2": 1,
+        "g": 9.81
+      },
+      "method": "gbs",
+      "dt": 0.005,
+      "steps": 4000,
+      "state0": [
+        2,
+        2,
+        0,
+        0
+      ],
+      "seed": 1
+    },
+    "inputHash": "005b16aa26cd81",
+    "result": {
+      "finalState": [
+        0.13310513554875142,
+        -30.15582392642568,
+        3.892926551840756,
+        4.799164113384467
+      ],
+      "energyInitial": 12.247201399582401,
+      "energyFinal": 12.247201399566261,
+      "energyDrift": 1.3178503166724283e-12,
+      "lambdaMax": 1.3060657137938658,
+      "integratorName": "Gragg-Bulirsch-Stoer"
+    }
+  },
+  "verification": {
+    "ok": true,
+    "maxStateDiff": 0,
+    "tolerance": 1e-9,
+    "hashMatches": true,
+    "recomputedHash": "005b16aa26cd81"
+  }
+}

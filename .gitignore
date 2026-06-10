@@ -1,0 +1,11 @@
+node_modules/
+dist/
+standalone/
+coverage/
+reports/*.tmp
+reports/playwright/
+reports/coverage/
+test-results/
+playwright-report/
+.vite/
+*.log

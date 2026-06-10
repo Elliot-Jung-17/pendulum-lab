@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Pendulum Lab Portfolio Summary</title>
+  <style>
+    body{font:13px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;color:#162032;margin:36px}
+    h1{font-size:28px;margin:0 0 6px}
+    h2{font-size:14px;margin:22px 0 8px;text-transform:uppercase;letter-spacing:.08em;color:#245c72}
+    p{margin:0 0 9px}
+    ul{margin:0;padding-left:18px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .tag{display:inline-block;border:1px solid #b8d7e1;border-radius:999px;padding:3px 8px;margin:2px;color:#245c72}
+  </style>
+</head>
+<body>
+  <h1>Pendulum Lab V10 Modernization</h1>
+  <p>Typed, tested, browser-based chaotic pendulum simulation with legacy compatibility and an index-first TypeScript physics path.</p>
+  <p>
+    <span class="tag">TypeScript</span>
+    <span class="tag">Vite</span>
+    <span class="tag">Numerical Methods</span>
+    <span class="tag">Playwright</span>
+    <span class="tag">Scientific Validation</span>
+  </p>
+  <div class="grid">
+    <section>
+      <h2>What Changed</h2>
+      <ul>
+        <li>Direct file execution now falls back to main-thread physics so the pendulum keeps moving.</li>
+        <li>TypeScript physics core powers the served default double-pendulum path.</li>
+        <li>Canonical theta/p Hamiltonian utilities and residual-reporting midpoint diagnostics were added.</li>
+        <li>Strict JSON import validation and legacy risk audits reduce browser security risk.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Why It Matters</h2>
+      <p>Chaotic systems expose hidden numerical and reproducibility problems quickly. The same engineering discipline applies to semiconductor and device-physics workflows where solver assumptions, drift, and validation gaps can change interpretation.</p>
+    </section>
+  </div>
+  <section>
+    <h2>Verification</h2>
+    <p>Automated checks cover typecheck, unit tests, index-page E2E, build, benchmark report generation, validation report generation, and weighted legacy-risk reduction.</p>
+  </section>
+  <section>
+    <h2>Known Limits</h2>
+    <p>Symplectic claims require canonical coordinates, gamma = 0, and converged residuals. Lyapunov and bifurcation views are finite-time diagnostics and require disclosed parameters.</p>
+  </section>
+</body>
+</html>

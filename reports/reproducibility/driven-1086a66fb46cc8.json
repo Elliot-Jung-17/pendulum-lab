@@ -1,0 +1,49 @@
+{
+  "package": {
+    "schemaVersion": "1.0.0",
+    "generatedAt": "2026-06-09T05:02:21.860Z",
+    "library": {
+      "name": "pendulum-lab",
+      "version": "10.9.0"
+    },
+    "run": {
+      "spec": {
+        "kind": "driven",
+        "g": 1,
+        "length": 1,
+        "damping": 0.5,
+        "driveAmplitude": 1.15,
+        "driveFrequency": 0.6666666666666666
+      },
+      "method": "dopri5",
+      "dt": 0.005,
+      "steps": 8000,
+      "state0": [
+        0.2,
+        0,
+        0
+      ],
+      "seed": 7
+    },
+    "inputHash": "1086a66fb46cc8",
+    "result": {
+      "finalState": [
+        2.964129001645297,
+        0.6319516340605486,
+        26.666666666669208
+      ],
+      "energyInitial": -0.9800665778412416,
+      "energyFinal": 1.1839760429458268,
+      "energyDrift": 2.2080567480973885,
+      "lambdaMax": 0.134274985112362,
+      "integratorName": "Dormand-Prince 5(4)"
+    }
+  },
+  "verification": {
+    "ok": true,
+    "maxStateDiff": 0,
+    "tolerance": 1e-9,
+    "hashMatches": true,
+    "recomputedHash": "1086a66fb46cc8"
+  }
+}

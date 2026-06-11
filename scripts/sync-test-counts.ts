@@ -31,9 +31,11 @@ async function readReport(path: string): Promise<TestSummary> {
 
 async function replaceInFile({ file, pattern, replace }: Replacement, summary: TestSummary): Promise<void> {
   const original = await readFile(file, 'utf8');
+  // Distinguish "marker missing" (an error) from "already up to date" (fine):
+  // a no-op replacement used to throw and fail `npm run verify` spuriously.
+  if (!pattern.test(original)) throw new Error(`No test-count marker matched in ${file}`);
   const updated = original.replace(pattern, replace(summary));
-  if (updated === original) throw new Error(`No test-count marker matched in ${file}`);
-  await writeFile(file, updated);
+  if (updated !== original) await writeFile(file, updated);
 }
 
 const summary = await readReport('reports/vitest-results.json');

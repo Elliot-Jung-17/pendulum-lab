@@ -12,3 +12,5 @@ playwright-report/
 *.log
 dist-lib/
 docs/api/
+.stryker-tmp/
+reports/mutation/

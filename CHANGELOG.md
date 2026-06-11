@@ -1,5 +1,20 @@
 # Changelog
 
+## 10.31.0 - 2026-06-12
+
+Architecture decomposition, research-stack integration for the 3D systems, validation hardening, credibility badges, and supply-chain-grade exports.
+
+- **FeatureParityLayer decomposed**: the 6,037-line monolith is now six real modules under `src/app/parity/` (research-workbench, storage-sync, figure-export, runtime-diagnostics, lab3d, governance-ui) plus a leaf `shared`; `FeatureParityLayer.ts` is a thin install orchestrator. `main.ts` boots in five documented stages (core runtime -> safety -> simulation -> research -> shell).
+- **API surfaces**: globals split into public `window.PendulumLab` and debug `window.PendulumLabDebug` (old names kept as deprecated aliases); `src/lib.ts` reorganised into `core` / `analysis` / `research` / `experimental` namespace groups with the flat surface preserved.
+- **DomBinder/TabController layer**: all 12 analysis tabs and LabApp reach the DOM exclusively through a typed binder (idempotent install, single-flight run guard); duplicated `num`/`str`/spec readers removed.
+- **Spherical N-chain in the research stack**: new `spherical-chain` and `double-string` SystemSpec kinds flow through `buildRhs`/`energyForSpec` into every spec-generic worker job (Lyapunov max/spectrum, RQA, 0-1, CLV, studyPoint). 3D Lab chain card: N = 1..5, per-link theta/phi lists + mass/length lists, integrator selection (RK4/DoPri5/GBS/Gauss2/Yoshida4) with dt/tolerance, worker lambda/RQA/FTLE analysis, trajectory CSV + PNG/JSON snapshot exports with reproducibility hashes, live pole-chart-limit warnings. Double string promoted to first-class: presets for the qualitative regimes, `doubleStringTautFraction` validity probe gating taut-branch analyses, CSV/snapshot exports.
+- **Performance**: allocation-free hot paths - chain workspace reuse in spec closures, flat per-link frame buffers in the spherical RHS, module-reused tension scratch in the string system.
+- **Validation hardening**: mass-matrix symmetry + Cholesky positive-definiteness over seeded random states (planar N=4/6, spherical N=3), measured RK4 dt-halving order on both chains, seeded conservation/dissipation property tests, an in-test analytic normal-mode external reference (1% agreement), and explicit pole-chart contracts (planar Lz=0 passages at machine precision; Lz!=0 grazes fail loudly). Lab Poincare crossings are now event-refined (RK4 sub-step + secant root-find) instead of linearly interpolated; 3D sphere section crossings interpolated. `depthSortIndices` painter ordering with golden projection tests (the previous inline bob sort was inverted).
+- **UX**: Beginner/Student/Research audience modes (rail footer, persisted); five-level result-credibility badges (visual-only / finite-time estimate / validated / publication-ready / caveat) stamped on every analysis tab, the validation tab, 3D analyses, and exports. Rail submenus auto-close when the pointer leaves (shipped into the standalone page; e2e covered).
+- **Security & integrity**: CSP drops `style-src 'unsafe-inline'` (inline markup styles extracted to generated classes; dynamic CSS via Constructable Stylesheets); ZIP bundle checksums upgraded to v2 with cryptographic SHA-256 per file.
+- **Quality gates**: per-directory coverage ratchet (`npm run test:coverage`), bundle budget gate (`npm run budget`), Stryker mutation testing on the numerical core (`npm run mutation`, weekly CI job), and Windows/macOS Chromium smoke jobs in CI.
+- **Docs**: README compressed to a claims-first layout with a 10-row per-claim reproduction table (equation, parameters, command, evidence JSON, caveat); new `docs/derivations.md`, `docs/tutorial-reproduce-paper.md`, `docs/schema-migrations.md` (policy + archive compatibility matrix), `docs/portfolio-korean.md`.
+
 ## 10.30.0 - 2026-06-11
 
 Research output tier: a reproducible mini-paper with a new measured result, a symbolic second reference, and the spherical double/triple pendulum (full 3D chain physics).

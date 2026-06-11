@@ -110,6 +110,28 @@ export function rhsChain(
   return out;
 }
 
+/**
+ * The chain's mass (inertia) matrix M(θ) with entries
+ * M_jk = S_{max(j,k)} · l_j · l_k · cos(θ_j − θ_k). Exposed for validation:
+ * a correct M is symmetric and positive definite for every configuration.
+ */
+export function chainMassMatrix(state: ArrayLike<number>, parameters: ChainParameters, out = new Float64Array(chainLength(parameters) ** 2)): Float64Array {
+  const n = chainLength(parameters);
+  const { lengths } = parameters;
+  const s = new Float64Array(n);
+  fillSuffixMass(parameters.masses, n, s);
+  for (let j = 0; j < n; j += 1) {
+    const tj = Number(state[j] ?? 0);
+    const lj = lengths[j] ?? 0;
+    for (let k = 0; k < n; k += 1) {
+      const tk = Number(state[k] ?? 0);
+      const lk = lengths[k] ?? 0;
+      out[j * n + k] = (s[Math.max(j, k)] ?? 0) * lj * lk * Math.cos(tj - tk);
+    }
+  }
+  return out;
+}
+
 export function energyChain(state: ArrayLike<number>, parameters: ChainParameters): EnergyBreakdown {
   const n = chainLength(parameters);
   const { masses, lengths, g } = parameters;

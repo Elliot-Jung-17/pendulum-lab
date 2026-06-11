@@ -719,6 +719,27 @@ export function renderChainReadout(): void {
     `method=${diag.method}, dt=${diag.dt}`,
     diag.caveat
   ].join(' | '));
+  // Coordinate-chart limit display: the (θ, φ) chart degenerates at the poles
+  // (sinθ → 0). Warn while any link is close, and explain the Lz caveat.
+  const warningNode = $('d3Warning');
+  if (warningNode) {
+    let minAbsSin = Infinity;
+    let nearLink = 0;
+    for (let k = 0; k < n; k += 1) {
+      const absSin = Math.abs(Math.sin(state[2 * k] ?? 0));
+      if (absSin < minAbsSin) {
+        minAbsSin = absSin;
+        nearLink = k + 1;
+      }
+    }
+    const message = minAbsSin < 5e-3
+      ? `CHART LIMIT: link ${nearLink} is near a pole (|sinθ| = ${minAbsSin.toExponential(1)}). The azimuth φ is ill-conditioned there; with Lz ≠ 0 the chart genuinely diverges (planar Lz = 0 passages are exact).`
+      : minAbsSin < 5e-2
+        ? `Link ${nearLink} approaching a pole (|sinθ| = ${minAbsSin.toFixed(3)}): azimuth chart accuracy degrades below |sinθ| ≈ 1e-6.`
+        : '';
+    warningNode.textContent = message;
+    warningNode.style.color = message ? (minAbsSin < 5e-3 ? '#e63946' : '#f4a261') : '';
+  }
 }
 
 /** Declarative spec of the current chain — the bridge into the research stack. */
@@ -1072,6 +1093,7 @@ export function installLab3dTab(): void {
       button('d3ExportSnap', 'Export Snapshot (PNG+JSON)', () => exportChainSnapshot())
     ),
     chainCanvas,
+    html('div', { id: 'd3Warning', className: 'research-summary', text: '' }),
     html('div', { id: 'd3Analysis', className: 'research-summary', text: 'Analyze runs the same worker studyPoint job as the Research batch runner (Lyapunov + RQA + FTLE with uncertainties) on the current chain.' }),
     html('div', { id: 'd3Readout', className: 'research-summary', text: 'Reset to initialise. Spherical N-chain (ball joints, 2N DOF): manipulator-form equations cross-checked against an independent SymPy derivation; E and Lz are conserved when undamped.' })
   );

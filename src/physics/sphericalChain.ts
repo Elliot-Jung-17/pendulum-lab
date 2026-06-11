@@ -231,6 +231,37 @@ export function rhsSphericalChain(
   return out;
 }
 
+/**
+ * The chain's (2N×2N) mass matrix M(q) in the (θ, φ) chart, with entries
+ * M_{(j,α),(k,β)} = S_{max(j,k)} · l_j l_k · d_{jα}·d_{kβ} where d are the
+ * Jacobian columns (a for θ, b for φ). Exposed for validation: away from the
+ * pole chart-regularisation M must be symmetric positive definite.
+ */
+export function sphericalChainMassMatrix(state: ArrayLike<number>, params: SphericalChainParams, out = new Float64Array((2 * sphericalChainLength(params)) ** 2)): Float64Array {
+  const n = sphericalChainLength(params);
+  const dof = 2 * n;
+  const s = new Float64Array(n);
+  fillSuffixMass(params.masses, n, s);
+  const frames = new Float64Array(FRAME_STRIDE * n);
+  fillLinkFrames(state, params, n, frames);
+  for (let j = 0; j < n; j += 1) {
+    const lj = params.lengths[j] ?? 0;
+    for (let alpha = 0; alpha < 2; alpha += 1) {
+      const rowOff = FRAME_STRIDE * j + FRAME_A + 3 * alpha;
+      for (let k = 0; k < n; k += 1) {
+        const lk = params.lengths[k] ?? 0;
+        const sjk = s[Math.max(j, k)] ?? 0;
+        for (let beta = 0; beta < 2; beta += 1) {
+          const colOff = FRAME_STRIDE * k + FRAME_A + 3 * beta;
+          out[(2 * j + alpha) * dof + (2 * k + beta)] =
+            sjk * lj * lk * (frames[rowOff]! * frames[colOff]! + frames[rowOff + 1]! * frames[colOff + 1]! + frames[rowOff + 2]! * frames[colOff + 2]!);
+        }
+      }
+    }
+  }
+  return out;
+}
+
 /** Cartesian bob positions (y up, pivot at the origin). */
 export function sphericalChainPositions(state: ArrayLike<number>, params: SphericalChainParams): Array<{ x: number; y: number; z: number }> {
   const n = sphericalChainLength(params);

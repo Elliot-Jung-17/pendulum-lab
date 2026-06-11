@@ -34,7 +34,7 @@ export * from './physics/types';
 export * from './physics/integrators';
 export { rhsDouble } from './physics/double';
 export { energyDouble } from './physics/energy';
-export { rhsChain, energyChain, createChainWorkspace, validateChainParameters } from './physics/nPendulum';
+export { rhsChain, energyChain, chainMassMatrix, createChainWorkspace, validateChainParameters } from './physics/nPendulum';
 export type { ChainParameters, ChainWorkspace } from './physics/nPendulum';
 export { assertLinearSolve, solveLinearInPlace } from './physics/linearSolve';
 export type { LinearSolveFailureReason, LinearSolveOptions, LinearSolveResult } from './physics/linearSolve';
@@ -60,6 +60,7 @@ export {
   rhsSphericalChain,
   sphericalChainEnergy,
   sphericalChainLz,
+  sphericalChainMassMatrix,
   sphericalChainPositions,
   sphericalChainVelocities,
   validateSphericalChainParams

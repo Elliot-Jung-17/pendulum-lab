@@ -1,7 +1,7 @@
+import { TabController } from './TabController';
 import { ChaosClient } from '../runtime/ChaosClient';
 import { renderLabelGrid } from './labPlots';
 import { downloadText } from './labExport';
-import { setText, takeOverButton } from './domTakeover';
 import { num, readSystem } from './systemControls';
 
 /**
@@ -16,17 +16,16 @@ import { num, readSystem } from './systemControls';
  *
  * Takes over the tab's controls when the modern app mounts (idempotent).
  */
-export class RqaTab {
+export class RqaTab extends TabController {
   private client = new ChaosClient();
   private plot: number[] = [];
   private plotSize = 0;
   private metrics: { key: string; value: string }[] = [];
-  private running = false;
 
   async run(): Promise<void> {
     if (this.running) return;
     this.running = true;
-    setText('rqaStatus', this.client.usesWorker() ? 'computing (worker)…' : 'computing…');
+    this.dom.setText('rqaStatus', this.client.usesWorker() ? 'computing (worker)…' : 'computing…');
     const { spec, state0 } = readSystem();
     const dimension = Math.max(1, Math.round(num('rqaDim', 2)));
     const delay = Math.max(1, Math.round(num('rqaDelay', 5)));
@@ -44,24 +43,24 @@ export class RqaTab {
         { key: 'rqa_determinism_std_error', value: r.determinismStdError.toPrecision(6) },
         { key: 'rqa_divergence_std_error', value: r.divergenceStdError.toPrecision(6) }
       ];
-      setText('rqaRR', r.recurrenceRate.toFixed(3));
-      setText('rqaDET', `${r.determinism.toFixed(3)} ± ${r.determinismStdError.toFixed(3)}`);
-      setText('rqaLAM', r.laminarity.toFixed(3));
-      setText('rqaLmax', String(r.longestDiagonal));
-      setText('rqaDIV', `${r.divergence.toFixed(4)} ± ${r.divergenceStdError.toFixed(4)}`);
-      setText('rqaENTR', r.entropy.toFixed(3));
+      this.dom.setText('rqaRR', r.recurrenceRate.toFixed(3));
+      this.dom.setText('rqaDET', `${r.determinism.toFixed(3)} ± ${r.determinismStdError.toFixed(3)}`);
+      this.dom.setText('rqaLAM', r.laminarity.toFixed(3));
+      this.dom.setText('rqaLmax', String(r.longestDiagonal));
+      this.dom.setText('rqaDIV', `${r.divergence.toFixed(4)} ± ${r.divergenceStdError.toFixed(4)}`);
+      this.dom.setText('rqaENTR', r.entropy.toFixed(3));
       this.render();
       const verdict = r.determinism > 0.85 && r.divergence < 0.1 ? 'regular/structured' : 'chaotic/stochastic';
-      setText('rqaStatus', `done · DET=${r.determinism.toFixed(3)}±${r.determinismStdError.toFixed(3)} · DIV=${r.divergence.toFixed(3)}±${r.divergenceStdError.toFixed(3)} (${r.uncertaintyBlocks} blocks) · ${verdict}`);
+      this.dom.setText('rqaStatus', `done · DET=${r.determinism.toFixed(3)}±${r.determinismStdError.toFixed(3)} · DIV=${r.divergence.toFixed(3)}±${r.divergenceStdError.toFixed(3)} (${r.uncertaintyBlocks} blocks) · ${verdict}`);
     } catch (err) {
-      setText('rqaStatus', `error: ${err instanceof Error ? err.message : String(err)}`);
+      this.dom.setText('rqaStatus', `error: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       this.running = false;
     }
   }
 
   private render(): void {
-    const canvas = document.getElementById('rqaCanvas') as HTMLCanvasElement | null;
+    const canvas = this.dom.el<HTMLCanvasElement>('rqaCanvas');
     const ctx = canvas?.getContext('2d');
     if (canvas && ctx) {
       // label 0 = empty (dark), 1 = recurrence point (cyan).
@@ -76,14 +75,13 @@ export class RqaTab {
     downloadText('pendulum_rqa.csv', csv, 'text/csv');
   }
 
-  /** Take over the tab's controls. Idempotent. */
-  install(): void {
-    takeOverButton('rqaStart')?.addEventListener('click', () => void this.run());
-    takeOverButton('rqaStop')?.addEventListener('click', () => {
+  protected bind(): void {
+    this.dom.takeOver('rqaStart')?.addEventListener('click', () => void this.run());
+    this.dom.takeOver('rqaStop')?.addEventListener('click', () => {
       this.client.terminate();
       this.running = false;
-      setText('rqaStatus', 'stopped');
+      this.dom.setText('rqaStatus', 'stopped');
     });
-    takeOverButton('rqaExport')?.addEventListener('click', () => this.exportCsv());
+    this.dom.takeOver('rqaExport')?.addEventListener('click', () => this.exportCsv());
   }
 }

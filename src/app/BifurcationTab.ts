@@ -1,9 +1,10 @@
+import { num } from './systemControls';
+import { TabController } from './TabController';
 import { poincareSection } from '../chaos';
 import { rhsDouble } from '../physics/double';
 import { renderBifurcation, type BifurcationColumnData } from '../viz';
 import type { PendulumParameters } from '../types/domain';
 import { downloadDataUrl } from './labExport';
-import { setText, takeOverButton } from './domTakeover';
 
 /**
  * Modern port of the Bifurcation tab. It sweeps gravity g and records θ₂ at the
@@ -15,13 +16,7 @@ import { setText, takeOverButton } from './domTakeover';
 
 const wrapPi = (x: number): number => Math.atan2(Math.sin(x), Math.cos(x));
 
-function num(id: string, fallback: number): number {
-  const el = document.getElementById(id) as HTMLInputElement | null;
-  const v = el ? Number.parseFloat(el.value) : Number.NaN;
-  return Number.isFinite(v) ? v : fallback;
-}
-
-export class BifurcationTab {
+export class BifurcationTab extends TabController {
   private gValues: number[] = [];
   private columns: BifurcationColumnData[] = [];
   private cursor = 0;
@@ -41,13 +36,13 @@ export class BifurcationTab {
     this.gValues = Array.from({ length: steps }, (_, i) => gMin + ((gMax - gMin) * i) / (steps - 1));
     this.columns = [];
     this.cursor = 0;
-    const canvas = document.getElementById('bifCanvas') as HTMLCanvasElement | null;
+    const canvas = this.dom.el<HTMLCanvasElement>('bifCanvas');
     const ctx = canvas?.getContext('2d');
     if (canvas && ctx) {
       ctx.fillStyle = '#05080d';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
-    setText('bifStatus', `sweeping g over ${steps}…`);
+    this.dom.setText('bifStatus', `sweeping g over ${steps}…`);
     this.rafId = requestAnimationFrame(() => this.chunk());
   }
 
@@ -66,7 +61,7 @@ export class BifurcationTab {
   }
 
   private chunk(): void {
-    const canvas = document.getElementById('bifCanvas') as HTMLCanvasElement | null;
+    const canvas = this.dom.el<HTMLCanvasElement>('bifCanvas');
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
     const deadline = performance.now() + 14;
@@ -76,13 +71,13 @@ export class BifurcationTab {
     }
     renderBifurcation(ctx, { x: 0, y: 0, width: canvas.width, height: canvas.height }, this.columns, { xLabel: 'g (m/s²)', yLabel: 'θ₂ at section' });
     const progress = this.cursor / this.gValues.length;
-    const bar = document.getElementById('bifProgress');
+    const bar = this.dom.el('bifProgress');
     if (bar) bar.style.width = `${(progress * 100).toFixed(1)}%`;
     if (this.cursor < this.gValues.length) {
-      setText('bifStatus', `${(progress * 100).toFixed(0)}%`);
+      this.dom.setText('bifStatus', `${(progress * 100).toFixed(0)}%`);
       this.rafId = requestAnimationFrame(() => this.chunk());
     } else {
-      setText('bifStatus', `done · ${this.gValues.length} columns`);
+      this.dom.setText('bifStatus', `done · ${this.gValues.length} columns`);
       this.rafId = null;
     }
   }
@@ -92,14 +87,14 @@ export class BifurcationTab {
     this.rafId = null;
   }
 
-  install(): void {
-    takeOverButton('bifStart')?.addEventListener('click', () => this.start());
-    takeOverButton('bifStop')?.addEventListener('click', () => {
+  protected bind(): void {
+    this.dom.takeOver('bifStart')?.addEventListener('click', () => this.start());
+    this.dom.takeOver('bifStop')?.addEventListener('click', () => {
       this.stop();
-      setText('bifStatus', 'cancelled');
+      this.dom.setText('bifStatus', 'cancelled');
     });
-    takeOverButton('bifExport')?.addEventListener('click', () => {
-      const canvas = document.getElementById('bifCanvas') as HTMLCanvasElement | null;
+    this.dom.takeOver('bifExport')?.addEventListener('click', () => {
+      const canvas = this.dom.el<HTMLCanvasElement>('bifCanvas');
       if (canvas) downloadDataUrl('pendulum_bifurcation.png', canvas.toDataURL('image/png'));
     });
   }

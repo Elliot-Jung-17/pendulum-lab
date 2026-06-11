@@ -12,6 +12,7 @@ import { installPendulumRuntime } from './runtime/PendulumRuntime';
 import { maybeMountModernAnalysisTabs, maybeMountModernLab, maybeMountModernLabProbe, maybeMountModernShell } from './app';
 import { installFeatureParityLayer, currentSnapshot } from './app/FeatureParityLayer';
 import { installUiPolish } from './app/UiPolish';
+import { publishPublicApi } from './runtime/globalApi';
 
 function installIndexCommands(): void {
   commandRegistry.upsert({
@@ -53,40 +54,72 @@ function installIndexCommands(): void {
 function installRuntimeApi(): void {
   installDefaultCommands();
   stateStore.syncFromLegacy();
-  window.PendulumLabIndex = Object.freeze({
-    version: '10.30.0',
+  const api = Object.freeze({
+    version: '10.31.0',
     commands: commandRegistry,
     events: eventBus,
     state: stateStore,
     physics: physicsAdapter
   });
+  // Public surface is `window.PendulumLab`; `PendulumLabIndex` stays as a
+  // deprecated alias for older scripts and the e2e suite.
+  publishPublicApi({ ...api }, { PendulumLabIndex: api });
 }
 
-function boot(): void {
-  // The DI container / canonical runtime surface comes up first so every other
-  // installer resolves its collaborators (events, commands, state, physics,
-  // worker, adopted legacy app) from one typed source of truth.
+/**
+ * Boot stage 1 — core runtime. The DI container / canonical runtime surface
+ * comes up first so every other installer resolves its collaborators (events,
+ * commands, state, physics, worker, adopted legacy app) from one typed source
+ * of truth.
+ */
+function bootCoreRuntime(): void {
   installPendulumRuntime();
   installRuntimeApi();
   installIndexCommands();
+}
+
+/** Boot stage 2 — safety rails: import validation, perf probe, a11y. */
+function bootSafety(): void {
   installJsonImportGuard();
   installPerformanceProbe();
   installAccessibilityEnhancements();
-  // Stage 2 of the legacy-removal program: the modern Lab simulation/render loop.
-  // `?modernLabProbe` mounts a standalone probe canvas; `?lab=modern` takes over
-  // the real lab canvases (legacy lab render stands down). Both are feature flags.
+}
+
+/**
+ * Boot stage 3 — the modern Lab simulation/render loop and analysis tabs.
+ * `?modernLabProbe` mounts a standalone probe canvas; `?lab=modern` takes over
+ * the real lab canvases (legacy lab render stands down). Both are feature flags.
+ */
+function bootSimulation(): void {
   maybeMountModernLabProbe();
   maybeMountModernLab();
-  // Stage 3: modern analysis-tab takeovers.
   maybeMountModernAnalysisTabs();
-  // Stage 3.5: restore the single-file research/governance/audit surfaces as
-  // typed modular UI, keeping the CSP and no-inline-handler improvements.
+}
+
+/**
+ * Boot stage 4 — the research/governance/audit surfaces (parity modules),
+ * keeping the CSP and no-inline-handler improvements.
+ */
+function bootResearch(): void {
   installFeatureParityLayer();
-  // Stage 4: modern shell owns tab navigation.
+}
+
+/**
+ * Boot stage 5 — modern shell owns tab navigation, then visual-only
+ * interaction polish (slider progress fill, ripples) installed last so it
+ * observes the fully-built DOM.
+ */
+function bootShell(): void {
   maybeMountModernShell();
-  // Visual-only interaction polish (slider progress fill, ripples) — installed
-  // last so it observes the fully-built DOM.
   installUiPolish();
+}
+
+function boot(): void {
+  bootCoreRuntime();
+  bootSafety();
+  bootSimulation();
+  bootResearch();
+  bootShell();
 }
 
 if (document.readyState === 'loading') {

@@ -1,21 +1,26 @@
 import type { SystemSpec } from '../physics/systemSpec';
+import { pageDom } from './DomBinder';
 
 /**
  * Read the current system (spec + initial state + exponent count) from the
- * shared on-page Lab controls. This mirrors `LyapunovTab.spec()` exactly so the
- * chaos-diagnostics tabs analyse the same system the simulator shows, without
- * each tab re-implementing (and risking drift from) the control wiring.
+ * shared on-page Lab controls, through the DomBinder layer. Every chaos
+ * diagnostics tab analyses the same system the simulator shows, without each
+ * tab re-implementing (and risking drift from) the control wiring.
  */
 
+/** Numeric control value with fallback (delegates to the page binder). */
 export function num(id: string, fallback: number): number {
-  const el = document.getElementById(id) as HTMLInputElement | null;
-  const v = el ? Number.parseFloat(el.value) : Number.NaN;
-  return Number.isFinite(v) ? v : fallback;
+  return pageDom.num(id, fallback);
 }
 
+/** String control value with fallback (delegates to the page binder). */
 export function str(id: string, fallback: string): string {
-  const el = document.getElementById(id) as HTMLInputElement | HTMLSelectElement | null;
-  return el ? el.value : fallback;
+  return pageDom.str(id, fallback);
+}
+
+/** Checkbox state (delegates to the page binder). */
+export function bool(id: string, fallback = false): boolean {
+  return pageDom.bool(id, fallback);
 }
 
 export interface SystemControls {

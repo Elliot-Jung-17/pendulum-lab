@@ -2,17 +2,31 @@
  * @packageDocumentation
  *
  * `pendulum-lab-core` — the headless, dependency-free research core of
- * Pendulum Lab: physics (double/triple/driven/rope/spherical pendulums,
- * integrators), chaos diagnostics (Lyapunov, RQA, basin/Wada, CLV, FTLE,
- * Floquet/continuation, Melnikov, 0–1 test, recurrence networks,
- * Neimark–Sacker, codim-2 scans), and the research tooling (experiment design,
- * ZIP bundles, provenance, notebook builder, figure pipeline, CLI batch spec).
+ * Pendulum Lab, organised into four audience-oriented groups:
  *
- * Every API here is browser- and Node-compatible: no DOM, no Workers — the
- * app's UI layers build on exactly these exports.
+ * - {@link core} — physics: systems (double/triple/N-chain, rope, double
+ *   string, spherical, 3D spherical chain), integrators, energies, SystemSpec.
+ * - {@link analysis} — chaos diagnostics: Lyapunov, RQA, basin/Wada, CLV,
+ *   FTLE, Floquet/continuation, Melnikov, 0–1 test, recurrence networks.
+ * - {@link research} — reproducibility tooling: sampling, experiment design,
+ *   ZIP bundles, provenance, notebooks, figures, CLI batch spec, job protocol.
+ * - {@link experimental} — unstable APIs (WebGPU ensemble runner).
+ *
+ * Every API is browser- and Node-compatible: no DOM, no Workers — the app's
+ * UI layers build on exactly these exports.
+ *
+ * The flat re-exports below the namespace exports preserve the pre-10.31
+ * import surface (`import { rhsChain } from 'pendulum-lab-core'`) so existing
+ * scripts keep working; new code should prefer the grouped namespaces.
  */
 
-// Shared domain types
+export * as core from './lib/core';
+export * as analysis from './lib/analysis';
+export * as research from './lib/research';
+export * as experimental from './lib/experimental';
+
+// --- Flat compatibility surface (pre-10.31) --------------------------------
+
 export type { PendulumParameters, SystemType, IntegratorId, RunMode, RuntimeSnapshot } from './types/domain';
 
 // Physics

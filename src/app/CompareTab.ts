@@ -1,7 +1,8 @@
+import { num } from './systemControls';
+import { TabController } from './TabController';
 import type { IntegratorId, PendulumParameters } from '../types/domain';
 import { LabSimulation, type LabConfig } from './LabSimulation';
 import { renderMultiLine, type LineSeries } from './labPlots';
-import { setText, takeOverButton } from './domTakeover';
 
 /**
  * Modern port of the integrator-Comparison tab. Several integrators are run from
@@ -37,13 +38,7 @@ const BENCH: MethodSpec[] = [
   { id: 'euler', color: '', field: 'bEuler' }
 ];
 
-function num(id: string, fallback: number): number {
-  const el = document.getElementById(id) as HTMLInputElement | null;
-  const v = el ? Number.parseFloat(el.value) : Number.NaN;
-  return Number.isFinite(v) ? v : fallback;
-}
-
-export class CompareTab {
+export class CompareTab extends TabController {
   private sims: LabSimulation[] = [];
   private driftHist: number[][] = [];
   private divHist: number[][] = [];
@@ -72,7 +67,7 @@ export class CompareTab {
   }
 
   private frame(): void {
-    const canvas = document.getElementById('cmpCanvas') as HTMLCanvasElement | null;
+    const canvas = this.dom.el<HTMLCanvasElement>('cmpCanvas');
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
 
@@ -120,7 +115,7 @@ export class CompareTab {
   }
 
   private plot(canvasId: string, hist: number[][]): void {
-    const canvas = document.getElementById(canvasId) as HTMLCanvasElement | null;
+    const canvas = this.dom.el(canvasId) as HTMLCanvasElement | null;
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
     const series: LineSeries[] = hist.map((values, k) => ({ color: OVERLAY[canvasId === 'cmpDiverge' ? k + 1 : k]!.color, values }));
@@ -150,13 +145,13 @@ export class CompareTab {
       const elapsed = performance.now() - t0;
       const stepsPerMs = elapsed > 0 ? steps / elapsed : 0;
       results.push({ id: m.id, stepsPerMs });
-      if (m.field) setText(m.field, `${stepsPerMs.toFixed(0)} steps/ms`);
+      if (m.field) this.dom.setText(m.field, `${stepsPerMs.toFixed(0)} steps/ms`);
     }
     this.drawBenchmark(results);
   }
 
   private drawBenchmark(results: { id: IntegratorId; stepsPerMs: number }[]): void {
-    const canvas = document.getElementById('cmpBench') as HTMLCanvasElement | null;
+    const canvas = this.dom.el<HTMLCanvasElement>('cmpBench');
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
     ctx.fillStyle = '#05080d';
@@ -174,9 +169,9 @@ export class CompareTab {
     });
   }
 
-  install(): void {
-    takeOverButton('cmpStart')?.addEventListener('click', () => this.start());
-    takeOverButton('cmpStop')?.addEventListener('click', () => this.stop());
-    takeOverButton('cmpBenchBtn')?.addEventListener('click', () => this.benchmark());
+  protected bind(): void {
+    this.dom.takeOver('cmpStart')?.addEventListener('click', () => this.start());
+    this.dom.takeOver('cmpStop')?.addEventListener('click', () => this.stop());
+    this.dom.takeOver('cmpBenchBtn')?.addEventListener('click', () => this.benchmark());
   }
 }

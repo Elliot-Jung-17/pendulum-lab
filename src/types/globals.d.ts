@@ -25,9 +25,16 @@ declare global {
       readonly CanvasMgr?: unknown;
       readonly UI?: Record<string, HTMLElement>;
     };
-    /** Canonical modern runtime surface installed by `installPendulumRuntime()`. */
+    /**
+     * @deprecated Alias for `PendulumLabDebug.runtime`; resolve services from
+     * the debug namespace instead.
+     */
     PendulumRuntime?: PendulumRuntimeSurface;
-    PendulumLab?: unknown;
+    /** Public, stable scripting API (version, commands, events, state, physics, research). */
+    PendulumLab?: Readonly<Record<string, unknown>>;
+    /** Internal/unstable debug surface (DI runtime, modern lab handle, audit tooling). */
+    PendulumLabDebug?: Readonly<Record<string, unknown>>;
+    /** @deprecated Alias for `PendulumLab`. */
     PendulumLabIndex?: unknown;
     toast?: (message: string, timeoutMs?: number) => void;
     hashState?: (state: Float64Array | number[]) => string;

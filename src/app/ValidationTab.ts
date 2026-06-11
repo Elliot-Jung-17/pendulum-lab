@@ -1,3 +1,4 @@
+import { TabController } from './TabController';
 import {
   runAllValidationChecks,
   runReplayDeterminismCheck,
@@ -9,7 +10,7 @@ import { runReferenceValidation } from '../validation/referenceSuite';
 import { rhsDouble } from '../physics/double';
 import { energyDouble } from '../physics/energy';
 import { rk4Step } from '../physics/integrators';
-import { clearChildren, setText, takeOverButton } from './domTakeover';
+import { clearChildren } from './domTakeover';
 
 /**
  * Modern port of the Validation tab. It takes over the tab's buttons (cloning to
@@ -48,17 +49,17 @@ function runStressCheck(): ValidationCaseResult {
   };
 }
 
-export class ValidationTab {
+export class ValidationTab extends TabController {
   private render(cases: ValidationCaseResult[], elapsedMs: number): void {
-    const container = document.getElementById('validateResults');
+    const container = this.dom.el('validateResults');
     if (container) {
       clearChildren(container);
       for (const c of cases) container.appendChild(this.row(c));
     }
     const passed = cases.filter((c) => c.status === 'PASS').length;
-    setText('testPassed', String(passed));
-    setText('testFailed', String(cases.length - passed));
-    setText('testTime', `${elapsedMs.toFixed(0)} ms`);
+    this.dom.setText('testPassed', String(passed));
+    this.dom.setText('testFailed', String(cases.length - passed));
+    this.dom.setText('testTime', `${elapsedMs.toFixed(0)} ms`);
   }
 
   private row(c: ValidationCaseResult): HTMLElement {
@@ -92,11 +93,11 @@ export class ValidationTab {
     }));
   }
 
-  install(): void {
-    takeOverButton('runValidation')?.addEventListener('click', () => this.timed(() => runAllValidationChecks().value ?? []));
-    takeOverButton('runDeterminism')?.addEventListener('click', () => this.timed(() => [runReplayDeterminismCheck()]));
-    takeOverButton('runConvergence')?.addEventListener('click', () => this.timed(() => this.convergenceCases()));
-    takeOverButton('runReplay')?.addEventListener('click', () => this.timed(() => [runReplayDeterminismCheck(), runEnergyDriftCheck()]));
-    takeOverButton('runStress')?.addEventListener('click', () => this.timed(() => [runStressCheck(), runDtHalvingCheck()]));
+  protected bind(): void {
+    this.dom.takeOver('runValidation')?.addEventListener('click', () => this.timed(() => runAllValidationChecks().value ?? []));
+    this.dom.takeOver('runDeterminism')?.addEventListener('click', () => this.timed(() => [runReplayDeterminismCheck()]));
+    this.dom.takeOver('runConvergence')?.addEventListener('click', () => this.timed(() => this.convergenceCases()));
+    this.dom.takeOver('runReplay')?.addEventListener('click', () => this.timed(() => [runReplayDeterminismCheck(), runEnergyDriftCheck()]));
+    this.dom.takeOver('runStress')?.addEventListener('click', () => this.timed(() => [runStressCheck(), runDtHalvingCheck()]));
   }
 }

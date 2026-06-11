@@ -20,6 +20,7 @@ export { FtleTab } from './FtleTab';
 export { Shell } from './Shell';
 
 import { mountModernLab, type LabHandle } from './LabController';
+import { publishDebugApi } from '../runtime/globalApi';
 import { LabApp } from './LabApp';
 import { LyapunovTab } from './LyapunovTab';
 import { ValidationTab } from './ValidationTab';
@@ -92,6 +93,9 @@ export function maybeMountModernLab(): boolean {
   const app = new LabApp();
   app.start();
   (window as Window & { __modernLab?: LabApp }).__modernLab = app;
+  // Also exposed on the structured debug namespace; `__modernLab` remains the
+  // legacy test hook.
+  publishDebugApi({ modernLab: app });
   return true;
 }
 

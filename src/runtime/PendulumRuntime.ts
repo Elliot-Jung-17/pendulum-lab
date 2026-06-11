@@ -1,4 +1,5 @@
 import { ServiceContainer } from './ServiceContainer';
+import { publishDebugApi } from './globalApi';
 import { eventBus, EventBus, type PendulumEvents } from './EventBus';
 import { commandRegistry, CommandRegistry } from './CommandRegistry';
 import { stateStore } from '../state/StateStore';
@@ -83,7 +84,9 @@ export function installPendulumRuntime(): ServiceContainer<PendulumServiceMap> {
     })
   });
 
-  Object.defineProperty(window, 'PendulumRuntime', { configurable: true, value: surface });
+  // The DI surface is an internal/debug concern: publish it on the debug
+  // namespace, keeping `window.PendulumRuntime` as a deprecated alias.
+  publishDebugApi({ runtime: surface }, { PendulumRuntime: surface });
   installed = true;
   return container;
 }

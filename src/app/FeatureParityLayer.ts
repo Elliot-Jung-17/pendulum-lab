@@ -14,6 +14,7 @@
  *
  * This file only sequences installation and publishes the frozen window APIs.
  */
+import { publishDebugApi, publishPublicApi } from '../runtime/globalApi';
 import { ensureCompatAnchors, installStyles, setAuditRenderHook, state } from './parity/shared';
 import {
   bindExtraTabClicks,
@@ -102,9 +103,9 @@ export function installFeatureParityLayer(): void {
   bindRailActions();
   renderRuntimePanels();
   window.setInterval(renderRuntimePanels, 2000);
-  Object.defineProperty(window, 'PendulumFeatureIntegrity', { configurable: true, value: Object.freeze({ report: featureReport, show: showFeaturePanel }) });
-  Object.defineProperty(window, 'PendulumLabAPlus', { configurable: true, value: Object.freeze({ runAudit: runAPlusAudit }) });
-  Object.defineProperty(window, 'PendulumResearchWorkspace', { configurable: true, value: Object.freeze({
+  const featureIntegrity = Object.freeze({ report: featureReport, show: showFeaturePanel });
+  const aPlus = Object.freeze({ runAudit: runAPlusAudit });
+  const researchWorkspace = Object.freeze({
     saveCurrentExperiment,
     generateParameterStudy,
     runStudyBatch,
@@ -126,5 +127,12 @@ export function installFeatureParityLayer(): void {
       batchCheckpoint: state.research.batchCheckpoint,
       comparisonRows: state.research.comparisonRows
     })
-  }) });
+  });
+  // Research workspace is part of the supported public API; integrity/audit
+  // tooling is debug-only. Old global names stay as deprecated aliases.
+  publishPublicApi({ research: researchWorkspace }, { PendulumResearchWorkspace: researchWorkspace });
+  publishDebugApi(
+    { featureIntegrity, aPlus },
+    { PendulumFeatureIntegrity: featureIntegrity, PendulumLabAPlus: aPlus }
+  );
 }

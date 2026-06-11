@@ -1,7 +1,7 @@
+import { TabController } from './TabController';
 import { ChaosClient } from '../runtime/ChaosClient';
 import { renderScatterPath } from './labPlots';
 import { downloadText } from './labExport';
-import { setText, takeOverButton } from './domTakeover';
 import { num, readSystem } from './systemControls';
 
 /**
@@ -13,17 +13,16 @@ import { num, readSystem } from './systemControls';
  *
  * Takes over the tab's controls when the modern app mounts (idempotent).
  */
-export class ZeroOneTab {
+export class ZeroOneTab extends TabController {
   private client = new ChaosClient();
   private pPath: number[] = [];
   private qPath: number[] = [];
   private kValues: number[] = [];
-  private running = false;
 
   async run(): Promise<void> {
     if (this.running) return;
     this.running = true;
-    setText('zeroOneStatus', this.client.usesWorker() ? 'computing (worker)…' : 'computing…');
+    this.dom.setText('zeroOneStatus', this.client.usesWorker() ? 'computing (worker)…' : 'computing…');
     const { spec, state0 } = readSystem();
     const samples = Math.max(500, Math.round(num('zeroOneSamples', 3000)));
     try {
@@ -32,19 +31,19 @@ export class ZeroOneTab {
       this.qPath = result.qPath;
       this.kValues = result.kValues;
       const verdict = result.K > 0.5 ? 'chaotic' : 'regular';
-      setText('zeroOneK', `${result.K.toFixed(3)} ± ${result.kStdError.toFixed(3)}`);
-      setText('zeroOneVerdict', `${verdict} (K${result.K > 0.5 ? ' ≈ 1' : ' ≈ 0'})`);
+      this.dom.setText('zeroOneK', `${result.K.toFixed(3)} ± ${result.kStdError.toFixed(3)}`);
+      this.dom.setText('zeroOneVerdict', `${verdict} (K${result.K > 0.5 ? ' ≈ 1' : ' ≈ 0'})`);
       this.render();
-      setText('zeroOneStatus', `done · K=${result.K.toFixed(3)}±${result.kStdError.toFixed(3)} · 95% CI [${result.kCi95[0].toFixed(3)}, ${result.kCi95[1].toFixed(3)}] · ${verdict}`);
+      this.dom.setText('zeroOneStatus', `done · K=${result.K.toFixed(3)}±${result.kStdError.toFixed(3)} · 95% CI [${result.kCi95[0].toFixed(3)}, ${result.kCi95[1].toFixed(3)}] · ${verdict}`);
     } catch (err) {
-      setText('zeroOneStatus', `error: ${err instanceof Error ? err.message : String(err)}`);
+      this.dom.setText('zeroOneStatus', `error: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       this.running = false;
     }
   }
 
   private render(): void {
-    const canvas = document.getElementById('zeroOneCanvas') as HTMLCanvasElement | null;
+    const canvas = this.dom.el<HTMLCanvasElement>('zeroOneCanvas');
     const ctx = canvas?.getContext('2d');
     if (canvas && ctx) renderScatterPath(ctx, { x: 0, y: 0, width: canvas.width, height: canvas.height }, this.pPath, this.qPath, { markOrigin: true });
   }
@@ -54,14 +53,13 @@ export class ZeroOneTab {
     downloadText('pendulum_zero_one_test.csv', csv, 'text/csv');
   }
 
-  /** Take over the tab's controls. Idempotent. */
-  install(): void {
-    takeOverButton('zeroOneStart')?.addEventListener('click', () => void this.run());
-    takeOverButton('zeroOneStop')?.addEventListener('click', () => {
+  protected bind(): void {
+    this.dom.takeOver('zeroOneStart')?.addEventListener('click', () => void this.run());
+    this.dom.takeOver('zeroOneStop')?.addEventListener('click', () => {
       this.client.terminate();
       this.running = false;
-      setText('zeroOneStatus', 'stopped');
+      this.dom.setText('zeroOneStatus', 'stopped');
     });
-    takeOverButton('zeroOneExport')?.addEventListener('click', () => this.exportCsv());
+    this.dom.takeOver('zeroOneExport')?.addEventListener('click', () => this.exportCsv());
   }
 }

@@ -9,7 +9,7 @@ import { LyapunovEstimator } from './LyapunovEstimator';
 import { renderPhasePortrait, renderSpectrum, type PhaseSample } from './labPlots';
 import { magnitudeSpectrum } from './fft';
 import { downloadDataUrl, downloadText, poincareCsv, runJson, trajectoryCsv } from './labExport';
-import { takeOverButton } from './domTakeover';
+import { pageDom as dom } from './DomBinder';
 import { AudioSonifier } from './AudioSonifier';
 import { configureCanvas2D, type ManagedCanvas2D } from './canvasQuality';
 
@@ -27,20 +27,9 @@ const CANVAS_IDS = ['main', 'energy', 'lyap', 'phase', 'poincare', 'fft'] as con
 type CanvasId = (typeof CANVAS_IDS)[number];
 
 function ctxOf(id: CanvasId): ManagedCanvas2D | null {
-  const canvas = document.getElementById(id) as HTMLCanvasElement | null;
+  const canvas = dom.el<HTMLCanvasElement>(id);
   if (!canvas) return null;
   return configureCanvas2D(canvas);
-}
-
-function num(id: string, fallback: number): number {
-  const el = document.getElementById(id) as HTMLInputElement | null;
-  const v = el ? Number.parseFloat(el.value) : Number.NaN;
-  return Number.isFinite(v) ? v : fallback;
-}
-
-function str(id: string, fallback: string): string {
-  const el = document.getElementById(id) as HTMLInputElement | HTMLSelectElement | null;
-  return el ? el.value : fallback;
 }
 
 export class LabApp {
@@ -81,27 +70,27 @@ export class LabApp {
 
   /** Read the current control values into a LabConfig. */
   readConfig(): LabConfig {
-    const system: SystemType = str('sysType', 'double') === 'triple' ? 'triple' : 'double';
+    const system: SystemType = dom.str('sysType', 'double') === 'triple' ? 'triple' : 'double';
     const parameters = {
-      m1: num('m1', 1),
-      m2: num('m2', 1),
-      m3: num('m3', 1),
-      l1: num('l1', 1.2),
-      l2: num('l2', 1.0),
-      l3: num('l3', 0.8),
-      g: num('g', 9.81)
+      m1: dom.num('m1', 1),
+      m2: dom.num('m2', 1),
+      m3: dom.num('m3', 1),
+      l1: dom.num('l1', 1.2),
+      l2: dom.num('l2', 1.0),
+      l3: dom.num('l3', 0.8),
+      g: dom.num('g', 9.81)
     };
     const initialState =
       system === 'triple'
-        ? [num('th1', 2), num('th2', 2.5), num('th3', 1), num('iw1', 0), num('iw2', 0), num('iw3', 0)]
-        : [num('th1', 2), num('th2', 2.5), num('iw1', 0), num('iw2', 0)];
+        ? [dom.num('th1', 2), dom.num('th2', 2.5), dom.num('th3', 1), dom.num('iw1', 0), dom.num('iw2', 0), dom.num('iw3', 0)]
+        : [dom.num('th1', 2), dom.num('th2', 2.5), dom.num('iw1', 0), dom.num('iw2', 0)];
     return {
       system,
       parameters,
-      gamma: num('gamma', 0),
-      method: str('method', 'rk4') as IntegratorId,
-      dt: num('dt', 0.003),
-      tolerance: 10 ** num('tol', -6),
+      gamma: dom.num('gamma', 0),
+      method: dom.str('method', 'rk4') as IntegratorId,
+      dt: dom.num('dt', 0.003),
+      tolerance: 10 ** dom.num('tol', -6),
       initialState
     };
   }
@@ -109,8 +98,8 @@ export class LabApp {
   /** (Re)build the simulation and clear all derived histories. */
   private build(): void {
     const config = this.readConfig();
-    this.spf = Math.max(1, Math.round(num('spf', 6)));
-    this.phaseAxis = str('phaseAxis', '1');
+    this.spf = Math.max(1, Math.round(dom.num('spf', 6)));
+    this.phaseAxis = dom.str('phaseAxis', '1');
 
     this.sim = new LabSimulation(config);
     const dim = config.system === 'triple' ? 6 : 4;
@@ -186,7 +175,7 @@ export class LabApp {
     // advancing (so the trajectory is continuous when you return) but we don't
     // pay for rendering canvases nobody is looking at — which keeps the active
     // analysis tab smooth.
-    const labVisible = document.getElementById('tab-lab')?.classList.contains('active') ?? true;
+    const labVisible = dom.tabActive('tab-lab');
     if (!labVisible) return;
 
     // Pendulum + trail render every frame, for smooth motion.
@@ -196,9 +185,9 @@ export class LabApp {
         fade: this.readFade(),
         ensembleTips: this.ensembleTips(),
         trailColor: this.trailColor(),
-        trailMode: str('trailMode', 'rainbow'),
-        trailLength: Math.max(2, Math.round(num('trailLen', 1500))),
-        glow: (document.getElementById('glowMode') as HTMLInputElement | null)?.checked ?? false
+        trailMode: dom.str('trailMode', 'rainbow'),
+        trailLength: Math.max(2, Math.round(dom.num('trailLen', 1500))),
+        glow: dom.bool('glowMode')
       });
     }
 
@@ -208,7 +197,7 @@ export class LabApp {
     if (diag) {
       this.drawSidePlots();
       this.updateChrome(snapshot, w1Index, w2Index);
-      const scrubber = document.getElementById('scrubber') as HTMLInputElement | null;
+      const scrubber = dom.el<HTMLInputElement>('scrubber');
       if (scrubber) {
         scrubber.max = String(Math.max(0, this.record.length - 1));
         if (this.scrubIndex < 0) scrubber.value = scrubber.max;
@@ -218,7 +207,7 @@ export class LabApp {
 
   /** New-segment trail colour for the current trail-mode (incremental trail). */
   private trailColor(): string {
-    const mode = str('trailMode', 'rainbow');
+    const mode = dom.str('trailMode', 'rainbow');
     if (mode === 'rainbow') return `hsl(${(this.frameCount * 2) % 360}, 90%, 60%)`; // cycles hue over time
     const fixed: Record<string, string> = {
       heat: '#ff7a1a',
@@ -243,8 +232,8 @@ export class LabApp {
 
   /** Build N perturbed copies of the initial state for the ensemble view. */
   private buildEnsemble(config: LabConfig, dim: number): void {
-    const n = Math.max(0, Math.min(200, Math.round(num('ensN', 0))));
-    const eps = 10 ** num('ensEps', -4);
+    const n = Math.max(0, Math.min(200, Math.round(dom.num('ensN', 0))));
+    const eps = 10 ** dom.num('ensEps', -4);
     this.ensemble = [];
     this.ensembleScratch = [];
     for (let i = 0; i < n; i += 1) {
@@ -295,8 +284,8 @@ export class LabApp {
    * control (a segment stays visible for roughly `trailLen/10` frames).
    */
   private readFade(): number {
-    if ((document.getElementById('longExpose') as HTMLInputElement | null)?.checked) return 0.008;
-    if ((document.getElementById('glowMode') as HTMLInputElement | null)?.checked) return 0.04;
+    if (dom.bool('longExpose')) return 0.008;
+    if (dom.bool('glowMode')) return 0.04;
     return 0.12;
   }
 
@@ -327,10 +316,7 @@ export class LabApp {
    * the only writer of these fields.
    */
   private updateChrome(snapshot: { time: number; energy: number; drift: number; state: number[] }, w1Index: number, w2Index: number): void {
-    const set = (id: string, text: string): void => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = text;
-    };
+    const set = (id: string, text: string): void => dom.setText(id, text);
     const st = snapshot.state;
     set('fpsBadge', `${this.lastFps.toFixed(0)} fps`);
     set('dPhys', this.lastPhysicsMs.toFixed(2));
@@ -338,7 +324,7 @@ export class LabApp {
     set('th1Stat', `${st[0]!.toFixed(3)} / ${st[w1Index]!.toFixed(2)}`);
     set('th2Stat', `${st[1]!.toFixed(3)} / ${st[w2Index]!.toFixed(2)}`);
     set('eStat', `${this.sim.initialEnergy.toFixed(3)} / ${snapshot.energy.toFixed(3)}`);
-    const driftEl = document.getElementById('driftStat');
+    const driftEl = dom.el('driftStat');
     if (driftEl) {
       driftEl.textContent = snapshot.drift.toExponential(2);
       driftEl.className = `sval ${snapshot.drift > 1e-2 ? 'bad' : snapshot.drift > 1e-4 ? 'warn' : 'good'}`;
@@ -439,8 +425,8 @@ export class LabApp {
     const ids = this.sim.config.system === 'triple' ? ['th1', 'th2', 'th3'] : ['th1', 'th2'];
     ids.forEach((id, i) => {
       if (angles[i] === undefined) return;
-      const el = document.getElementById(id) as HTMLInputElement | null;
-      const out = document.getElementById(`${id}V`);
+      const el = dom.el<HTMLInputElement>(id);
+      const out = dom.el(`${id}V`);
       if (el) el.value = String(angles[i]);
       if (out) out.textContent = angles[i]!.toFixed(3);
     });
@@ -456,18 +442,18 @@ export class LabApp {
       'sysType', 'method', 'dt', 'gamma', 'g', 'm1', 'm2', 'm3', 'l1', 'l2', 'l3', 'spf', 'tol',
       'phaseAxis', 'trailLen', 'ensN', 'ensEps', 'th1', 'th2', 'th3', 'iw1', 'iw2', 'iw3', 'seed'
     ];
-    for (const id of rebuildOn) document.getElementById(id)?.addEventListener('change', () => this.reset());
+    for (const id of rebuildOn) dom.el(id)?.addEventListener('change', () => this.reset());
 
     // Presets: legacy applyPreset updates the sliders first (registered earlier);
     // our handler then rebuilds the modern sim from those values.
-    document.querySelectorAll('[data-preset]').forEach((btn) => btn.addEventListener('click', () => setTimeout(() => this.reset(), 0)));
+    dom.all('[data-preset]').forEach((btn) => btn.addEventListener('click', () => setTimeout(() => this.reset(), 0)));
 
-    document.getElementById('resetBtn')?.addEventListener('click', () => this.reset());
-    document.getElementById('clearTrailBtn')?.addEventListener('click', () => {
+    dom.el('resetBtn')?.addEventListener('click', () => this.reset());
+    dom.el('clearTrailBtn')?.addEventListener('click', () => {
       this.renderer?.clear();
     });
-    document.getElementById('clearPoincBtn')?.addEventListener('click', () => this.poincare.clear());
-    document.getElementById('pauseBtn')?.addEventListener('click', () => {
+    dom.el('clearPoincBtn')?.addEventListener('click', () => this.poincare.clear());
+    dom.el('pauseBtn')?.addEventListener('click', () => {
       this.running = !this.running;
       if (this.running) this.rafId = requestAnimationFrame(this.loop);
     });
@@ -481,32 +467,32 @@ export class LabApp {
   private wireAudio(): void {
     // Take over the audio controls so the legacy audioInit never runs (no double
     // AudioContext); the modern AudioSonifier owns sonification.
-    this.audio.setVolume(num('audioVol', 0.08));
-    takeOverButton('audioOn')?.addEventListener('change', (e) => this.audio.setEnabled((e.target as HTMLInputElement).checked));
-    takeOverButton('audioVol')?.addEventListener('input', (e) => this.audio.setVolume(Number.parseFloat((e.target as HTMLInputElement).value)));
+    this.audio.setVolume(dom.num('audioVol', 0.08));
+    dom.takeOver('audioOn')?.addEventListener('change', (e) => this.audio.setEnabled((e.target as HTMLInputElement).checked));
+    dom.takeOver('audioVol')?.addEventListener('input', (e) => this.audio.setVolume(Number.parseFloat((e.target as HTMLInputElement).value)));
   }
 
   private wireExport(): void {
     const cfg = () => this.sim.config;
-    document.getElementById('dlTrajBtn')?.addEventListener('click', () =>
+    dom.el('dlTrajBtn')?.addEventListener('click', () =>
       downloadText('pendulum_modern_trajectory.csv', trajectoryCsv(this.record, cfg().system), 'text/csv')
     );
-    document.getElementById('dlPoincBtn')?.addEventListener('click', () =>
+    dom.el('dlPoincBtn')?.addEventListener('click', () =>
       downloadText('pendulum_modern_poincare.csv', poincareCsv(this.poincare.list()), 'text/csv')
     );
-    document.getElementById('dlJsonBtn')?.addEventListener('click', () => {
+    dom.el('dlJsonBtn')?.addEventListener('click', () => {
       const snap = this.sim.snapshot();
       downloadText('pendulum_modern_run.json', JSON.stringify(runJson(cfg(), snap.state, snap.time, snap.energy, snap.drift), null, 2), 'application/json');
     });
-    document.getElementById('dlPNGBtn')?.addEventListener('click', () => {
-      const canvas = document.getElementById('main') as HTMLCanvasElement | null;
+    dom.el('dlPNGBtn')?.addEventListener('click', () => {
+      const canvas = dom.el<HTMLCanvasElement>('main');
       if (canvas) downloadDataUrl('pendulum_modern.png', canvas.toDataURL('image/png'));
     });
   }
 
   private wireScrubber(): void {
-    const scrubber = document.getElementById('scrubber') as HTMLInputElement | null;
-    const scrubVal = document.getElementById('scrubVal');
+    const scrubber = dom.el<HTMLInputElement>('scrubber');
+    const scrubVal = dom.el('scrubVal');
     if (scrubber) {
       scrubber.addEventListener('input', () => {
         const max = Math.max(0, this.record.length - 1);
@@ -515,13 +501,13 @@ export class LabApp {
         if (scrubVal) scrubVal.textContent = this.scrubIndex < 0 ? 'live' : `${(this.record[v]?.time ?? 0).toFixed(2)}s`;
       });
     }
-    document.getElementById('rewindBtn')?.addEventListener('click', () => {
+    dom.el('rewindBtn')?.addEventListener('click', () => {
       if (this.record.length > 0) this.scrubIndex = 0;
     });
   }
 
   private wireDrag(): void {
-    const canvas = document.getElementById('main') as HTMLCanvasElement | null;
+    const canvas = dom.el<HTMLCanvasElement>('main');
     if (!canvas || !this.renderer) return;
     const toCanvas = (e: PointerEvent): Point2D => ({
       x: e.offsetX * (this.renderer!.size().width / canvas.offsetWidth),

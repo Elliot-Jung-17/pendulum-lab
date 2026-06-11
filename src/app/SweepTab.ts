@@ -1,9 +1,10 @@
+import { num } from './systemControls';
+import { TabController } from './TabController';
 import { maximalLyapunov } from '../chaos';
 import { rhsDouble } from '../physics/double';
 import type { PendulumParameters } from '../types/domain';
 import { lambdaColor } from './sweepColor';
 import { downloadDataUrl, downloadText } from './labExport';
-import { setText, takeOverButton } from './domTakeover';
 
 /**
  * Modern port of the chaos-map (Sweep) tab. It computes the maximal Lyapunov
@@ -16,13 +17,7 @@ import { setText, takeOverButton } from './domTakeover';
 const TWO_PI = Math.PI * 2;
 const COLOR_SCALE = 3; // λ treated as fully "chaotic" for coloring
 
-function num(id: string, fallback: number): number {
-  const el = document.getElementById(id) as HTMLInputElement | null;
-  const v = el ? Number.parseFloat(el.value) : Number.NaN;
-  return Number.isFinite(v) ? v : fallback;
-}
-
-export class SweepTab {
+export class SweepTab extends TabController {
   private canvas: HTMLCanvasElement | null = null;
   private ctx: CanvasRenderingContext2D | null = null;
   private res = 120;
@@ -43,7 +38,7 @@ export class SweepTab {
 
   private start(): void {
     this.stop();
-    this.canvas = document.getElementById('sweepCanvas') as HTMLCanvasElement | null;
+    this.canvas = this.dom.el<HTMLCanvasElement>('sweepCanvas');
     this.ctx = this.canvas?.getContext('2d') ?? null;
     if (!this.canvas || !this.ctx) return;
     this.readParams();
@@ -51,7 +46,7 @@ export class SweepTab {
     this.cursor = 0;
     this.ctx.fillStyle = '#05080d';
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    setText('sweepStatus', `computing ${this.res}×${this.res}…`);
+    this.dom.setText('sweepStatus', `computing ${this.res}×${this.res}…`);
     this.rafId = requestAnimationFrame(() => this.chunk());
   }
 
@@ -89,13 +84,13 @@ export class SweepTab {
       this.cursor += 1;
     }
     const progress = this.cursor / total;
-    const bar = document.getElementById('sweepProgress');
+    const bar = this.dom.el('sweepProgress');
     if (bar) bar.style.width = `${(progress * 100).toFixed(1)}%`;
     if (this.cursor < total) {
-      setText('sweepStatus', `${(progress * 100).toFixed(0)}%`);
+      this.dom.setText('sweepStatus', `${(progress * 100).toFixed(0)}%`);
       this.rafId = requestAnimationFrame(() => this.chunk());
     } else {
-      setText('sweepStatus', `done · ${this.res}×${this.res}`);
+      this.dom.setText('sweepStatus', `done · ${this.res}×${this.res}`);
       this.rafId = null;
     }
   }
@@ -125,30 +120,30 @@ export class SweepTab {
     const theta1 = -Math.PI + (px / canvas.width) * TWO_PI;
     const theta2 = -Math.PI + (py / canvas.height) * TWO_PI;
     for (const [id, value] of [['th1', theta1], ['th2', theta2]] as const) {
-      const el = document.getElementById(id) as HTMLInputElement | null;
-      const out = document.getElementById(`${id}V`);
+      const el = this.dom.el(id) as HTMLInputElement | null;
+      const out = this.dom.el(`${id}V`);
       if (el) {
         el.value = String(value);
         el.dispatchEvent(new Event('change', { bubbles: true }));
       }
       if (out) out.textContent = value.toFixed(3);
     }
-    setText('sweepStatus', `set θ₁=${theta1.toFixed(2)}, θ₂=${theta2.toFixed(2)}`);
+    this.dom.setText('sweepStatus', `set θ₁=${theta1.toFixed(2)}, θ₂=${theta2.toFixed(2)}`);
   }
 
-  install(): void {
-    takeOverButton('sweepStart')?.addEventListener('click', () => this.start());
-    takeOverButton('sweepStop')?.addEventListener('click', () => {
+  protected bind(): void {
+    this.dom.takeOver('sweepStart')?.addEventListener('click', () => this.start());
+    this.dom.takeOver('sweepStop')?.addEventListener('click', () => {
       this.stop();
-      setText('sweepStatus', 'cancelled');
+      this.dom.setText('sweepStatus', 'cancelled');
     });
-    takeOverButton('sweepExportPNG')?.addEventListener('click', () => {
-      const canvas = document.getElementById('sweepCanvas') as HTMLCanvasElement | null;
+    this.dom.takeOver('sweepExportPNG')?.addEventListener('click', () => {
+      const canvas = this.dom.el<HTMLCanvasElement>('sweepCanvas');
       if (canvas) downloadDataUrl('pendulum_chaos_map.png', canvas.toDataURL('image/png'));
     });
-    takeOverButton('sweepExportCSV')?.addEventListener('click', () => this.exportCsv());
+    this.dom.takeOver('sweepExportCSV')?.addEventListener('click', () => this.exportCsv());
 
-    const canvas = document.getElementById('sweepCanvas') as HTMLCanvasElement | null;
+    const canvas = this.dom.el<HTMLCanvasElement>('sweepCanvas');
     canvas?.addEventListener('pointerdown', (e) => this.setInitialFromClick(e));
   }
 }

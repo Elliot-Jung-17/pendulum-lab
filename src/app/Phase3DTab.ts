@@ -1,3 +1,5 @@
+import { num } from './systemControls';
+import { TabController } from './TabController';
 import { LabSimulation, type LabConfig } from './LabSimulation';
 import { rotateProject } from './phase3d';
 import { lerpHexColor, OKABE_ITO } from '../viz';
@@ -9,17 +11,7 @@ import { lerpHexColor, OKABE_ITO } from '../viz';
  * fades far points. Renders only while the tab is visible.
  */
 
-function num(id: string, fallback: number): number {
-  const el = document.getElementById(id) as HTMLInputElement | null;
-  const v = el ? Number.parseFloat(el.value) : Number.NaN;
-  return Number.isFinite(v) ? v : fallback;
-}
-
-function checked(id: string): boolean {
-  return Boolean((document.getElementById(id) as HTMLInputElement | null)?.checked);
-}
-
-export class Phase3DTab {
+export class Phase3DTab extends TabController {
   private sim: LabSimulation | null = null;
   private points: Array<{ x: number; y: number; z: number }> = [];
   private yaw = 0.6;
@@ -43,7 +35,7 @@ export class Phase3DTab {
   }
 
   private active(): boolean {
-    return Boolean(document.getElementById('tab-phase3d')?.classList.contains('active'));
+    return this.dom.tabActive('tab-phase3d');
   }
 
   private frame(): void {
@@ -53,7 +45,7 @@ export class Phase3DTab {
 
   private renderFrame(): void {
     if (!this.active()) return;
-    const canvas = document.getElementById('p3dCanvas') as HTMLCanvasElement | null;
+    const canvas = this.dom.el<HTMLCanvasElement>('p3dCanvas');
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
     if (!this.sim) this.sim = new LabSimulation(this.config());
@@ -72,7 +64,7 @@ export class Phase3DTab {
     const cx = canvas.width / 2;
     const cy = canvas.height / 2;
     const scale = Math.min(canvas.width, canvas.height) * 0.3;
-    const depthFade = checked('p3dDepthFade');
+    const depthFade = this.dom.bool('p3dDepthFade');
     const n = this.points.length;
     for (let i = 0; i < n; i += 1) {
       const p = rotateProject(this.points[i]!, this.yaw, this.pitch);
@@ -88,8 +80,8 @@ export class Phase3DTab {
     ctx.fillRect(0, 0, canvas.width, 8);
   }
 
-  install(): void {
-    const canvas = document.getElementById('p3dCanvas') as HTMLCanvasElement | null;
+  protected bind(): void {
+    const canvas = this.dom.el<HTMLCanvasElement>('p3dCanvas');
     canvas?.addEventListener('pointerdown', (e) => {
       this.dragging = true;
       this.lastX = e.clientX;
@@ -114,11 +106,11 @@ export class Phase3DTab {
     canvas?.addEventListener('pointerup', stop);
     canvas?.addEventListener('pointercancel', stop);
 
-    document.getElementById('p3dClear')?.addEventListener('click', () => {
+    this.dom.el('p3dClear')?.addEventListener('click', () => {
       this.points = [];
       this.sim = new LabSimulation(this.config());
     });
-    document.getElementById('p3dResetCam')?.addEventListener('click', () => {
+    this.dom.el('p3dResetCam')?.addEventListener('click', () => {
       this.yaw = 0.6;
       this.pitch = 0.4;
     });

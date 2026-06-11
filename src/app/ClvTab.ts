@@ -1,7 +1,7 @@
+import { TabController } from './TabController';
 import { ChaosClient } from '../runtime/ChaosClient';
 import { renderSpectrumBars, renderHistogram } from './labPlots';
 import { downloadText } from './labExport';
-import { setText, takeOverButton } from './domTakeover';
 import { readSystem } from './systemControls';
 
 /**
@@ -17,16 +17,15 @@ import { readSystem } from './systemControls';
  *
  * Takes over the tab's controls when the modern app mounts (idempotent).
  */
-export class ClvTab {
+export class ClvTab extends TabController {
   private client = new ChaosClient();
   private exponents: number[] = [];
   private angles: number[] = [];
-  private running = false;
 
   async run(): Promise<void> {
     if (this.running) return;
     this.running = true;
-    setText('clvStatus', this.client.usesWorker() ? 'computing (worker)…' : 'computing…');
+    this.dom.setText('clvStatus', this.client.usesWorker() ? 'computing (worker)…' : 'computing…');
     const { spec, state0, count } = readSystem();
     try {
       const result = await this.client.clv(spec, state0, count, {
@@ -38,21 +37,21 @@ export class ClvTab {
       });
       this.exponents = result.exponents;
       this.angles = result.hyperbolicityAngles;
-      setText('clvLambda1', (result.exponents[0] ?? 0).toFixed(4));
-      setText('clvHypMean', `${result.meanHyperbolicityAngle.toFixed(4)} rad`);
-      setText('clvHypMin', `${result.minHyperbolicityAngle.toFixed(4)} rad`);
+      this.dom.setText('clvLambda1', (result.exponents[0] ?? 0).toFixed(4));
+      this.dom.setText('clvHypMean', `${result.meanHyperbolicityAngle.toFixed(4)} rad`);
+      this.dom.setText('clvHypMin', `${result.minHyperbolicityAngle.toFixed(4)} rad`);
       this.render();
       const hyp = result.minHyperbolicityAngle > 0.05 ? 'hyperbolic' : 'near-tangency';
-      setText('clvStatus', `done · λ₁=${(result.exponents[0] ?? 0).toFixed(3)} · ⟨∠⟩=${result.meanHyperbolicityAngle.toFixed(3)} · ${hyp}`);
+      this.dom.setText('clvStatus', `done · λ₁=${(result.exponents[0] ?? 0).toFixed(3)} · ⟨∠⟩=${result.meanHyperbolicityAngle.toFixed(3)} · ${hyp}`);
     } catch (err) {
-      setText('clvStatus', `error: ${err instanceof Error ? err.message : String(err)}`);
+      this.dom.setText('clvStatus', `error: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       this.running = false;
     }
   }
 
   private render(): void {
-    const canvas = document.getElementById('clvCanvas') as HTMLCanvasElement | null;
+    const canvas = this.dom.el<HTMLCanvasElement>('clvCanvas');
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
     const half = canvas.height / 2;
@@ -69,14 +68,13 @@ export class ClvTab {
     downloadText('pendulum_covariant_lyapunov_vectors.csv', rows.join('\n'), 'text/csv');
   }
 
-  /** Take over the tab's controls. Idempotent. */
-  install(): void {
-    takeOverButton('clvStart')?.addEventListener('click', () => void this.run());
-    takeOverButton('clvStop')?.addEventListener('click', () => {
+  protected bind(): void {
+    this.dom.takeOver('clvStart')?.addEventListener('click', () => void this.run());
+    this.dom.takeOver('clvStop')?.addEventListener('click', () => {
       this.client.terminate();
       this.running = false;
-      setText('clvStatus', 'stopped');
+      this.dom.setText('clvStatus', 'stopped');
     });
-    takeOverButton('clvExport')?.addEventListener('click', () => this.exportCsv());
+    this.dom.takeOver('clvExport')?.addEventListener('click', () => this.exportCsv());
   }
 }

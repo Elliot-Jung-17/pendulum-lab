@@ -1,5 +1,6 @@
+import { num } from './systemControls';
+import { TabController } from './TabController';
 import { LabSimulation, type LabConfig } from './LabSimulation';
-import { setText } from './domTakeover';
 
 /**
  * Modern port of the phase-density tab. The legacy tab uses WebGL additive
@@ -12,13 +13,7 @@ import { setText } from './domTakeover';
 
 const wrapPi = (x: number): number => Math.atan2(Math.sin(x), Math.cos(x));
 
-function num(id: string, fallback: number): number {
-  const el = document.getElementById(id) as HTMLInputElement | null;
-  const v = el ? Number.parseFloat(el.value) : Number.NaN;
-  return Number.isFinite(v) ? v : fallback;
-}
-
-export class DensityTab {
+export class DensityTab extends TabController {
   private sim: LabSimulation | null = null;
   private rafId: number | null = null;
   private cleared = true;
@@ -35,13 +30,13 @@ export class DensityTab {
   }
 
   private active(): boolean {
-    return Boolean(document.getElementById('tab-density')?.classList.contains('active'));
+    return this.dom.tabActive('tab-density');
   }
 
   private frame(): void {
     this.rafId = requestAnimationFrame(() => this.frame());
     if (!this.active()) return;
-    const canvas = document.getElementById('gpuCanvas') as HTMLCanvasElement | null;
+    const canvas = this.dom.el<HTMLCanvasElement>('gpuCanvas');
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
     if (!this.sim) this.sim = new LabSimulation(this.config());
@@ -50,7 +45,7 @@ export class DensityTab {
       ctx.fillStyle = '#05080d';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       this.cleared = false;
-      setText('gpuStatus', 'Canvas2D additive');
+      this.dom.setText('gpuStatus', 'Canvas2D additive');
     }
 
     const alpha = num('gpuAlpha', 0.04);
@@ -68,9 +63,9 @@ export class DensityTab {
     ctx.globalCompositeOperation = 'source-over';
   }
 
-  install(): void {
-    setText('gpuStatus', 'Canvas2D additive (ready)');
-    document.getElementById('gpuClear')?.addEventListener('click', () => {
+  protected bind(): void {
+    this.dom.setText('gpuStatus', 'Canvas2D additive (ready)');
+    this.dom.el('gpuClear')?.addEventListener('click', () => {
       this.cleared = true;
       this.sim = new LabSimulation(this.config());
     });

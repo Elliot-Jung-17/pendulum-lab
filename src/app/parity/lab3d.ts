@@ -71,6 +71,7 @@ import { clampNumber } from './storage-sync';
 import { append, button, html, numberFrom, setText, toast } from './shared';
 import { logResearchRun, researchActions, researchCard, researchFormRow, researchInput, researchSelect } from './research-workbench';
 import { $ } from './shared';
+import { attachBadge } from '../resultBadges';
 
 
 export const lab3d = {
@@ -196,6 +197,7 @@ export async function analyzeDoubleStringDiagnostics(): Promise<void> {
   const validityLine = `taut ${(validity.tautFraction * 100).toFixed(1)}% of 30 s, ${validity.slackEvents} slack / ${validity.captureEvents} capture events, E lost ${validity.energyLost.toFixed(4)} J`;
   if (validity.tautFraction < 0.99) {
     setText('ds3Analysis', `${validityLine} | ${validity.caveat} | Smooth-chart λ/RQA/FTLE skipped: the hybrid events dominate, so a single-chart estimate would be misleading.`);
+    attachBadge('ds3Analysis', 'caveat', validity.caveat);
     logResearchRun('probe', 'Double-string validity probe', validityLine);
     return;
   }
@@ -215,6 +217,7 @@ export async function analyzeDoubleStringDiagnostics(): Promise<void> {
       `FTLE(T=${result.ftleHorizon}s)=${result.ftle.toFixed(3)}`,
       'valid on the taut branch (strings stayed taut over the probe horizon)'
     ].join(' | '));
+    attachBadge('ds3Analysis', 'finite-time-estimate', 'Taut-branch diagnostics; validity confirmed by the hybrid taut-fraction probe.');
     logResearchRun('probe', 'Double-string taut-branch diagnostics', `λ=${result.lambdaMax.toFixed(4)}±${result.lambdaBlockStdError.toFixed(4)}, DET=${result.rqaDeterminism.toFixed(3)}, ${validityLine}`);
   } catch (error) {
     setText('ds3Analysis', `Double-string analysis failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -791,6 +794,7 @@ export async function analyzeChainDiagnostics(): Promise<void> {
       verdict,
       'method: studyPoint worker job (dt=0.002, RK4 fiducial; same pipeline as the Research batch runner)'
     ].join(' | '));
+    attachBadge('d3Analysis', 'finite-time-estimate', 'Worker studyPoint job: finite-time Lyapunov/RQA/FTLE with block uncertainties.');
     logResearchRun('probe', `3D chain diagnostics (N=${spec.masses.length})`, `λ=${result.lambdaMax.toFixed(4)}±${result.lambdaBlockStdError.toFixed(4)}, DET=${result.rqaDeterminism.toFixed(3)}, FTLE=${result.ftle.toFixed(3)}`);
   } catch (error) {
     setText('d3Analysis', `Chain analysis failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -848,6 +852,7 @@ export function exportChainSnapshot(): void {
     reproducibilityHash: hashText(JSON.stringify({ spec: chainSpec(), state: Array.from(lab3d.chain.current()), dt: diag.dt, method: diag.method }))
   };
   downloadJson('pendulum_spherical_chain_diagnostics.json', payload);
+  attachBadge('d3Readout', 'publication-ready', 'Snapshot ships spec, state, dt, method and a reproducibility hash.');
   logResearchRun('export', `3D chain snapshot (N=${lab3d.chain.params.masses.length})`, `E drift ${diag.energyDrift.toExponential(2)}, Lz drift ${diag.lzDrift.toExponential(2)}, method=${diag.method}`, 'pendulum_spherical_chain_snapshot.png');
   toast('Chain snapshot exported (PNG + JSON)');
 }

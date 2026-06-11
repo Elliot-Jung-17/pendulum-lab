@@ -43,6 +43,7 @@ export class BasinTab extends TabController {
       this.render();
       const wada = result.wadaCandidate ? 'Wada candidate ✓' : `Wada fraction ${(result.wadaFraction * 100).toFixed(0)}%`;
       this.dom.setText('basinStatus', `done · Sb=${result.basinEntropy.toFixed(3)}±${result.basinEntropyStdError.toFixed(3)} · dim=${result.boxCountingDimension.toFixed(3)}±${result.boxCountingStdError.toFixed(3)} (R²=${result.boxCountingR2.toFixed(3)}) · ${wada}`);
+      this.badge('basinStatus', 'finite-time-estimate', 'Basin entropy/dimension: finite-resolution estimates with std errors.');
     } catch (err) {
       this.dom.setText('basinStatus', `error: ${err instanceof Error ? err.message : String(err)}`);
     } finally {

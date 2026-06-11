@@ -35,6 +35,7 @@ export class ZeroOneTab extends TabController {
       this.dom.setText('zeroOneVerdict', `${verdict} (K${result.K > 0.5 ? ' ≈ 1' : ' ≈ 0'})`);
       this.render();
       this.dom.setText('zeroOneStatus', `done · K=${result.K.toFixed(3)}±${result.kStdError.toFixed(3)} · 95% CI [${result.kCi95[0].toFixed(3)}, ${result.kCi95[1].toFixed(3)}] · ${verdict}`);
+      this.badge('zeroOneStatus', 'finite-time-estimate', '0–1 test K: finite-sample estimate with bootstrap CI.');
     } catch (err) {
       this.dom.setText('zeroOneStatus', `error: ${err instanceof Error ? err.message : String(err)}`);
     } finally {

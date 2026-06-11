@@ -28,6 +28,7 @@ export class FtleTab extends TabController {
     const { spec } = readSystem();
     if (spec.kind !== 'double') {
       this.dom.setText('ftleStatus', 'FTLE field requires the double pendulum (set System → Double)');
+      this.badge('ftleStatus', 'caveat', 'FTLE field requires the double pendulum (set System → Double)');
       return;
     }
     this.running = true;
@@ -46,6 +47,7 @@ export class FtleTab extends TabController {
       this.dom.setText('ftleT2', `${totalTime.toFixed(1)} s`);
       this.render();
       this.dom.setText('ftleStatus', `done · σ_T∈[${r.min.toFixed(2)}, ${r.max.toFixed(2)}] · T=${totalTime.toFixed(1)}s`);
+      this.badge('ftleStatus', 'finite-time-estimate', 'FTLE field: finite-horizon flow-map gradient estimate.');
     } catch (err) {
       this.dom.setText('ftleStatus', `error: ${err instanceof Error ? err.message : String(err)}`);
     } finally {

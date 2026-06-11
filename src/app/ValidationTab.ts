@@ -1,4 +1,5 @@
 import { TabController } from './TabController';
+import { classifyValidation } from './resultBadges';
 import {
   runAllValidationChecks,
   runReplayDeterminismCheck,
@@ -57,9 +58,15 @@ export class ValidationTab extends TabController {
       for (const c of cases) container.appendChild(this.row(c));
     }
     const passed = cases.filter((c) => c.status === 'PASS').length;
+    const failed = cases.length - passed;
     this.dom.setText('testPassed', String(passed));
-    this.dom.setText('testFailed', String(cases.length - passed));
+    this.dom.setText('testFailed', String(failed));
     this.dom.setText('testTime', `${elapsedMs.toFixed(0)} ms`);
+    this.badge(
+      'testPassed',
+      classifyValidation(passed, failed),
+      failed > 0 ? `${failed} validation case(s) failed — see the table.` : `${passed} independent checks passed (analytic limits, reversibility, dt-halving, replay hash).`
+    );
   }
 
   private row(c: ValidationCaseResult): HTMLElement {

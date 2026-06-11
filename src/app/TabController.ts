@@ -8,6 +8,7 @@
  *   started twice from double clicks.
  */
 import { DomBinder, pageDom } from './DomBinder';
+import { attachBadge, type ResultBadgeLevel } from './resultBadges';
 
 export abstract class TabController {
   protected readonly dom: DomBinder;
@@ -28,6 +29,14 @@ export abstract class TabController {
 
   /** Wire the tab's controls. Called once from install(). */
   protected abstract bind(): void;
+
+  /**
+   * Stamp the tab's status line with a result-credibility badge (visual-only /
+   * finite-time-estimate / validated / publication-ready / caveat).
+   */
+  protected badge(statusId: string, level: ResultBadgeLevel, note?: string): void {
+    attachBadge(statusId, level, note);
+  }
 
   /**
    * Run `task` unless one is already in flight. Reports errors to `statusId`

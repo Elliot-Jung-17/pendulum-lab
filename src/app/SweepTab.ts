@@ -91,6 +91,7 @@ export class SweepTab extends TabController {
       this.rafId = requestAnimationFrame(() => this.chunk());
     } else {
       this.dom.setText('sweepStatus', `done · ${this.res}×${this.res}`);
+      this.badge('sweepStatus', 'finite-time-estimate', 'Chaos map: finite-time lambda estimates per cell.');
       this.rafId = null;
     }
   }

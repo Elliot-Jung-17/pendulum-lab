@@ -43,6 +43,7 @@ export class ClvTab extends TabController {
       this.render();
       const hyp = result.minHyperbolicityAngle > 0.05 ? 'hyperbolic' : 'near-tangency';
       this.dom.setText('clvStatus', `done · λ₁=${(result.exponents[0] ?? 0).toFixed(3)} · ⟨∠⟩=${result.meanHyperbolicityAngle.toFixed(3)} · ${hyp}`);
+      this.badge('clvStatus', 'finite-time-estimate', 'CLV exponents/angles: finite-window Ginelli estimate.');
     } catch (err) {
       this.dom.setText('clvStatus', `error: ${err instanceof Error ? err.message : String(err)}`);
     } finally {

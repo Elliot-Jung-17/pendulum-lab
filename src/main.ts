@@ -13,6 +13,7 @@ import { maybeMountModernAnalysisTabs, maybeMountModernLab, maybeMountModernLabP
 import { installFeatureParityLayer, currentSnapshot } from './app/FeatureParityLayer';
 import { installUiPolish } from './app/UiPolish';
 import { publishPublicApi } from './runtime/globalApi';
+import { installAudienceMode } from './app/audienceMode';
 
 function installIndexCommands(): void {
   commandRegistry.upsert({
@@ -111,6 +112,7 @@ function bootResearch(): void {
  */
 function bootShell(): void {
   maybeMountModernShell();
+  installAudienceMode();
   installUiPolish();
 }
 

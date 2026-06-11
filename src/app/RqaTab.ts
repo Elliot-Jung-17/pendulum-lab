@@ -52,6 +52,7 @@ export class RqaTab extends TabController {
       this.render();
       const verdict = r.determinism > 0.85 && r.divergence < 0.1 ? 'regular/structured' : 'chaotic/stochastic';
       this.dom.setText('rqaStatus', `done · DET=${r.determinism.toFixed(3)}±${r.determinismStdError.toFixed(3)} · DIV=${r.divergence.toFixed(3)}±${r.divergenceStdError.toFixed(3)} (${r.uncertaintyBlocks} blocks) · ${verdict}`);
+      this.badge('rqaStatus', 'finite-time-estimate', 'RQA metrics: finite-window estimates with block std errors.');
     } catch (err) {
       this.dom.setText('rqaStatus', `error: ${err instanceof Error ? err.message : String(err)}`);
     } finally {

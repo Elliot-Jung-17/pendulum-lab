@@ -51,6 +51,7 @@ export class LyapunovTab extends TabController {
       const verdict = c ? (c.symplectic ? 'symplectic ✓' : 'pairing ✗') : '';
       const pairing = c ? `, pairErr=${c.pairingError.toExponential(1)}` : '';
       this.dom.setText('lyapStatus', `done · Σλ=${result.sum.toExponential(1)}${pairing}${verdict ? ` · ${verdict}` : ''}`);
+      this.badge('lyapStatus', 'finite-time-estimate', 'Lyapunov spectrum: finite-time Benettin/QR estimate with block std errors.');
     } catch (err) {
       this.dom.setText('lyapStatus', `error: ${err instanceof Error ? err.message : String(err)}`);
     } finally {

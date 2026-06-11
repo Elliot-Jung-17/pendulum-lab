@@ -78,6 +78,7 @@ export class BifurcationTab extends TabController {
       this.rafId = requestAnimationFrame(() => this.chunk());
     } else {
       this.dom.setText('bifStatus', `done · ${this.gValues.length} columns`);
+      this.badge('bifStatus', 'finite-time-estimate', 'Bifurcation diagram: finite-transient section sampling.');
       this.rafId = null;
     }
   }

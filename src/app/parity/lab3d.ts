@@ -52,7 +52,7 @@ import { RopePendulum } from '../../physics/rope';
 import { DoubleStringPendulum, doubleStringTautFraction } from '../../physics/doubleString';
 import { SphericalPendulum } from '../../physics/spherical';
 import { SphericalChain, type SphericalChainParams } from '../../physics/sphericalChain';
-import { bindOrbitControls, drawPolyline3D, drawSphereWireframe, OrbitCamera } from '../../viz/orbit3d';
+import { bindOrbitControls, depthSortIndices, drawPolyline3D, drawSphereWireframe, OrbitCamera } from '../../viz/orbit3d';
 import { ensembleGrid, runDoublePendulumEnsemble } from '../../runtime/gpuEnsemble';
 import {
   adaptiveRefinement,
@@ -88,6 +88,8 @@ export const lab3d = {
   sphereTrail: [] as { x: number; y: number; z: number }[],
   spherePoincare: [] as { phi: number; theta: number }[],
   lastThetaDotSign: 0,
+  /** Previous frame's (θ, φ, θ̇) for interpolated section crossings. */
+  spherePrev: null as [number, number, number] | null,
   camera: new OrbitCamera(),
   chain: null as SphericalChain | null,
   chainRunning: false,
@@ -281,6 +283,7 @@ export function resetSphereSim(): void {
   lab3d.sphere = new SphericalPendulum(params, [theta0, 0, thetaDot0, phiDot0], 0.002);
   lab3d.sphereTrail = [];
   lab3d.spherePoincare = [];
+  lab3d.spherePrev = null;
   lab3d.lastThetaDotSign = Math.sign(thetaDot0) || 1;
   renderSphereSim();
   renderSphereReadout();
@@ -371,14 +374,20 @@ export function lab3dFrame(timestamp: number): void {
     const position = lab3d.sphere.position();
     lab3d.sphereTrail.push(position);
     if (lab3d.sphereTrail.length > 1200) lab3d.sphereTrail.shift();
-    // Poincaré section at θ̇ = 0 (turning points of the polar angle).
+    // Poincaré section at θ̇ = 0 (turning points of the polar angle), with the
+    // crossing interpolated to the θ̇ zero instead of frame-sampled: the frame
+    // bracket [prev, now] is solved linearly in θ̇ for (θ, φ) at the section.
     const [theta, phi, thetaDot] = lab3d.sphere.current();
-    const sign = Math.sign(thetaDot) || lab3d.lastThetaDotSign;
-    if (sign !== lab3d.lastThetaDotSign && lab3d.lastThetaDotSign !== 0) {
-      lab3d.spherePoincare.push({ phi: ((phi % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI), theta });
+    const previous = lab3d.spherePrev;
+    if (previous && Math.sign(thetaDot ?? 0) !== Math.sign(previous[2]) && previous[2] !== 0) {
+      const dPrev = previous[2];
+      const frac = dPrev / (dPrev - (thetaDot ?? 0));
+      const thetaCross = previous[0] + frac * ((theta ?? 0) - previous[0]);
+      const phiCross = previous[1] + frac * ((phi ?? 0) - previous[1]);
+      lab3d.spherePoincare.push({ phi: ((phiCross % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI), theta: thetaCross });
       if (lab3d.spherePoincare.length > 800) lab3d.spherePoincare.shift();
     }
-    lab3d.lastThetaDotSign = sign;
+    lab3d.spherePrev = [theta ?? 0, phi ?? 0, thetaDot ?? 0];
     renderSphereSim();
     renderSphereReadout();
   }
@@ -690,15 +699,13 @@ export function renderChainSim(): void {
   ctx.arc(pivot.screenX, pivot.screenY, 4, 0, 2 * Math.PI);
   ctx.fill();
   // Painter's order: draw far bobs first so near bobs overlap them correctly.
-  projected
-    .map((bob, index) => ({ bob, index }))
-    .sort((a, b) => a.bob.depth - b.bob.depth)
-    .forEach(({ bob, index }) => {
-      ctx.fillStyle = CHAIN_COLORS[index % CHAIN_COLORS.length]!.css;
-      ctx.beginPath();
-      ctx.arc(bob.screenX, bob.screenY, index === projected.length - 1 ? 8 : 7, 0, 2 * Math.PI);
-      ctx.fill();
-    });
+  for (const index of depthSortIndices(projected)) {
+    const bob = projected[index]!;
+    ctx.fillStyle = CHAIN_COLORS[index % CHAIN_COLORS.length]!.css;
+    ctx.beginPath();
+    ctx.arc(bob.screenX, bob.screenY, index === projected.length - 1 ? 8 : 7, 0, 2 * Math.PI);
+    ctx.fill();
+  }
   ctx.fillStyle = '#8fa3c2';
   ctx.font = '10px system-ui';
   ctx.fillText('drag to orbit, wheel to zoom', 8, canvas.height - 8);

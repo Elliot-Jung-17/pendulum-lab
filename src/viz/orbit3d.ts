@@ -100,6 +100,20 @@ export interface PolylinePoint3 {
   z: number;
 }
 
+/**
+ * Painter's-algorithm ordering for projected scene elements: indices sorted
+ * far-to-near (ascending screen proximity), so drawing in the returned order
+ * lets near elements correctly overlap far ones. Depth convention follows
+ * `rotateProject`: larger depth = further from the viewer… and the camera
+ * looks down −depth, so far elements (large depth) must be drawn first.
+ */
+export function depthSortIndices(items: ReadonlyArray<{ depth: number }>): number[] {
+  return items
+    .map((item, index) => ({ depth: item.depth, index }))
+    .sort((a, b) => b.depth - a.depth)
+    .map((entry) => entry.index);
+}
+
 /** Draw a depth-faded 3D polyline through the camera. */
 export function drawPolyline3D(
   ctx: CanvasRenderingContext2D,

@@ -108,6 +108,9 @@ export class LabApp {
     this.lyap = new LyapunovEstimator(rhs, dim, config.dt);
     this.lyap.reset(config.initialState);
     this.poincare.clear();
+    // Event-refined section crossings: root-found on the flow itself rather
+    // than linearly interpolated between steps.
+    this.poincare.setRefiner(rhs, config.dt);
     this.phaseSamples = [];
     this.theta1Frames = [];
     this.energy = { time: [], total: [], drift: [] };

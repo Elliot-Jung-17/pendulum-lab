@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-06-11T12:51:03.990Z",
+  "generatedAt": "2026-06-11T23:24:41.882Z",
   "totals": {
     "done": 4,
     "partial": 4,
     "gap": 0
   },
   "legacyRisk": {
-    "generatedAt": "2026-06-11T09:44:08.497Z",
+    "generatedAt": "2026-06-11T12:53:41.869Z",
     "pass": true,
     "counts": {
       "innerHTML": 0,
@@ -532,6 +532,14 @@
         "dynamicScript": 0,
         "globalRuntimeExports": 0
       },
+      "src\\physics\\doubleString.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
       "src\\physics\\driven.ts": {
         "innerHTML": 0,
         "onclick": 0,
@@ -565,6 +573,14 @@
         "globalRuntimeExports": 0
       },
       "src\\physics\\integrators.ts": {
+        "innerHTML": 0,
+        "onclick": 0,
+        "inlineWorkerBlob": 0,
+        "evalLike": 0,
+        "dynamicScript": 0,
+        "globalRuntimeExports": 0
+      },
+      "src\\physics\\linearSolve.ts": {
         "innerHTML": 0,
         "onclick": 0,
         "inlineWorkerBlob": 0,
@@ -1096,7 +1112,7 @@
       "area": "Testing and browser coverage",
       "status": "done",
       "evidence": [
-        "446/446 unit tests across 66 files",
+        "497/497 unit tests across 72 files",
         "unit tests cover integrators, energy drift, determinism, JSON import validation, edge cases, chaos, visualization, repro packages",
         "Playwright config includes Chromium, Firefox, WebKit, and mobile Chrome"
       ],

@@ -49,7 +49,7 @@ import {
 } from '../../research/libraryUx';
 import { evaluatePerformanceBudget } from '../../render/progressive';
 import { RopePendulum } from '../../physics/rope';
-import { DoubleStringPendulum } from '../../physics/doubleString';
+import { DoubleStringPendulum, doubleStringTautFraction } from '../../physics/doubleString';
 import { SphericalPendulum } from '../../physics/spherical';
 import { SphericalChain, type SphericalChainParams } from '../../physics/sphericalChain';
 import { bindOrbitControls, drawPolyline3D, drawSphereWireframe, OrbitCamera } from '../../viz/orbit3d';
@@ -145,6 +145,128 @@ export function resetDoubleStringSim(): void {
   lab3d.doubleStringTrail2 = [];
   renderDoubleStringSim();
   renderDoubleStringReadout();
+}
+
+/** Named double-string presets covering the three qualitative regimes. */
+export const DOUBLE_STRING_PRESETS: Record<string, { label: string; theta1: number; theta2: number; omega1: number; omega2: number }> = {
+  'gentle-swing': { label: 'Gentle swing (stays taut)', theta1: 0.7, theta2: 0.4, omega1: 0.2, omega2: -0.1 },
+  'chaotic-taut': { label: 'Chaotic but taut', theta1: 2.0, theta2: 2.4, omega1: 0, omega2: 0 },
+  'slack-cascade': { label: 'Near-inverted fold (slack + recapture)', theta1: 2.5, theta2: -2.5, omega1: 0, omega2: 0 },
+  'whirling': { label: 'Fast whirl (centripetally taut)', theta1: 3.0, theta2: 3.0, omega1: 0, omega2: 8 }
+};
+
+export function applyDoubleStringPreset(key: string): void {
+  const preset = DOUBLE_STRING_PRESETS[key];
+  if (!preset) return;
+  const set = (id: string, value: number): void => {
+    const el = $(id);
+    if (el instanceof HTMLInputElement) el.value = String(value);
+  };
+  set('ds3Theta1', preset.theta1);
+  set('ds3Theta2', preset.theta2);
+  set('ds3Omega1', preset.omega1);
+  set('ds3Omega2', preset.omega2);
+  lab3d.doubleStringRunning = false;
+  resetDoubleStringSim();
+}
+
+/** Declarative spec of the current double-string setup (taut-branch analyses). */
+export function doubleStringSpec(): Extract<SystemSpec, { kind: 'double-string' }> {
+  const params = lab3dDoubleStringParams();
+  return { kind: 'double-string', m1: params.m1, m2: params.m2, l1: params.l1, l2: params.l2, g: params.g, damping: params.damping };
+}
+
+let doubleStringClient: ChaosClient | null = null;
+
+/**
+ * Research diagnostics for the double string: first the hybrid taut-fraction
+ * validity probe, then (when the smooth chart is meaningful) the same worker
+ * studyPoint job the Research tab uses, on the taut-branch vector field.
+ */
+export async function analyzeDoubleStringDiagnostics(): Promise<void> {
+  const params = lab3dDoubleStringParams();
+  const theta1 = clampNumber(numberFrom('ds3Theta1', 0.7), 0.7, -3.1, 3.1);
+  const theta2 = clampNumber(numberFrom('ds3Theta2', 0.4), 0.4, -3.1, 3.1);
+  const omega1 = clampNumber(numberFrom('ds3Omega1', 0.2), 0.2, -20, 20);
+  const omega2 = clampNumber(numberFrom('ds3Omega2', -0.1), -0.1, -20, 20);
+  setText('ds3Analysis', 'Probing string validity (hybrid taut-fraction)…');
+  const validity = doubleStringTautFraction(params, theta1, theta2, omega1, omega2, 30);
+  const validityLine = `taut ${(validity.tautFraction * 100).toFixed(1)}% of 30 s, ${validity.slackEvents} slack / ${validity.captureEvents} capture events, E lost ${validity.energyLost.toFixed(4)} J`;
+  if (validity.tautFraction < 0.99) {
+    setText('ds3Analysis', `${validityLine} | ${validity.caveat} | Smooth-chart λ/RQA/FTLE skipped: the hybrid events dominate, so a single-chart estimate would be misleading.`);
+    logResearchRun('probe', 'Double-string validity probe', validityLine);
+    return;
+  }
+  setText('ds3Analysis', `${validityLine} | computing taut-branch λ/RQA/FTLE…`);
+  if (!doubleStringClient) doubleStringClient = new ChaosClient();
+  try {
+    const result = await doubleStringClient.studyPoint(doubleStringSpec(), [theta1, theta2, omega1, omega2], {
+      lyapunov: { steps: 8000 },
+      rqa: { samples: 360 },
+      ftleHorizon: 5
+    });
+    if (!result.ok) throw new Error('analysis failed');
+    setText('ds3Analysis', [
+      validityLine,
+      `λ_max=${result.lambdaMax.toFixed(4)} ± ${result.lambdaBlockStdError.toFixed(4)} /s`,
+      `RQA DET=${result.rqaDeterminism.toFixed(3)}, DIV=${result.rqaDivergence.toFixed(4)}`,
+      `FTLE(T=${result.ftleHorizon}s)=${result.ftle.toFixed(3)}`,
+      'valid on the taut branch (strings stayed taut over the probe horizon)'
+    ].join(' | '));
+    logResearchRun('probe', 'Double-string taut-branch diagnostics', `λ=${result.lambdaMax.toFixed(4)}±${result.lambdaBlockStdError.toFixed(4)}, DET=${result.rqaDeterminism.toFixed(3)}, ${validityLine}`);
+  } catch (error) {
+    setText('ds3Analysis', `Double-string analysis failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/** Record a finite hybrid trajectory (with phase/tension columns) as CSV. */
+export function exportDoubleStringTrajectoryCsv(): void {
+  const params = lab3dDoubleStringParams();
+  const theta1 = clampNumber(numberFrom('ds3Theta1', 0.7), 0.7, -3.1, 3.1);
+  const theta2 = clampNumber(numberFrom('ds3Theta2', 0.4), 0.4, -3.1, 3.1);
+  const omega1 = clampNumber(numberFrom('ds3Omega1', 0.2), 0.2, -20, 20);
+  const omega2 = clampNumber(numberFrom('ds3Omega2', -0.1), -0.1, -20, 20);
+  const horizon = clampNumber(numberFrom('ds3ExportT', 20), 20, 1, 120);
+  const sim = new DoubleStringPendulum(params, theta1, theta2, omega1, omega2);
+  const sample = 0.01;
+  const rows = ['time,phase,theta1,theta2,omega1,omega2,x1,y1,x2,y2,tension1,tension2,energy'];
+  const steps = Math.round(horizon / sample);
+  for (let i = 0; i < steps; i += 1) {
+    sim.step(sample);
+    const s = sim.snapshot();
+    rows.push([
+      s.time.toPrecision(8), s.phase, s.theta1.toPrecision(8), s.theta2.toPrecision(8),
+      s.omega1.toPrecision(8), s.omega2.toPrecision(8), s.x1.toPrecision(8), s.y1.toPrecision(8),
+      s.x2.toPrecision(8), s.y2.toPrecision(8), s.tension1.toPrecision(6), s.tension2.toPrecision(6),
+      s.energy.toPrecision(10)
+    ].join(','));
+  }
+  downloadBytes('pendulum_double_string_trajectory.csv', textToBytes(rows.join('\n')), 'text/csv');
+  logResearchRun('export', 'Double-string trajectory CSV', `${steps} samples over ${horizon}s with phase + tension columns; ${sim.events.length} hybrid events`, 'pendulum_double_string_trajectory.csv');
+  toast('Double-string trajectory CSV exported');
+}
+
+/** Paper-ready double-string snapshot: scene PNG + diagnostics/events JSON. */
+export function exportDoubleStringSnapshot(): void {
+  const canvas = $('ds3Canvas');
+  if (!(canvas instanceof HTMLCanvasElement) || !lab3d.doubleString) {
+    toast('Run the double string pendulum first');
+    return;
+  }
+  downloadBytes('pendulum_double_string_snapshot.png', dataUrlToBytes(canvas.toDataURL('image/png')), 'image/png');
+  const snapshot = lab3d.doubleString.snapshot();
+  const payload = {
+    schemaVersion: 'pendulum-3d-diagnostics/v1',
+    generatedAt: new Date().toISOString(),
+    system: 'double-string-pendulum',
+    spec: doubleStringSpec(),
+    snapshot,
+    events: lab3d.doubleString.events,
+    reproducibilityHash: hashText(JSON.stringify({ spec: doubleStringSpec(), snapshot }))
+  };
+  downloadJson('pendulum_double_string_diagnostics.json', payload);
+  logResearchRun('export', 'Double-string snapshot', `phase=${snapshot.phase}, ${lab3d.doubleString.events.length} hybrid events, E=${snapshot.energy.toFixed(4)} J`, 'pendulum_double_string_snapshot.png');
+  toast('Double-string snapshot exported (PNG + JSON)');
 }
 
 export function resetSphereSim(): void {
@@ -782,8 +904,11 @@ export function installLab3dTab(): void {
   doubleStringCanvas.height = 360;
   doubleStringCanvas.style.width = '100%';
   doubleStringCanvas.style.maxWidth = '480px';
+  const dsPreset = researchSelect('ds3Preset', Object.entries(DOUBLE_STRING_PRESETS).map(([key, preset]) => [key, preset.label]));
+  dsPreset.addEventListener('change', () => applyDoubleStringPreset(dsPreset.value));
   append(
     doubleStringCard,
+    researchFormRow('Preset', dsPreset),
     researchFormRow('theta1_0', researchInput('ds3Theta1', 'number', '0.7', 'rad')),
     researchFormRow('theta2_0', researchInput('ds3Theta2', 'number', '0.4', 'rad')),
     researchFormRow('omega1_0', researchInput('ds3Omega1', 'number', '0.2', 'rad/s')),
@@ -808,7 +933,16 @@ export function installLab3dTab(): void {
         resetDoubleStringSim();
       })
     ),
+    researchActions(
+      button('ds3Analyze', 'Analyze (validity + λ/RQA/FTLE)', () => {
+        void analyzeDoubleStringDiagnostics();
+      }, 'primary'),
+      button('ds3ExportCsv', 'Export Trajectory CSV', () => exportDoubleStringTrajectoryCsv()),
+      button('ds3ExportSnap', 'Export Snapshot (PNG+JSON)', () => exportDoubleStringSnapshot())
+    ),
+    researchFormRow('Export T', researchInput('ds3ExportT', 'number', '20', 's of trajectory for CSV export')),
     doubleStringCanvas,
+    html('div', { id: 'ds3Analysis', className: 'research-summary', text: 'Analyze first runs the hybrid taut-fraction validity probe; when the strings stay taut it runs the worker λ/RQA/FTLE job on the (then-exact) taut-branch vector field.' }),
     html('div', { id: 'ds3Warning', className: 'research-summary', text: '' }),
     html('div', { id: 'ds3Readout', className: 'research-summary', text: 'Reset to initialise. Taut motion uses the double-pendulum equations with explicit string tension gates; slack links enter hybrid free-flight/capture mode.' })
   );

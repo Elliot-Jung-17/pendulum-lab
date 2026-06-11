@@ -68,7 +68,20 @@ export interface SphericalChainWorkspace {
   suffix: Float64Array;
   matrix: Float64Array;
   force: Float64Array;
+  /**
+   * Per-link geometric frame buffer, 14 floats per link:
+   * u (3), a = ∂u/∂θ (3), b = ∂u/∂φ (3), v = l(θ̇ȧ + φ̇ḃ) (3), sinθ, cosθ.
+   * Flat so the RHS performs zero allocations per evaluation.
+   */
+  frames: Float64Array;
 }
+
+const FRAME_STRIDE = 14;
+const FRAME_U = 0;
+const FRAME_A = 3;
+const FRAME_B = 6;
+const FRAME_V = 9;
+const FRAME_SIN = 12;
 
 export function sphericalChainLength(params: SphericalChainParams): number {
   validateSphericalChainParams(params);
@@ -97,7 +110,8 @@ export function createSphericalChainWorkspace(n: number): SphericalChainWorkspac
     dof,
     suffix: new Float64Array(n),
     matrix: new Float64Array(dof * dof),
-    force: new Float64Array(dof)
+    force: new Float64Array(dof),
+    frames: new Float64Array(FRAME_STRIDE * n)
   };
 }
 
@@ -109,26 +123,14 @@ function fillSuffixMass(masses: readonly number[], n: number, s: Float64Array): 
   }
 }
 
-/** Per-link geometric quantities (3-vectors stored flat as [x, y, z]). */
-interface LinkFrame {
-  u: [number, number, number];
-  /** ∂u/∂θ. */
-  a: [number, number, number];
-  /** ∂u/∂φ = sinθ_clamped · e_φ. */
-  b: [number, number, number];
-  /** l_k (θ̇ ȧ + φ̇ ḃ) — the J̇ q̇ contribution of this link. */
-  v: [number, number, number];
-  sin: number;
-  cos: number;
-}
-
-function dot(p: readonly [number, number, number], q: readonly [number, number, number]): number {
-  return p[0] * q[0] + p[1] * q[1] + p[2] * q[2];
-}
-
-function linkFrames(state: ArrayLike<number>, params: SphericalChainParams, n: number): LinkFrame[] {
-  const frames: LinkFrame[] = [];
+/**
+ * Fill the workspace's flat per-link frame buffer (u, a, b, v, sinθ, cosθ —
+ * see {@link SphericalChainWorkspace}). Allocation-free: this runs once per
+ * RHS evaluation inside chaos jobs that call the RHS millions of times.
+ */
+function fillLinkFrames(state: ArrayLike<number>, params: SphericalChainParams, n: number, frames: Float64Array): void {
   for (let k = 0; k < n; k += 1) {
+    const base = FRAME_STRIDE * k;
     const theta = Number(state[2 * k] ?? 0);
     const phi = Number(state[2 * k + 1] ?? 0);
     const thetaDot = Number(state[2 * n + 2 * k] ?? 0);
@@ -140,30 +142,32 @@ function linkFrames(state: ArrayLike<number>, params: SphericalChainParams, n: n
     const cp = Math.cos(phi);
     // Regularise the chart singularity at the poles (see header comment).
     const safeSin = Math.abs(sin) < POLE_EPS ? (sin >= 0 ? POLE_EPS : -POLE_EPS) : sin;
-    const u: [number, number, number] = [sin * cp, -cos, sin * sp];
-    const a: [number, number, number] = [cos * cp, sin, cos * sp];
-    const ephi: [number, number, number] = [-sp, 0, cp];
-    const rho: [number, number, number] = [cp, 0, sp];
-    const b: [number, number, number] = [safeSin * ephi[0], 0, safeSin * ephi[2]];
-    // ȧ = −θ̇u + φ̇cosθ e_φ ; ḃ = θ̇cosθ e_φ − φ̇sinθ ρ
-    const aDot: [number, number, number] = [
-      -thetaDot * u[0] + phiDot * cos * ephi[0],
-      -thetaDot * u[1],
-      -thetaDot * u[2] + phiDot * cos * ephi[2]
-    ];
-    const bDot: [number, number, number] = [
-      thetaDot * cos * ephi[0] - phiDot * sin * rho[0],
-      0,
-      thetaDot * cos * ephi[2] - phiDot * sin * rho[2]
-    ];
-    const v: [number, number, number] = [
-      l * (thetaDot * aDot[0] + phiDot * bDot[0]),
-      l * (thetaDot * aDot[1] + phiDot * bDot[1]),
-      l * (thetaDot * aDot[2] + phiDot * bDot[2])
-    ];
-    frames.push({ u, a, b, v, sin, cos });
+    // u = (sinθcosφ, −cosθ, sinθsinφ)
+    const ux = sin * cp;
+    const uy = -cos;
+    const uz = sin * sp;
+    frames[base + FRAME_U] = ux;
+    frames[base + FRAME_U + 1] = uy;
+    frames[base + FRAME_U + 2] = uz;
+    // a = ∂u/∂θ = (cosθcosφ, sinθ, cosθsinφ)
+    frames[base + FRAME_A] = cos * cp;
+    frames[base + FRAME_A + 1] = sin;
+    frames[base + FRAME_A + 2] = cos * sp;
+    // e_φ = (−sinφ, 0, cosφ); ρ = (cosφ, 0, sinφ); b = sinθ_clamped·e_φ
+    frames[base + FRAME_B] = safeSin * -sp;
+    frames[base + FRAME_B + 1] = 0;
+    frames[base + FRAME_B + 2] = safeSin * cp;
+    // ȧ = −θ̇u + φ̇cosθ e_φ ; ḃ = θ̇cosθ e_φ − φ̇sinθ ρ ; v = l(θ̇ȧ + φ̇ḃ)
+    const aDotX = -thetaDot * ux + phiDot * cos * -sp;
+    const aDotY = -thetaDot * uy;
+    const aDotZ = -thetaDot * uz + phiDot * cos * cp;
+    const bDotX = thetaDot * cos * -sp - phiDot * sin * cp;
+    const bDotZ = thetaDot * cos * cp - phiDot * sin * sp;
+    frames[base + FRAME_V] = l * (thetaDot * aDotX + phiDot * bDotX);
+    frames[base + FRAME_V + 1] = l * (thetaDot * aDotY);
+    frames[base + FRAME_V + 2] = l * (thetaDot * aDotZ + phiDot * bDotZ);
+    frames[base + FRAME_SIN] = sin;
   }
-  return frames;
 }
 
 /**
@@ -180,37 +184,40 @@ export function rhsSphericalChain(
   const n = sphericalChainLength(params);
   const dof = 2 * n;
   if (workspace.n !== n || workspace.dof !== dof) throw new Error(`rhsSphericalChain: workspace length ${workspace.n} does not match chain length ${n}`);
-  const { suffix: s, matrix, force } = workspace;
+  const { suffix: s, matrix, force, frames } = workspace;
   fillSuffixMass(params.masses, n, s);
   matrix.fill(0);
   force.fill(0);
-  const frames = linkFrames(state, params, n);
+  fillLinkFrames(state, params, n, frames);
 
   for (let j = 0; j < n; j += 1) {
-    const fj = frames[j]!;
+    const jBase = FRAME_STRIDE * j;
     const lj = params.lengths[j] ?? 0;
     // d/dt of the coordinates.
     out[2 * j] = Number(state[dof + 2 * j] ?? 0);
     out[2 * j + 1] = Number(state[dof + 2 * j + 1] ?? 0);
 
-    // Row vectors of J for link j's two coordinates, scaled by l_j.
-    const rows: Array<readonly [number, number, number]> = [fj.a, fj.b];
+    // Row vectors of J for link j's two coordinates (a then b), scaled by l_j.
     for (let alpha = 0; alpha < 2; alpha += 1) {
-      const row = rows[alpha]!;
+      const rowOff = jBase + FRAME_A + 3 * alpha;
+      const rx = frames[rowOff]!;
+      const ry = frames[rowOff + 1]!;
+      const rz = frames[rowOff + 2]!;
       const r = 2 * j + alpha;
       let coriolis = 0;
       for (let k = 0; k < n; k += 1) {
-        const fk = frames[k]!;
+        const kBase = FRAME_STRIDE * k;
         const lk = params.lengths[k] ?? 0;
         const sjk = s[Math.max(j, k)] ?? 0;
-        const cols: Array<readonly [number, number, number]> = [fk.a, fk.b];
         for (let beta = 0; beta < 2; beta += 1) {
-          matrix[r * dof + (2 * k + beta)] = sjk * lj * lk * dot(row, cols[beta]!);
+          const colOff = kBase + FRAME_A + 3 * beta;
+          matrix[r * dof + (2 * k + beta)] =
+            sjk * lj * lk * (rx * frames[colOff]! + ry * frames[colOff + 1]! + rz * frames[colOff + 2]!);
         }
-        coriolis += sjk * lj * dot(row, fk.v);
+        coriolis += sjk * lj * (rx * frames[kBase + FRAME_V]! + ry * frames[kBase + FRAME_V + 1]! + rz * frames[kBase + FRAME_V + 2]!);
       }
       // Gravity acts only on the θ coordinate of each link.
-      const gravity = alpha === 0 ? -params.g * lj * fj.sin * (s[j] ?? 0) : 0;
+      const gravity = alpha === 0 ? -params.g * lj * frames[jBase + FRAME_SIN]! * (s[j] ?? 0) : 0;
       force[r] = gravity - coriolis;
     }
   }

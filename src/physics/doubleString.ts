@@ -144,12 +144,16 @@ export function doubleStringTautFraction(
   };
 }
 
+// Scratch for the per-substep tension gate: doubleStringTensions sits on the
+// hot path (every taut substep), so the derivative buffer is module-reused.
+const tensionDerivScratch = new Float64Array(4);
+
 export function doubleStringTensions(state: ArrayLike<number>, params: DoubleStringParams): { tension1: number; tension2: number } {
   const t1 = Number(state[0] ?? 0);
   const t2 = Number(state[1] ?? 0);
   const w1 = Number(state[2] ?? 0);
   const w2 = Number(state[3] ?? 0);
-  const deriv = rhsDouble(state, { m1: params.m1, m2: params.m2, l1: params.l1, l2: params.l2, g: params.g }, params.damping, new Float64Array(4));
+  const deriv = rhsDouble(state, { m1: params.m1, m2: params.m2, l1: params.l1, l2: params.l2, g: params.g }, params.damping, tensionDerivScratch);
   const a1 = Number(deriv[2] ?? 0);
   const a2 = Number(deriv[3] ?? 0);
   const ax1 = params.l1 * (a1 * Math.cos(t1) - w1 * w1 * Math.sin(t1));
@@ -170,6 +174,8 @@ export class DoubleStringPendulum {
   private state: Float64Array;
   private cart: CartesianState;
   private readonly scratch: Float64Array[];
+  /** Rigid-pendulum parameter view, hoisted off the per-substep RHS path. */
+  private readonly rigidParams: { m1: number; m2: number; l1: number; l2: number; g: number };
   private time = 0;
   readonly events: DoubleStringEvent[] = [];
 
@@ -177,6 +183,7 @@ export class DoubleStringPendulum {
     validateParams(params);
     this.state = new Float64Array([theta1, theta2, omega1, omega2]);
     this.scratch = [0, 1, 2, 3, 4].map(() => new Float64Array(4));
+    this.rigidParams = { m1: params.m1, m2: params.m2, l1: params.l1, l2: params.l2, g: params.g };
     this.cart = tautToCartesian(this.state, params);
     this.checkSlack();
   }
@@ -200,7 +207,7 @@ export class DoubleStringPendulum {
   private stepTaut(h: number): void {
     const [k1, k2, k3, k4, tmp] = this.scratch as [Float64Array, Float64Array, Float64Array, Float64Array, Float64Array];
     const rhs = (state: Float64Array, out: Float64Array): void => {
-      rhsDouble(state, { m1: this.params.m1, m2: this.params.m2, l1: this.params.l1, l2: this.params.l2, g: this.params.g }, this.params.damping, out);
+      rhsDouble(state, this.rigidParams, this.params.damping, out);
     };
     rhs(this.state, k1);
     for (let i = 0; i < 4; i += 1) tmp[i] = (this.state[i] ?? 0) + 0.5 * h * (k1[i] ?? 0);

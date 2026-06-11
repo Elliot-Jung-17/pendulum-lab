@@ -2,7 +2,7 @@ import type { Derivative, Jacobian } from './types';
 import { rhsDouble, energyDouble, jacobianDouble } from './double';
 import { rhsTriple } from './triple';
 import { energyTriple } from './energy';
-import { rhsChain, energyChain } from './nPendulum';
+import { rhsChain, energyChain, createChainWorkspace } from './nPendulum';
 import { rhsDriven, energyDriven } from './driven';
 import { rhsSpring, energySpring } from './spring';
 import { createSphericalChainWorkspace, rhsSphericalChain, sphericalChainEnergy } from './sphericalChain';
@@ -51,8 +51,11 @@ export function buildRhs(spec: SystemSpec): Derivative {
     }
     case 'chain': {
       const p = { masses: spec.masses, lengths: spec.lengths, g: spec.g };
+      // One workspace per closure: without it every RHS evaluation re-allocates
+      // the mass-matrix/suffix/rhs buffers (millions of times per chaos job).
+      const workspace = createChainWorkspace(spec.masses.length);
       return (s, o) => {
-        rhsChain(s, p, 0, o);
+        rhsChain(s, p, 0, o, workspace);
       };
     }
     case 'driven': {

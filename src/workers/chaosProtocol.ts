@@ -15,6 +15,12 @@ import {
   doublePendulumFtleField,
   finiteTimeLyapunov,
   wadaCandidate,
+  wadaResolutionConvergence,
+  codimTwoDiagram,
+  type WadaConvergenceOptions,
+  type WadaConvergenceResult,
+  type CodimTwoOptions,
+  type CodimTwoResult,
   type LyapunovSettings,
   type SpectrumConsistency,
   type ClvSettings,
@@ -156,6 +162,25 @@ export interface StudyPointRequest {
   settings?: StudyPointJobSettings;
 }
 
+export interface WadaConvergenceRequest {
+  id: string;
+  kind: 'wadaConvergence';
+  /** Double-pendulum spec; the flip basin is double-pendulum specific. */
+  spec: Extract<SystemSpec, { kind: 'double' }>;
+  settings?: WadaConvergenceOptions;
+}
+
+export interface CodimTwoRequest {
+  id: string;
+  kind: 'codim2';
+  /** Base driven spec; `driveAmplitude` (x) and `damping` (y) vary per cell. */
+  base: Extract<SystemSpec, { kind: 'driven' }>;
+  state0: number[];
+  xRange: [number, number];
+  yRange: [number, number];
+  settings?: CodimTwoOptions;
+}
+
 export type ChaosRequest =
   | LyapunovRequest
   | BifurcationRequest
@@ -165,7 +190,9 @@ export type ChaosRequest =
   | BasinRequest
   | RqaRequest
   | FtleRequest
-  | StudyPointRequest;
+  | StudyPointRequest
+  | WadaConvergenceRequest
+  | CodimTwoRequest;
 
 export interface LyapunovResponse {
   id: string;
@@ -312,6 +339,20 @@ export interface StudyPointResponse {
   ftleHorizon: number;
 }
 
+export interface WadaConvergenceResponse {
+  id: string;
+  kind: 'wadaConvergence';
+  ok: true;
+  result: WadaConvergenceResult;
+}
+
+export interface CodimTwoResponse {
+  id: string;
+  kind: 'codim2';
+  ok: true;
+  result: CodimTwoResult;
+}
+
 export interface ChaosErrorResponse {
   id: string;
   ok: false;
@@ -328,6 +369,8 @@ export type ChaosResponse =
   | RqaResponse
   | FtleResponse
   | StudyPointResponse
+  | WadaConvergenceResponse
+  | CodimTwoResponse
   | ChaosErrorResponse;
 
 const wrapPi = (x: number): number => Math.atan2(Math.sin(x), Math.cos(x));
@@ -590,6 +633,24 @@ function runStudyPoint(req: StudyPointRequest): StudyPointResponse {
   };
 }
 
+function runWadaConvergence(req: WadaConvergenceRequest): WadaConvergenceResponse {
+  const params = { m1: req.spec.m1, m2: req.spec.m2, l1: req.spec.l1, l2: req.spec.l2, g: req.spec.g };
+  return { id: req.id, kind: 'wadaConvergence', ok: true, result: wadaResolutionConvergence(params, req.settings ?? {}) };
+}
+
+function runCodimTwo(req: CodimTwoRequest): CodimTwoResponse {
+  const result = codimTwoDiagram(
+    (x, y) => ({ ...req.base, driveAmplitude: x, damping: y }),
+    req.state0,
+    'driveAmplitude',
+    req.xRange,
+    'damping',
+    req.yRange,
+    req.settings ?? {}
+  );
+  return { id: req.id, kind: 'codim2', ok: true, result };
+}
+
 /** Execute a chaos job, converting any thrown error into an error response. */
 export function runChaosJob(req: ChaosRequest): ChaosResponse {
   try {
@@ -602,6 +663,8 @@ export function runChaosJob(req: ChaosRequest): ChaosResponse {
     if (req.kind === 'rqa') return runRqa(req);
     if (req.kind === 'ftle') return runFtle(req);
     if (req.kind === 'studyPoint') return runStudyPoint(req);
+    if (req.kind === 'wadaConvergence') return runWadaConvergence(req);
+    if (req.kind === 'codim2') return runCodimTwo(req);
     const exhaustive: never = req;
     return { id: (req as ChaosRequest).id, ok: false, error: `unknown request: ${JSON.stringify(exhaustive)}` };
   } catch (err) {

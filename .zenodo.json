@@ -1,0 +1,24 @@
+{
+  "title": "Pendulum Lab: a browser-based research platform for nonlinear pendulum dynamics",
+  "description": "Typed, modular research platform for chaotic pendulum dynamics: double/triple/driven/rope/spherical pendulum physics, Lyapunov and RQA diagnostics, basin entropy with multi-resolution Wada convergence analysis, Floquet/continuation and Neimark-Sacker tracking, codim-2 regime scans, reproducible parameter studies with adaptive experiment design, provenance-tracked ZIP research bundles, and an executable notebook export. Runs fully in the browser with a headless CLI for batch studies.",
+  "creators": [
+    {
+      "name": "Yoo, Chanmin"
+    }
+  ],
+  "keywords": [
+    "nonlinear dynamics",
+    "chaos",
+    "double pendulum",
+    "spherical pendulum",
+    "Lyapunov exponent",
+    "basin entropy",
+    "Wada basins",
+    "recurrence quantification",
+    "reproducible research",
+    "browser simulation"
+  ],
+  "license": "MIT",
+  "upload_type": "software",
+  "access_right": "open"
+}

@@ -22,8 +22,38 @@ jobs:
       - run: npm run audit:worldclass
       - run: npm run reports
       - run: npm run build
+      - run: npm run build:standalone
+      - run: npm run build:lib
+      - run: npm run docs:api
+      # Executable-notebook gate: structural nbformat validation + headless
+      # execution of the embedded code cells with plain Python.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm run notebook:validate
       - run: npx playwright install --with-deps chromium firefox webkit
+      # Includes the visual-regression (figure fingerprint), memory/soak
+      # (long-run-performance.spec), bundle, storage, design, superpack,
+      # and 3D-lab specs alongside the original suites.
       - run: npm run test:e2e
+
+  julia-reference:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: '1.10'
+      - run: npm ci
+      - run: julia -e 'using Pkg; Pkg.add(["OrdinaryDiffEq","JSON"])'
+      # External Vern9 reference vs the TS GBS integrator (skips cleanly
+      # when Julia setup fails, so this job never blocks a release).
+      - run: npm run validate:julia
 
   cross-validate:
     runs-on: ubuntu-latest

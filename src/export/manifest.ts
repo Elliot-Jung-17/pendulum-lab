@@ -36,6 +36,17 @@ export function createSubmissionManifest(runtime: RuntimeSnapshot): SubmissionMa
 
 export function downloadJson(filename: string, value: unknown): void {
   const blob = new Blob([JSON.stringify(value, null, 2)], { type: 'application/json;charset=utf-8' });
+  downloadBlob(filename, blob);
+}
+
+export function downloadBytes(filename: string, bytes: Uint8Array, type = 'application/octet-stream'): void {
+  // Copy into a plain ArrayBuffer-backed view so Blob accepts it under strict lib.dom typing.
+  const copy = new Uint8Array(bytes.length);
+  copy.set(bytes);
+  downloadBlob(filename, new Blob([copy.buffer], { type }));
+}
+
+export function downloadBlob(filename: string, blob: Blob): void {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement('a');
   anchor.href = url;

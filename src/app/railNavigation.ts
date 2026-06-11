@@ -8,6 +8,7 @@ export interface RailTabDefinition {
 export const EXTRA_RAIL_TABS = [
   { id: 'architecture', label: 'Arch', tip: 'Architecture diagnostics', icon: 'ARCH' },
   { id: 'research', label: 'Research', tip: 'Research contract', icon: 'R' },
+  { id: 'lab3d', label: '3D Lab', tip: 'Rope and spherical pendulum 3D lab', icon: '3D' },
   { id: 'canonical', label: 'Canonical', tip: 'Canonical Hamiltonian QA', icon: 'dH' },
   { id: 'aplus', label: 'Audit', tip: 'Scientific audit', icon: 'A+' },
   { id: 'docs', label: 'Docs', tip: 'Method notes', icon: '?' }

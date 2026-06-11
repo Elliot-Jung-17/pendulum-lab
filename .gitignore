@@ -9,3 +9,5 @@ test-results/
 playwright-report/
 .vite/
 *.log
+dist-lib/
+docs/api/

@@ -14,9 +14,11 @@ import {
   type RqaResponse,
   type FtleResponse,
   type StudyPointJobSettings,
-  type StudyPointResponse
+  type StudyPointResponse,
+  type WadaConvergenceResponse,
+  type CodimTwoResponse
 } from '../workers/chaosProtocol';
-import type { ClvSettings, FlipBasinOptions, FtleFieldOptions, LyapunovSettings } from '../chaos';
+import type { ClvSettings, CodimTwoOptions, FlipBasinOptions, FtleFieldOptions, LyapunovSettings, WadaConvergenceOptions } from '../chaos';
 import type { SystemSpec } from '../physics/systemSpec';
 
 /**
@@ -210,6 +212,37 @@ export class ChaosClient {
       ...(settings ? { settings } : {})
     };
     return this.run<StudyPointResponse>(request);
+  }
+
+  /** Multi-resolution Wada convergence analysis on the flip basin. */
+  wadaConvergence(spec: Extract<SystemSpec, { kind: 'double' }>, settings?: WadaConvergenceOptions): Promise<WadaConvergenceResponse> {
+    const request: ChaosRequest = {
+      id: nextId(),
+      kind: 'wadaConvergence',
+      spec,
+      ...(settings ? { settings } : {})
+    };
+    return this.run<WadaConvergenceResponse>(request);
+  }
+
+  /** Two-parameter (drive amplitude × damping) λ-sign regime diagram. */
+  codimTwo(
+    base: Extract<SystemSpec, { kind: 'driven' }>,
+    state0: ArrayLike<number>,
+    xRange: [number, number],
+    yRange: [number, number],
+    settings?: CodimTwoOptions
+  ): Promise<CodimTwoResponse> {
+    const request: ChaosRequest = {
+      id: nextId(),
+      kind: 'codim2',
+      base,
+      state0: Array.from(state0),
+      xRange,
+      yRange,
+      ...(settings ? { settings } : {})
+    };
+    return this.run<CodimTwoResponse>(request);
   }
 
   terminate(): void {

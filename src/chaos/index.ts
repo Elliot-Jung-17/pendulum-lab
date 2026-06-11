@@ -66,3 +66,24 @@ export {
   seedTangentFrame,
   mulberry32
 } from './variational';
+
+export { wadaResolutionConvergence, wadaConvergenceFromGrids } from './wadaConvergence';
+export type { WadaConvergenceOptions, WadaConvergenceResult, WadaConvergenceVerdict } from './wadaConvergence';
+
+export { recurrenceNetworkMetrics } from './recurrenceNetwork';
+export type { RecurrenceNetworkMetrics } from './recurrenceNetwork';
+
+export { extractFtleRidges } from './ftleRidge';
+export type { FtleRidgeOptions, FtleRidgeResult } from './ftleRidge';
+
+export { detectBifurcations } from './bifurcationDetect';
+export type { BifurcationEvent, BifurcationEventType, BifurcationDetectionOptions, BifurcationDetectionResult } from './bifurcationDetect';
+
+export { classifyFixedPoint } from './fixedPointClassify';
+export type { FixedPointClass, FixedPointClassification } from './fixedPointClassify';
+
+export { detectNeimarkSacker, torusIndicator } from './neimarkSacker';
+export type { BranchSample, NeimarkSackerPoint, NeimarkSackerScan, TorusIndicator } from './neimarkSacker';
+
+export { codimTwoDiagram } from './codimTwo';
+export type { CodimTwoOptions, CodimTwoCell, CodimTwoResult } from './codimTwo';

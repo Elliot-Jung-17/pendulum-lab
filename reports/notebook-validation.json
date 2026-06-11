@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "pendulum-notebook-validation/v1",
+  "notebookSchema": "pendulum-research-notebook/v2",
+  "source": "fixture",
+  "generatedAt": "2026-06-10T23:07:32.781Z",
+  "structural": {
+    "ok": true,
+    "problems": [],
+    "cellCount": 8,
+    "codeCells": 6
+  },
+  "jupyterAvailable": false,
+  "execution": {
+    "runner": "plain-python",
+    "status": 0,
+    "stderr": ""
+  }
+}

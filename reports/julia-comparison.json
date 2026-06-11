@@ -1,0 +1,6 @@
+{
+  "schemaVersion": "pendulum-julia-comparison/v1",
+  "status": "skipped",
+  "reason": "julia unavailable and no cached reference",
+  "generatedAt": "2026-06-10T23:39:01.267Z"
+}

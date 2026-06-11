@@ -17,18 +17,21 @@
  * Shared options: --m1 --m2 --l1 --l2 --g (double-pendulum parameters),
  * --state th1,th2,w1,w2 — defaults match the app's Lab defaults.
  */
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { runChaosJob, type ChaosRequest } from '../src/workers/chaosProtocol';
 import {
   doublePendulumFlipBasin,
   wadaCandidate,
+  wadaResolutionConvergence,
+  codimTwoDiagram,
   drivenPeriodicOrbit,
   continueDrivenPeriodicOrbit,
   switchPeriodDoubling,
   melnikovVerdict,
   melnikovCriticalAmplitude
 } from '../src/chaos';
+import { runCliBatch, validateCliBatchSpec } from '../src/research/cliBatchSpec';
 import type { SystemSpec } from '../src/physics/systemSpec';
 
 interface CliArgs {
@@ -140,6 +143,44 @@ function run(args: CliArgs): unknown {
         })
       };
     }
+    case 'wadaconv': {
+      // Multi-resolution Wada convergence: fraction curve, adjacent deltas,
+      // stable/unstable verdict, grid hashes, caveat, reproducibility hash.
+      const raw = flags.get('resolutions');
+      const resolutions = raw
+        ? raw.split(',').map((part) => Number.parseInt(part.trim(), 10)).filter(Number.isFinite)
+        : [40, 60, 90];
+      return wadaResolutionConvergence(
+        { m1: spec.m1, m2: spec.m2, l1: spec.l1, l2: spec.l2, g: spec.g },
+        {
+          resolutions,
+          maxTime: flagNum(flags, 'maxTime', 15),
+          dt: flagNum(flags, 'dt', 0.01),
+          radius: flagNum(flags, 'radius', 2),
+          threshold: flagNum(flags, 'threshold', 0.95),
+          convergenceTolerance: flagNum(flags, 'tolerance', 0.05)
+        }
+      );
+    }
+    case 'codim2': {
+      const base = {
+        kind: 'driven' as const,
+        g: flagNum(flags, 'g', 1),
+        length: flagNum(flags, 'l', 1),
+        damping: flagNum(flags, 'damping', 0.5),
+        driveAmplitude: flagNum(flags, 'afrom', 0.2),
+        driveFrequency: flagNum(flags, 'frequency', 2 / 3)
+      };
+      return codimTwoDiagram(
+        (amplitude, damping) => ({ ...base, driveAmplitude: amplitude, damping }),
+        flagState(flags, [0.3, 0, 0]),
+        'driveAmplitude',
+        [flagNum(flags, 'afrom', 0.2), flagNum(flags, 'ato', 1.6)],
+        'damping',
+        [flagNum(flags, 'gfrom', 0.05), flagNum(flags, 'gto', 0.7)],
+        { n: flagNum(flags, 'n', 12), steps: flagNum(flags, 'steps', 4000), dt: flagNum(flags, 'dt', 0.01) }
+      );
+    }
     case 'orbit': {
       const base = {
         g: flagNum(flags, 'g', 1),
@@ -222,12 +263,13 @@ function run(args: CliArgs): unknown {
     default:
       return {
         usage: 'npx tsx scripts/research-cli.ts <command> [--flags]',
-        commands: ['lyapunov', 'spectrum', 'zeroone', 'rqa', 'ftle', 'basin', 'wada', 'studypoint', 'orbit', 'continue', 'switch', 'melnikov'],
+        commands: ['lyapunov', 'spectrum', 'zeroone', 'rqa', 'ftle', 'basin', 'wada', 'wadaconv', 'codim2', 'studypoint', 'orbit', 'continue', 'switch', 'melnikov', 'batch'],
         sharedFlags: ['--m1 --m2 --l1 --l2 --g', '--state th1,th2,w1,w2', '--out file.json', '--full (keep raster arrays)'],
         examples: [
           'npx tsx scripts/research-cli.ts lyapunov --state 2,2.5,0,0',
-          'npx tsx scripts/research-cli.ts wada --n 150',
-          'npx tsx scripts/research-cli.ts orbit --amplitude 0.3 --damping 0.5'
+          'npx tsx scripts/research-cli.ts wadaconv --resolutions 40,60,90 --maxTime 15',
+          'npx tsx scripts/research-cli.ts codim2 --n 12 --afrom 0.2 --ato 1.6',
+          'npx tsx scripts/research-cli.ts batch --spec study-spec.json --out results.json'
         ]
       };
   }
@@ -236,7 +278,18 @@ function run(args: CliArgs): unknown {
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   const started = Date.now();
-  const result = run(args);
+  let result: unknown;
+  if (args.command === 'batch') {
+    // JSON-spec batch: one committed file reproducibly drives a whole study.
+    const specPath = args.flags.get('spec');
+    if (!specPath) throw new Error('batch requires --spec <file.json>');
+    const parsed = JSON.parse(await readFile(specPath, 'utf8')) as unknown;
+    const validation = validateCliBatchSpec(parsed);
+    if (!validation.ok || !validation.spec) throw new Error(`invalid batch spec: ${validation.problems.join('; ')}`);
+    result = runCliBatch(validation.spec);
+  } else {
+    result = run(args);
+  }
   const payload = {
     schemaVersion: 'pendulum-research-cli/v1',
     command: args.command,

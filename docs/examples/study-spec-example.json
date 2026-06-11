@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "pendulum-cli-batch/v1",
+  "description": "Example committed study: baseline Lyapunov + RQA + multi-resolution Wada convergence, reproducible from this one file via `npm run research -- batch --spec docs/examples/study-spec-example.json`.",
+  "jobs": [
+    {
+      "name": "lyapunov-chaotic-baseline",
+      "request": {
+        "kind": "lyapunov",
+        "spec": { "kind": "double", "m1": 1, "m2": 1, "l1": 1.2, "l2": 1, "g": 9.81 },
+        "state0": [2.0, 2.5, 0, 0],
+        "settings": { "steps": 8000, "dt": 0.01 }
+      }
+    },
+    {
+      "name": "rqa-chaotic-baseline",
+      "request": {
+        "kind": "rqa",
+        "spec": { "kind": "double", "m1": 1, "m2": 1, "l1": 1.2, "l2": 1, "g": 9.81 },
+        "state0": [2.0, 2.5, 0, 0],
+        "settings": { "samples": 240 }
+      }
+    },
+    {
+      "name": "wada-convergence-small",
+      "request": {
+        "kind": "wadaConvergence",
+        "spec": { "kind": "double", "m1": 1, "m2": 1, "l1": 1, "l2": 1, "g": 9.81 },
+        "settings": { "resolutions": [24, 32, 40], "maxTime": 8, "dt": 0.02 }
+      }
+    }
+  ]
+}

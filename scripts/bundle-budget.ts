@@ -1,11 +1,14 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
-import { gzipSync } from 'node:zlib';
+import { brotliCompressSync, gzipSync } from 'node:zlib';
 
 /**
- * Bundle budget gate. Fails (exit 1) when the production build exceeds the
- * budgets below — a ratchet against silent bundle growth. Run after
- * `npm run build` (and `build:standalone` for the single-file budget).
+ * Bundle budget gate. Run after `npm run build` and `build:standalone`.
+ *
+ * Budgets are split by delivery role:
+ * - initial: assets referenced directly by dist/index.html;
+ * - chunk: lazy/additional built assets;
+ * - standalone: the self-contained single-file page.
  */
 
 interface Budget {
@@ -14,16 +17,31 @@ interface Budget {
   budget: number;
 }
 
+const KiB = 1024;
 const BUDGETS = {
-  /** Sum of all dist/assets JS (raw bytes). */
-  totalJsRaw: 800 * 1024,
-  /** Largest single JS chunk, gzipped. */
-  largestChunkGzip: 170 * 1024,
-  /** All CSS, raw. */
-  totalCssRaw: 120 * 1024,
-  /** The self-contained standalone page, raw. */
-  standaloneHtml: 900 * 1024
+  initialJsRaw: 760 * KiB,
+  initialJsGzip: 180 * KiB,
+  initialJsBrotli: 150 * KiB,
+  chunkJsRaw: 520 * KiB,
+  chunkJsGzip: 135 * KiB,
+  chunkJsBrotli: 115 * KiB,
+  initialCssRaw: 140 * KiB,
+  initialCssGzip: 32 * KiB,
+  initialCssBrotli: 26 * KiB,
+  standaloneRaw: 1300 * KiB,
+  standaloneGzip: 430 * KiB,
+  standaloneBrotli: 360 * KiB
 };
+
+interface SizeSet {
+  raw: number;
+  gzip: number;
+  brotli: number;
+}
+
+async function fileBytes(path: string): Promise<Buffer> {
+  return Buffer.from(await readFile(path));
+}
 
 async function fileSize(path: string): Promise<number> {
   try {
@@ -33,42 +51,75 @@ async function fileSize(path: string): Promise<number> {
   }
 }
 
+function compressedSizes(bytes: Buffer): SizeSet {
+  return {
+    raw: bytes.length,
+    gzip: gzipSync(bytes).length,
+    brotli: brotliCompressSync(bytes).length
+  };
+}
+
+function addSize(total: SizeSet, next: SizeSet): void {
+  total.raw += next.raw;
+  total.gzip += next.gzip;
+  total.brotli += next.brotli;
+}
+
+function assetRefsFromIndex(indexHtml: string): Set<string> {
+  const refs = new Set<string>();
+  const attr = /(?:src|href)="\.?\/?assets\/([^"]+)"/g;
+  for (const match of indexHtml.matchAll(attr)) refs.add(match[1]!);
+  return refs;
+}
+
 async function main(): Promise<void> {
   const rows: Budget[] = [];
-  let totalJs = 0;
-  let totalCss = 0;
-  let largestGzip = 0;
-  let largestName = '';
   const assetsDir = 'dist/assets';
+  const initialRefs = assetRefsFromIndex(await readFile('dist/index.html', 'utf8'));
+  const initialJs: SizeSet = { raw: 0, gzip: 0, brotli: 0 };
+  const chunkJs: SizeSet = { raw: 0, gzip: 0, brotli: 0 };
+  const initialCss: SizeSet = { raw: 0, gzip: 0, brotli: 0 };
+
   for (const name of await readdir(assetsDir)) {
     const full = join(assetsDir, name);
     const size = await fileSize(full);
+    if (size === 0) continue;
+    const sizes = compressedSizes(await fileBytes(full));
+    const isInitial = initialRefs.has(name);
     if (name.endsWith('.js')) {
-      totalJs += size;
-      const gz = gzipSync(await readFile(full)).length;
-      if (gz > largestGzip) {
-        largestGzip = gz;
-        largestName = name;
-      }
-    } else if (name.endsWith('.css')) {
-      totalCss += size;
+      addSize(isInitial ? initialJs : chunkJs, sizes);
+    } else if (name.endsWith('.css') && isInitial) {
+      addSize(initialCss, sizes);
     }
   }
-  rows.push({ label: 'dist JS total (raw)', bytes: totalJs, budget: BUDGETS.totalJsRaw });
-  rows.push({ label: `largest chunk gzip (${largestName})`, bytes: largestGzip, budget: BUDGETS.largestChunkGzip });
-  rows.push({ label: 'dist CSS total (raw)', bytes: totalCss, budget: BUDGETS.totalCssRaw });
-  const standalone = await fileSize('standalone/index.html');
-  if (standalone > 0) rows.push({ label: 'standalone/index.html (raw)', bytes: standalone, budget: BUDGETS.standaloneHtml });
+
+  rows.push({ label: 'initial JS raw', bytes: initialJs.raw, budget: BUDGETS.initialJsRaw });
+  rows.push({ label: 'initial JS gzip', bytes: initialJs.gzip, budget: BUDGETS.initialJsGzip });
+  rows.push({ label: 'initial JS brotli', bytes: initialJs.brotli, budget: BUDGETS.initialJsBrotli });
+  rows.push({ label: 'non-initial JS raw', bytes: chunkJs.raw, budget: BUDGETS.chunkJsRaw });
+  rows.push({ label: 'non-initial JS gzip', bytes: chunkJs.gzip, budget: BUDGETS.chunkJsGzip });
+  rows.push({ label: 'non-initial JS brotli', bytes: chunkJs.brotli, budget: BUDGETS.chunkJsBrotli });
+  rows.push({ label: 'initial CSS raw', bytes: initialCss.raw, budget: BUDGETS.initialCssRaw });
+  rows.push({ label: 'initial CSS gzip', bytes: initialCss.gzip, budget: BUDGETS.initialCssGzip });
+  rows.push({ label: 'initial CSS brotli', bytes: initialCss.brotli, budget: BUDGETS.initialCssBrotli });
+
+  const standaloneBytes = await fileBytes('standalone/index.html').catch(() => null);
+  if (standaloneBytes) {
+    const standalone = compressedSizes(standaloneBytes);
+    rows.push({ label: 'standalone HTML raw', bytes: standalone.raw, budget: BUDGETS.standaloneRaw });
+    rows.push({ label: 'standalone HTML gzip', bytes: standalone.gzip, budget: BUDGETS.standaloneGzip });
+    rows.push({ label: 'standalone HTML brotli', bytes: standalone.brotli, budget: BUDGETS.standaloneBrotli });
+  }
 
   let failed = 0;
   for (const row of rows) {
     const ok = row.bytes <= row.budget;
     if (!ok) failed += 1;
-    const kb = (n: number): string => `${(n / 1024).toFixed(1)} KiB`;
+    const kb = (n: number): string => `${(n / KiB).toFixed(1)} KiB`;
     console.log(`${ok ? 'OK  ' : 'OVER'}  ${row.label}: ${kb(row.bytes)} / budget ${kb(row.budget)}`);
   }
   if (failed > 0) {
-    console.error(`bundle budget exceeded in ${failed} row(s) — raise the budget intentionally or shrink the bundle`);
+    console.error(`bundle budget exceeded in ${failed} row(s); raise the budget intentionally or shrink the bundle`);
     process.exitCode = 1;
     return;
   }

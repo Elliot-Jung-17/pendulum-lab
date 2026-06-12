@@ -1,0 +1,36 @@
+name: Release Artifacts
+
+on:
+  push:
+    tags:
+      - 'v*'
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  release-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run verify
+      - run: npm run build
+      - run: npm run build:standalone
+      - run: npm run build:lib
+      - run: npm run budget
+      - run: npm run docs:api
+      - run: npm run audit:worldclass
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pendulum-lab-release
+          path: |
+            dist/
+            standalone/
+            dist-lib/
+            docs/api/
+            reports/worldclass-scorecard.md

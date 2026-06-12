@@ -1,0 +1,84 @@
+name: Mainline Full Validation
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  full-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run verify
+      - run: npm run test:coverage
+      - run: npm run audit:legacy
+      - run: npm run reports
+      - run: npm run build
+      - run: npm run build:standalone
+      - run: npm run build:lib
+      - run: npm run budget
+      - run: npm run docs:api
+      - run: npm run audit:worldclass
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm run notebook:validate
+      - run: npx playwright install --with-deps chromium firefox webkit
+      # Full browser suite: includes visual fingerprints, storage, design,
+      # superpack, 3D lab, accessibility, and long-run performance specs.
+      - run: npm run test:e2e
+
+  cross-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: pip install numpy scipy sympy
+      - run: npm run validate:cross
+      - run: npm run validate:sympy
+      - run: npm run validate:literature
+
+  julia-reference:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: '1.10'
+      - run: npm ci
+      - run: julia -e 'using Pkg; Pkg.add(["OrdinaryDiffEq","JSON"])'
+      - run: npm run validate:julia
+
+  os-smoke:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run smoke

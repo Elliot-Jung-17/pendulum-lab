@@ -48,12 +48,20 @@ const has = {
   numerics: await exists('docs/numerics.md'),
   limitations: await exists('docs/known-limitations.md'),
   ci: await exists('.github/workflows/ci.yml'),
+  mainWorkflow: await exists('.github/workflows/main.yml'),
+  nightlyWorkflow: await exists('.github/workflows/nightly.yml'),
+  releaseWorkflow: await exists('.github/workflows/release.yml'),
   pagesWorkflow: await exists('.github/workflows/pages.yml'),
   distIndex: await exists('dist/index.html'),
   license: await exists('LICENSE'),
   citation: await exists('CITATION.cff'),
   typedocIndex: await exists('docs/api/index.html'),
-  index: await exists('index.html')
+  index: await exists('index.html'),
+  coverageScopeBaseline: await exists('config/coverage-scope-baseline.json'),
+  bundleBudget: await exists('scripts/bundle-budget.ts'),
+  longRunE2e: await exists('e2e/long-run-performance.spec.ts'),
+  accessibilityE2e: await exists('e2e/accessibility.spec.ts'),
+  railAutocloseE2e: await exists('e2e/rail-autoclose.spec.ts')
 };
 
 const pagesReady = has.pagesWorkflow && has.distIndex;
@@ -99,14 +107,25 @@ const items: ScorecardItem[] = [
   },
   {
     area: 'Testing and browser coverage',
-    status: scripts['test:e2e'] && has.ci ? 'done' : 'partial',
-    evidence: [unitTestSummary, 'unit tests cover integrators, energy drift, determinism, JSON import validation, edge cases, chaos, visualization, repro packages', 'Playwright config includes Chromium, Firefox, WebKit, and mobile Chrome'],
-    remaining: ['Visual regression, memory leak, and long-runtime soak tests are not yet first-class CI jobs']
+    status: scripts['test:e2e'] && has.ci && has.mainWorkflow && has.longRunE2e ? 'done' : 'partial',
+    evidence: [
+      unitTestSummary,
+      'unit tests cover integrators, energy drift, determinism, JSON import validation, edge cases, chaos, visualization, repro packages',
+      'PR, mainline, nightly mutation, and release workflows are split by cost and intent',
+      has.coverageScopeBaseline ? 'coverage scope guard catches new source files missing from the v8 coverage map' : 'coverage scope guard missing',
+      has.longRunE2e ? 'long-run performance/soak e2e spec exists and runs in mainline full validation' : 'long-run performance/soak e2e spec missing',
+      has.accessibilityE2e ? 'accessibility e2e spec exists and runs in mainline full validation' : 'accessibility e2e spec missing'
+    ],
+    remaining: ['Versioned visual golden artifacts and memory-regression baselines can still be promoted into explicit reviewed assets']
   },
   {
     area: 'Performance and benchmark reporting',
     status: has.benchmark && has.energy ? 'done' : 'partial',
-    evidence: ['benchmark-report.md captures FPS, physics ms/frame, memory, worker latency', 'energy-benchmark.md compares long-run drift by integrator'],
+    evidence: [
+      'benchmark-report.md captures FPS, physics ms/frame, memory, worker latency',
+      'energy-benchmark.md compares long-run drift by integrator',
+      has.bundleBudget ? 'bundle budget gate splits initial/chunk/standalone assets across raw/gzip/brotli sizes' : 'bundle budget gate missing'
+    ],
     remaining: ['True original-vs-candidate comparison needs distinct ORIGINAL_URL and CANDIDATE_URL inputs']
   },
   {
@@ -121,6 +140,9 @@ const items: ScorecardItem[] = [
     evidence: [
       'README, architecture, numerics, security, validation, energy benchmark, changelog, roadmap, and portfolio summary artifacts exist',
       has.pagesWorkflow ? 'GitHub Pages workflow exists' : 'GitHub Pages workflow missing',
+      has.mainWorkflow ? 'mainline full-validation workflow exists' : 'mainline full-validation workflow missing',
+      has.nightlyWorkflow ? 'nightly mutation workflow exists' : 'nightly mutation workflow missing',
+      has.releaseWorkflow ? 'release artifact workflow exists' : 'release artifact workflow missing',
       has.distIndex ? 'dist/index.html exists for Pages artifact deployment' : 'dist/index.html missing; run npm run build',
       has.license ? 'LICENSE exists' : 'LICENSE missing',
       has.citation ? 'CITATION.cff exists' : 'CITATION.cff missing',

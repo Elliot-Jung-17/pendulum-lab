@@ -11,19 +11,38 @@
  */
 
 // Shared domain types
-export type { PendulumParameters, SystemType, IntegratorId, RunMode, RuntimeSnapshot } from '../types/domain';
+export type { EnergyBreakdown, PendulumParameters, SystemType, IntegratorId, RunMode, RuntimeSnapshot } from '../types/domain';
 
 // Physics primitives
 export * from '../physics/types';
 export * from '../physics/integrators';
 export { rhsDouble } from '../physics/double';
 export { energyDouble } from '../physics/energy';
-export { rhsChain, energyChain, chainMassMatrix, createChainWorkspace, validateChainParameters } from '../physics/nPendulum';
+export { rhsChain, energyChain, chainMassMatrix, chainMassMatrixDiagnostics, createChainWorkspace, validateChainParameters } from '../physics/nPendulum';
 export type { ChainParameters, ChainWorkspace } from '../physics/nPendulum';
-export { assertLinearSolve, solveLinearInPlace } from '../physics/linearSolve';
-export type { LinearSolveFailureReason, LinearSolveOptions, LinearSolveResult } from '../physics/linearSolve';
-export { buildRhs, buildJacobian } from '../physics/systemSpec';
+export { assertLinearSolve, choleskyFactor, choleskySolveFactored, solveCholeskyInPlace, solveLinearInPlace } from '../physics/linearSolve';
+export type { CholeskyFactorResult, LinearSolveFailureReason, LinearSolveFallbackPolicy, LinearSolveOptions, LinearSolveResult } from '../physics/linearSolve';
+export { buildRhs, buildJacobian, dampingConventionFor } from '../physics/systemSpec';
 export type { SystemSpec } from '../physics/systemSpec';
+export type { DampingConvention } from '../physics/constants';
+export {
+  MASS_MATRIX_SINGULARITY_THRESHOLD,
+  SPHERICAL_POLE_EPS,
+  SPHERICAL_CHAIN_POLE_EPS,
+  FD_JACOBIAN_EPS,
+  IMPLICIT_SOLVE_TOLERANCE
+} from '../physics/constants';
+export {
+  jacobianChain,
+  jacobianDriven,
+  jacobianSphericalChain,
+  createChainJacobianWorkspace,
+  createSphericalChainJacobianWorkspace
+} from '../physics/jacobians';
+export type { ChainJacobianWorkspace, SphericalChainJacobianWorkspace } from '../physics/jacobians';
+export type { CrossingDirection, EventFunction } from '../physics/events';
+export { DAMPED_DRIVEN_CHAOS_PRESET, energyDriven, rhsDriven } from '../physics/driven';
+export type { DrivenParameters } from '../physics/driven';
 
 // Non-rigid and 3D systems
 export { RopePendulum } from '../physics/rope';

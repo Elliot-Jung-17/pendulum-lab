@@ -1,5 +1,6 @@
 import type { EnergyBreakdown, PendulumParameters } from '../types/domain';
 import { energyDouble } from './double';
+import { MASS_MATRIX_SINGULARITY_THRESHOLD } from './constants';
 
 export interface CanonicalState {
   q1: number;
@@ -26,7 +27,7 @@ export interface CanonicalStepResult {
   stats: ImplicitMidpointStats;
 }
 
-const DET_THRESHOLD = 1e-14;
+const DET_THRESHOLD = MASS_MATRIX_SINGULARITY_THRESHOLD;
 
 export function doubleMassMatrix(q1: number, q2: number, parameters: PendulumParameters): MassMatrix2 {
   const delta = q1 - q2;

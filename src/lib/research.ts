@@ -19,6 +19,36 @@ export { hashText, csvCell, dataUrlByteEstimate } from '../research/researchExpo
 
 // Worker job protocol (pure handlers usable headlessly).
 export { runChaosJob } from '../workers/chaosProtocol';
-export type { ChaosRequest, ChaosResponse } from '../workers/chaosProtocol';
+export type {
+  BasinRequest,
+  BasinResponse,
+  BifurcationJobSettings,
+  BifurcationRequest,
+  BifurcationResponse,
+  ChaosErrorResponse,
+  ChaosRequest,
+  ChaosResponse,
+  ClvRequest,
+  ClvResponse,
+  CodimTwoRequest,
+  CodimTwoResponse,
+  FtleRequest,
+  FtleResponse,
+  LyapunovRequest,
+  LyapunovResponse,
+  LyapunovSpectrumRequest,
+  LyapunovSpectrumResponse,
+  RqaJobSettings,
+  RqaRequest,
+  RqaResponse,
+  StudyPointJobSettings,
+  StudyPointRequest,
+  StudyPointResponse,
+  WadaConvergenceRequest,
+  WadaConvergenceResponse,
+  ZeroOneJobSettings,
+  ZeroOneRequest,
+  ZeroOneResponse
+} from '../workers/chaosProtocol';
 export { JobEngine, jobPhases, JOB_PROTOCOL_V2 } from '../workers/jobProtocol';
-export type { JobEventMessage, JobInboundMessage, JobStatus, JobCheckpointState, PhaseRunner } from '../workers/jobProtocol';
+export type { JobControlMessage, JobEventMessage, JobInboundMessage, JobStatus, JobCheckpointState, JobSubmitMessage, PhaseRunner } from '../workers/jobProtocol';

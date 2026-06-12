@@ -38,7 +38,7 @@ export { energyDouble, energyTriple, relativeEnergyDrift } from './energy';
 export { integratorRegistry } from './integrators';
 export { rhsDouble } from './double';
 export { rhsTriple } from './triple';
-export { rhsChain, energyChain, chainLength, createChainWorkspace, validateChainParameters } from './nPendulum';
+export { rhsChain, energyChain, chainLength, chainMassMatrixDiagnostics, createChainWorkspace, validateChainParameters } from './nPendulum';
 export type { ChainParameters, ChainWorkspace } from './nPendulum';
 export {
   SphericalChain,
@@ -46,14 +46,33 @@ export {
   rhsSphericalChain,
   sphericalChainEnergy,
   sphericalChainLz,
+  sphericalChainMassMatrixDiagnostics,
   sphericalChainPositions,
   sphericalChainVelocities,
   sphericalChainLength,
   validateSphericalChainParams
 } from './sphericalChain';
 export type { SphericalChainParams, SphericalChainDiagnostics, SphericalChainOptions, SphericalChainWorkspace } from './sphericalChain';
-export { assertLinearSolve, solveLinearInPlace } from './linearSolve';
-export type { LinearSolveFailureReason, LinearSolveOptions, LinearSolveResult } from './linearSolve';
+export { assertLinearSolve, choleskyFactor, choleskySolveFactored, solveCholeskyInPlace, solveLinearInPlace } from './linearSolve';
+export type { CholeskyFactorResult, LinearSolveFailureReason, LinearSolveFallbackPolicy, LinearSolveOptions, LinearSolveResult } from './linearSolve';
+export {
+  jacobianChain,
+  jacobianDriven,
+  jacobianSphericalChain,
+  createChainJacobianWorkspace,
+  createSphericalChainJacobianWorkspace
+} from './jacobians';
+export type { ChainJacobianWorkspace, SphericalChainJacobianWorkspace } from './jacobians';
+export { DualArena, dAdd, dAddScaled, dClampAbsMin, dConst, dCos, dDot3, dMul, dNeg, dScale, dSin, dSub, dVar } from './autodiff';
+export type { DualScalar } from './autodiff';
+export {
+  MASS_MATRIX_SINGULARITY_THRESHOLD,
+  SPHERICAL_POLE_EPS,
+  SPHERICAL_CHAIN_POLE_EPS,
+  FD_JACOBIAN_EPS,
+  IMPLICIT_SOLVE_TOLERANCE
+} from './constants';
+export type { DampingConvention } from './constants';
 export { rhsDriven, energyDriven, DAMPED_DRIVEN_CHAOS_PRESET } from './driven';
 export type { DrivenParameters } from './driven';
 export { rhsSpring, energySpring } from './spring';
@@ -78,11 +97,16 @@ export {
 } from './integrators';
 export {
   dormandPrince54Step,
+  dormandPrince54StepDense,
   bulirschStoerStep,
   adaptiveStep,
   integrateAdaptive,
-  richardsonStep
+  richardsonStep,
+  createStepController
 } from './adaptive';
+export type { DenseStepResult, StepController, StepControllerCoefficients, StepControllerKind } from './adaptive';
+export { refineCrossing, locateTransition } from './eventLocator';
+export type { RefineOptions, RefinedCrossing } from './eventLocator';
 export { trBdf2Step } from './stiff';
 export { detectEvents } from './events';
 export type {

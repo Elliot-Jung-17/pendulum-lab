@@ -1,5 +1,13 @@
 import type { Derivative, Jacobian } from './types';
+import type { DampingConvention } from './constants';
 import { rhsDouble, energyDouble, jacobianDouble } from './double';
+import {
+  createChainJacobianWorkspace,
+  createSphericalChainJacobianWorkspace,
+  jacobianChain,
+  jacobianDriven,
+  jacobianSphericalChain
+} from './jacobians';
 import { rhsTriple } from './triple';
 import { energyTriple } from './energy';
 import { rhsChain, energyChain, createChainWorkspace } from './nPendulum';
@@ -33,6 +41,35 @@ export type SystemSpec =
    * links fall ballistically (handled inside the RHS via phase detection).
    */
   | { kind: 'double-string'; m1: number; m2: number; l1: number; l2: number; g: number; damping: number };
+
+/**
+ * How linear damping enters each system's equations of motion (see
+ * {@link DampingConvention}). Cross-system damping comparisons are only
+ * meaningful between systems that share a convention; the UI and exports
+ * surface this so a γ slider is never silently reinterpreted.
+ */
+export function dampingConventionFor(kind: SystemSpec['kind']): DampingConvention {
+  switch (kind) {
+    case 'double':
+    case 'triple':
+    case 'chain':
+    case 'double-string':
+      // −γ·ω_j enters the generalised force before the mass-matrix solve.
+      return 'force-level';
+    case 'driven':
+    case 'spherical-chain':
+      // q̈_j ← q̈_j − γ·q̇_j after the solve (per-coordinate rate damping).
+      // (For the 1-DOF driven pendulum the two conventions coincide.)
+      return 'rate-level';
+    case 'spring':
+      // The spring spec carries no damping parameter.
+      return 'none';
+    default: {
+      const exhaustive: never = kind;
+      throw new Error(`unknown system kind: ${String(exhaustive)}`);
+    }
+  }
+}
 
 /** Reconstruct the (undamped unless the spec encodes damping) RHS for a spec. */
 export function buildRhs(spec: SystemSpec): Derivative {
@@ -99,19 +136,68 @@ export function buildRhs(spec: SystemSpec): Derivative {
 }
 
 /**
- * Exact analytic Jacobian for a spec, where one is known in closed form
- * (currently the double pendulum). Returns `undefined` otherwise, so callers
- * transparently fall back to the central-difference Jacobian. Supplying this to
- * the Lyapunov spectrum removes the finite-difference error floor.
+ * Exact Jacobian of the spec's RHS — the tangent of the same vector field
+ * `buildRhs` returns, including each spec's damping convention. The double
+ * pendulum uses the hand-derived closed form; the chain systems use the
+ * dual-number (forward-mode AD) mass-matrix assembly of `jacobians.ts`; the
+ * driven pendulum is trivial. Only the spring pendulum falls back to the
+ * central-difference Jacobian (`undefined`). Supplying this to the Lyapunov /
+ * variational pipeline removes the finite-difference error floor, and to
+ * Newton-based implicit steppers restores quadratic convergence.
  */
 export function buildJacobian(spec: SystemSpec): Jacobian | undefined {
-  if (spec.kind === 'double') {
-    const p = spec;
-    return (state, jac) => {
-      jacobianDouble(state, p, 0, jac);
-    };
+  switch (spec.kind) {
+    case 'double': {
+      const p = spec;
+      return (state, jac) => {
+        jacobianDouble(state, p, 0, jac);
+      };
+    }
+    case 'double-string': {
+      // Taut chart: the vector field is the rigid double pendulum with the
+      // spec's damping (matching buildRhs above).
+      const p = { m1: spec.m1, m2: spec.m2, l1: spec.l1, l2: spec.l2, g: spec.g };
+      const damping = spec.damping;
+      return (state, jac) => {
+        jacobianDouble(state, p, damping, jac);
+      };
+    }
+    case 'triple': {
+      // rhsTriple is the N = 3 chain in closed form (pinned by tests), so the
+      // chain Jacobian is its exact tangent as well.
+      const p = { masses: [spec.m1, spec.m2, spec.m3], lengths: [spec.l1, spec.l2, spec.l3], g: spec.g };
+      const workspace = createChainJacobianWorkspace(3);
+      return (state, jac) => {
+        jacobianChain(state, p, 0, jac, workspace);
+      };
+    }
+    case 'chain': {
+      const p = { masses: spec.masses, lengths: spec.lengths, g: spec.g };
+      const workspace = createChainJacobianWorkspace(spec.masses.length);
+      return (state, jac) => {
+        jacobianChain(state, p, 0, jac, workspace);
+      };
+    }
+    case 'spherical-chain': {
+      const p = { masses: spec.masses, lengths: spec.lengths, g: spec.g, damping: spec.damping };
+      const workspace = createSphericalChainJacobianWorkspace(spec.masses.length);
+      return (state, jac) => {
+        jacobianSphericalChain(state, p, jac, workspace);
+      };
+    }
+    case 'driven': {
+      const p = spec;
+      return (state, jac) => {
+        jacobianDriven(state, p, jac);
+      };
+    }
+    case 'spring':
+      return undefined;
+    default: {
+      const exhaustive: never = spec;
+      throw new Error(`unknown system spec: ${JSON.stringify(exhaustive)}`);
+    }
   }
-  return undefined;
 }
 
 /** Total/kinetic/potential energy for a spec's state, mirroring `buildRhs`. */

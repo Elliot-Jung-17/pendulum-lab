@@ -14,6 +14,13 @@ export type Jacobian = (state: StateVector, jac: Float64Array) => void;
 export interface StepOptions {
   tolerance?: number;
   previousError?: { value: number };
+  /**
+   * Exact tangent Jacobian of the RHS. When supplied, Newton-based implicit
+   * steppers (TR-BDF2) use it instead of a forward-difference approximation:
+   * fewer RHS evaluations per iteration and quadratic convergence unspoiled
+   * by the ~1e-7 finite-difference floor.
+   */
+  jacobian?: Jacobian;
 }
 
 export interface IntegratorMeta {

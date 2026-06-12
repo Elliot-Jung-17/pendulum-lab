@@ -5,6 +5,7 @@ import {
   rhsSphericalChain,
   sphericalChainEnergy,
   sphericalChainLz,
+  sphericalChainMassMatrixDiagnostics,
   sphericalChainPositions,
   sphericalChainVelocities,
   type SphericalChainParams
@@ -167,6 +168,20 @@ describe('spherical N-chain (3D double/triple pendulum)', () => {
     const a = rhsSphericalChain(state, DOUBLE_3D, new Float64Array(8));
     const b = rhsSphericalChain(state, DOUBLE_3D, new Float64Array(8), createSphericalChainWorkspace(2));
     for (let i = 0; i < 8; i += 1) expect(Math.abs((a[i] ?? 0) - (b[i] ?? 0))).toBeLessThan(1e-14);
+  });
+
+  it('reports mass-matrix conditioning in public diagnostics', () => {
+    const state = [1.7, 0.4, 2.1, -0.8, 0.3, 0.9, -0.5, 0.6];
+    const solve = sphericalChainMassMatrixDiagnostics(state, DOUBLE_3D);
+    expect(solve.ok).toBe(true);
+    expect(solve.conditionEstimate).toBeGreaterThanOrEqual(1);
+    expect(solve.relativeResidual).toBeLessThan(1e-12);
+
+    const chain = new SphericalChain(DOUBLE_3D, state, { dt: 0.001, method: 'rk4' });
+    const diag = chain.diagnostics();
+    expect(diag.conditionEstimate).toBeCloseTo(solve.conditionEstimate, 12);
+    expect(diag.relativeResidual).toBeLessThan(1e-12);
+    expect(diag.massMatrixScale).toBeGreaterThan(0);
   });
 
   it('can run with a non-RK4 integrator for reference studies', () => {

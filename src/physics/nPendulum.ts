@@ -1,6 +1,6 @@
 import type { EnergyBreakdown } from '../types/domain';
 import type { StateVector } from './types';
-import { assertLinearSolve, solveLinearInPlace } from './linearSolve';
+import { assertLinearSolve, solveCholeskyInPlace, solveLinearInPlace, type LinearSolveResult } from './linearSolve';
 
 /**
  * Generalized planar chain ("N-pendulum"). The double and triple pendulums are
@@ -23,6 +23,8 @@ export interface ChainWorkspace {
   suffix: Float64Array;
   matrix: Float64Array;
   rhs: Float64Array;
+  /** Cholesky factor scratch (n×n); keeps `matrix` intact for the GE fallback. */
+  factor: Float64Array;
 }
 
 export function chainLength(parameters: ChainParameters): number {
@@ -49,7 +51,8 @@ export function createChainWorkspace(n: number): ChainWorkspace {
     n,
     suffix: new Float64Array(n),
     matrix: new Float64Array(n * n),
-    rhs: new Float64Array(n)
+    rhs: new Float64Array(n),
+    factor: new Float64Array(n * n)
   };
 }
 
@@ -104,8 +107,14 @@ export function rhsChain(
     rhs[j] = -coupling - g * lj * Math.sin(tj) * (s[j] ?? 0) - gamma * wj;
   }
 
-  const solve = solveLinearInPlace(matrix, rhs, n);
-  assertLinearSolve(solve, 'rhsChain mass matrix');
+  // The mass matrix is SPD by construction, so Cholesky (≈3× cheaper and
+  // pivot-free) is the primary solver; a numerically non-SPD configuration
+  // falls back to pivoted Gaussian elimination on the untouched matrix.
+  const cholesky = solveCholeskyInPlace(matrix, rhs, n, workspace.factor);
+  if (!cholesky.ok) {
+    const solve = solveLinearInPlace(matrix, rhs, n);
+    assertLinearSolve(solve, 'rhsChain mass matrix');
+  }
   for (let j = 0; j < n; j += 1) out[n + j] = rhs[j] ?? 0;
   return out;
 }
@@ -130,6 +139,14 @@ export function chainMassMatrix(state: ArrayLike<number>, parameters: ChainParam
     }
   }
   return out;
+}
+
+export function chainMassMatrixDiagnostics(state: ArrayLike<number>, parameters: ChainParameters): LinearSolveResult {
+  const n = chainLength(parameters);
+  const matrix = chainMassMatrix(state, parameters);
+  const probeRhs = new Float64Array(n);
+  probeRhs.fill(1);
+  return solveLinearInPlace(matrix, probeRhs, n, { diagnostics: true });
 }
 
 export function energyChain(state: ArrayLike<number>, parameters: ChainParameters): EnergyBreakdown {

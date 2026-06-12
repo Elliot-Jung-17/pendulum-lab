@@ -22,6 +22,16 @@ export interface AdaptiveControllerOptions {
   safety?: number;
   /** Embedded method order used for the error exponent (default 5). */
   order?: number;
+  /**
+   * Step-size controller. `basic` is the classical elementary controller
+   * (default, byte-identical to the historical behaviour). `pi` adds the
+   * proportional memory term of Gustafsson's PI controller, which damps the
+   * accept/reject oscillation ("chattering") near stability boundaries —
+   * e.g. sweeping the driven pendulum across the Melnikov threshold.
+   */
+  controller?: StepControllerKind;
+  /** Override the per-order PI(D) exponents; defaults to PI4.2 for `pi`. */
+  controllerCoefficients?: StepControllerCoefficients;
 }
 
 export interface AdaptiveStepOutcome {
@@ -52,12 +62,8 @@ const DP_B4 = [5179 / 57600, 0, 7571 / 16695, 393 / 640, -92097 / 339200, 187 / 
 
 void DP_C; // tableau nodes retained for documentation/extension
 
-/**
- * One Dormand-Prince 5(4) step. Returns the 5th-order solution and an absolute
- * infinity-norm error estimate (difference between the 5th and 4th order
- * solutions). Does not mutate `state`.
- */
-export function dormandPrince54Step(state: StateVector, dt: number, rhs: Derivative): EmbeddedStepResult {
+/** Shared stage computation for the plain and dense Dormand-Prince steps. */
+function dormandPrinceStages(state: StateVector, dt: number, rhs: Derivative): { k: StateVector[]; y: StateVector; error: number } {
   const n = state.length;
   const k: StateVector[] = Array.from({ length: 7 }, () => new Float64Array(n));
   const tmp = new Float64Array(n);
@@ -87,7 +93,151 @@ export function dormandPrince54Step(state: StateVector, dt: number, rhs: Derivat
     y[i] = Number(state[i] ?? 0) + dt * sum5;
     error = Math.max(error, Math.abs(dt * (sum5 - sum4)));
   }
+  return { k, y, error };
+}
+
+/**
+ * One Dormand-Prince 5(4) step. Returns the 5th-order solution and an absolute
+ * infinity-norm error estimate (difference between the 5th and 4th order
+ * solutions). Does not mutate `state`.
+ */
+export function dormandPrince54Step(state: StateVector, dt: number, rhs: Derivative): EmbeddedStepResult {
+  const { y, error } = dormandPrinceStages(state, dt, rhs);
   return { y, error };
+}
+
+export interface DenseStepResult extends EmbeddedStepResult {
+  /**
+   * Evaluate the continuous extension at θ ∈ [0, 1] (fraction of the step),
+   * writing the interpolated state into `out`. Fourth-order accurate across
+   * the whole step — the standard tool for event localisation: one polynomial
+   * evaluation per root-finder probe instead of a re-integration.
+   */
+  interpolate(theta: number, out: StateVector): StateVector;
+}
+
+// Dense-output weights for the 5th rcont polynomial (Hairer, Nørsett & Wanner,
+// DOPRI5). Validated in tests by the O(h⁵) interpolation-convergence check,
+// which a transcription error would degrade to a lower order.
+const DP_D = [
+  -12715105075 / 11282082432,
+  0,
+  87487479700 / 32700410799,
+  -10690763975 / 1880347072,
+  701980252875 / 199316789632,
+  -1453857185 / 822651844,
+  69997945 / 29380423
+];
+
+/**
+ * Dormand-Prince 5(4) step with dense output: identical advance and error
+ * estimate to {@link dormandPrince54Step}, plus a 4th-order interpolant over
+ * the step built from the same seven stages (no extra RHS evaluations).
+ */
+export function dormandPrince54StepDense(state: StateVector, dt: number, rhs: Derivative): DenseStepResult {
+  const n = state.length;
+  const { k, y, error } = dormandPrinceStages(state, dt, rhs);
+  // rcont1..5 of Hairer's contd5: u(θ) = r1 + θ(r2 + (1−θ)(r3 + θ(r4 + (1−θ)r5))).
+  const r1 = new Float64Array(state);
+  const r2 = new Float64Array(n);
+  const r3 = new Float64Array(n);
+  const r4 = new Float64Array(n);
+  const r5 = new Float64Array(n);
+  for (let i = 0; i < n; i += 1) {
+    const ydiff = Number(y[i] ?? 0) - Number(state[i] ?? 0);
+    const bspl = dt * Number(k[0]![i] ?? 0) - ydiff;
+    r2[i] = ydiff;
+    r3[i] = bspl;
+    r4[i] = ydiff - dt * Number(k[6]![i] ?? 0) - bspl;
+    let acc = 0;
+    for (let s = 0; s < 7; s += 1) acc += DP_D[s]! * Number(k[s]![i] ?? 0);
+    r5[i] = dt * acc;
+  }
+  return {
+    y,
+    error,
+    interpolate(theta: number, out: StateVector): StateVector {
+      const oneMinus = 1 - theta;
+      for (let i = 0; i < n; i += 1) {
+        out[i] = Number(r1[i] ?? 0) + theta * (Number(r2[i] ?? 0) + oneMinus * (Number(r3[i] ?? 0) + theta * (Number(r4[i] ?? 0) + oneMinus * Number(r5[i] ?? 0))));
+      }
+      return out;
+    }
+  };
+}
+
+export type StepControllerKind = 'basic' | 'pi';
+
+/**
+ * Exponents (per unit of method order p) of the generalised controller
+ * factor = safety · err^(−kI/p) · errPrev^(kP/p) · errPrev2^(−kD/p).
+ * kI = 1, kP = kD = 0 is the elementary controller; the PI4.2 choice
+ * kI = 0.7, kP = 0.4 (Gustafsson; Hairer & Wanner II.4) damps step-size
+ * oscillation. A derivative term kD can be supplied for a full PID.
+ */
+export interface StepControllerCoefficients {
+  kI: number;
+  kP: number;
+  kD?: number;
+}
+
+export interface StepController {
+  /**
+   * Step-size factor for the next attempt. Error memory advances only on
+   * accepted steps; after a rejection the factor is capped at 1 so the step
+   * can never grow off a failure.
+   */
+  factor(errorNorm: number, accepted: boolean): number;
+  reset(): void;
+}
+
+const PI42: StepControllerCoefficients = { kI: 0.7, kP: 0.4 };
+
+export function createStepController(options: {
+  kind?: StepControllerKind;
+  order?: number;
+  safety?: number;
+  minFactor?: number;
+  maxFactor?: number;
+  coefficients?: StepControllerCoefficients;
+} = {}): StepController {
+  const order = options.order ?? 5;
+  const safety = options.safety ?? 0.9;
+  const minFactor = options.minFactor ?? 0.2;
+  const maxFactor = options.maxFactor ?? 5;
+  const kind = options.kind ?? 'basic';
+  const co = options.coefficients ?? (kind === 'pi' ? PI42 : { kI: 1, kP: 0 });
+  const ERR_FLOOR = 1e-12; // keeps the memory powers finite on exact steps
+  let prev = 1;
+  let prev2 = 1;
+  return {
+    factor(errorNorm: number, accepted: boolean): number {
+      const err = Math.max(errorNorm, ERR_FLOOR);
+      let raw = errorNorm === 0
+        ? maxFactor
+        : safety * err ** (-co.kI / order) * prev ** (co.kP / order) * prev2 ** (-(co.kD ?? 0) / order);
+      if (!accepted) raw = Math.min(raw, 1);
+      if (accepted) {
+        prev2 = prev;
+        prev = err;
+      }
+      return Math.min(maxFactor, Math.max(minFactor, raw));
+    },
+    reset(): void {
+      prev = 1;
+      prev2 = 1;
+    }
+  };
+}
+
+/** Mixed abs/rel normalised error: target is ≤ 1 (shared by all controllers). */
+function normalisedError(state: StateVector, y: StateVector, error: number, absTol: number, relTol: number): number {
+  let errorNorm = 0;
+  for (let i = 0; i < state.length; i += 1) {
+    const scale = absTol + relTol * Math.max(Math.abs(Number(state[i] ?? 0)), Math.abs(Number(y[i] ?? 0)));
+    errorNorm = Math.max(errorNorm, error / scale);
+  }
+  return errorNorm;
 }
 
 /**
@@ -110,11 +260,7 @@ export function adaptiveStep(
 
   const { y, error } = dormandPrince54Step(state, dt, rhs);
   // Normalise: error / (absTol + relTol * max(|y_old|, |y_new|)).
-  let errorNorm = 0;
-  for (let i = 0; i < state.length; i += 1) {
-    const scale = absTol + relTol * Math.max(Math.abs(Number(state[i] ?? 0)), Math.abs(Number(y[i] ?? 0)));
-    errorNorm = Math.max(errorNorm, error / scale);
-  }
+  const errorNorm = normalisedError(state, y, error, absTol, relTol);
   const accepted = errorNorm <= 1 || dt <= minDt;
   const exponent = 1 / order;
   const raw = errorNorm === 0 ? 5 : safety * errorNorm ** -exponent;
@@ -141,9 +287,39 @@ export function integrateAdaptive(
   let rejected = 0;
   let guard = 0;
   const maxIterations = 10_000_000;
+  // The stateful PI(D) controller path; `basic`/unset keeps the historical
+  // memoryless adaptiveStep behaviour bit for bit.
+  const controller = options.controller && options.controller !== 'basic'
+    ? createStepController({
+        kind: options.controller,
+        order: options.order ?? 5,
+        safety: options.safety ?? 0.9,
+        ...(options.controllerCoefficients ? { coefficients: options.controllerCoefficients } : {})
+      })
+    : undefined;
+  const absTol = options.absTol ?? 1e-8;
+  const relTol = options.relTol ?? 1e-6;
+  const minDt = options.minDt ?? 1e-9;
+  const maxDt = options.maxDt ?? 1;
   while (t < duration && guard < maxIterations) {
     guard += 1;
     if (t + dt > duration) dt = duration - t;
+    if (controller) {
+      const { y: yNew, error } = dormandPrince54Step(y, dt, rhs);
+      const errorNorm = normalisedError(y, yNew, error, absTol, relTol);
+      const ok = errorNorm <= 1 || dt <= minDt;
+      const factor = controller.factor(errorNorm, ok);
+      const nextDt = Math.min(maxDt, Math.max(minDt, dt * factor));
+      if (ok) {
+        y.set(yNew);
+        t += dt;
+        accepted += 1;
+      } else {
+        rejected += 1;
+      }
+      dt = nextDt;
+      continue;
+    }
     const outcome = adaptiveStep(y, dt, rhs, options);
     if (outcome.accepted) {
       y.set(outcome.y);

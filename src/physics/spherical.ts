@@ -16,6 +16,8 @@
  * fidelity metric for the 3D mode.
  */
 
+import { SPHERICAL_POLE_EPS } from './constants';
+
 export interface SphericalParams {
   /** Pendulum length (m). */
   l: number;
@@ -35,7 +37,7 @@ export function sphericalRhs(state: SphericalState, params: SphericalParams): Sp
   const cos = Math.cos(theta);
   // Regularise the coordinate singularity at the poles (sinθ → 0): the true
   // dynamics is smooth there, only the chart is singular.
-  const safeSin = Math.abs(sin) < 1e-9 ? (sin >= 0 ? 1e-9 : -1e-9) : sin;
+  const safeSin = Math.abs(sin) < SPHERICAL_POLE_EPS ? (sin >= 0 ? SPHERICAL_POLE_EPS : -SPHERICAL_POLE_EPS) : sin;
   const thetaAcc = sin * cos * phiDot * phiDot - (g / l) * sin - damping * thetaDot;
   const phiAcc = (-2 * cos / safeSin) * thetaDot * phiDot - damping * phiDot;
   return [thetaDot, phiDot, thetaAcc, phiAcc];

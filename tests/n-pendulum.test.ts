@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { rhsDouble, energyDouble } from '../src/physics/double';
 import { rhsTriple } from '../src/physics/triple';
 import { energyTriple } from '../src/physics/energy';
-import { createChainWorkspace, rhsChain, energyChain, type ChainParameters } from '../src/physics/nPendulum';
+import { chainMassMatrixDiagnostics, createChainWorkspace, rhsChain, energyChain, type ChainParameters } from '../src/physics/nPendulum';
 import { rhsSpring, energySpring, type SpringPendulumParameters } from '../src/physics/spring';
 import { rhsDriven, energyDriven, DAMPED_DRIVEN_CHAOS_PRESET } from '../src/physics/driven';
 import { rk4Step, leapfrogStep } from '../src/physics/integrators';
@@ -95,6 +95,16 @@ describe('N-pendulum generalization reduces to the existing systems', () => {
     rhsChain(state, chain, 0.03, a);
     rhsChain(state, chain, 0.03, b, createChainWorkspace(5));
     expect(maxAbsDiff(a, b)).toBeLessThan(1e-14);
+  });
+
+  test('mass-matrix diagnostics expose condition and residual for N = 5', () => {
+    const chain: ChainParameters = { masses: [1, 0.8, 1.2, 0.9, 1.1], lengths: [1, 0.7, 1.1, 0.9, 0.8], g: 9.81 };
+    const state = new Float64Array([0.4, -0.2, 0.7, -0.5, 0.1, 0.2, -0.1, 0.3, -0.4, 0.5]);
+    const diag = chainMassMatrixDiagnostics(state, chain);
+    expect(diag.ok).toBe(true);
+    expect(diag.conditionEstimate).toBeGreaterThanOrEqual(1);
+    expect(diag.matrixScale).toBeGreaterThan(0);
+    expect(diag.relativeResidual).toBeLessThan(1e-12);
   });
 });
 

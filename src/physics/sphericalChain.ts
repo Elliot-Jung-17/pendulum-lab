@@ -47,8 +47,9 @@
  */
 import type { EnergyBreakdown } from '../types/domain';
 import type { IntegratorId } from '../types/domain';
-import { assertLinearSolve, solveLinearInPlace } from './linearSolve';
+import { assertLinearSolve, solveCholeskyInPlace, solveLinearInPlace, type LinearSolveResult } from './linearSolve';
 import { step as integrateStep } from './integrators';
+import { SPHERICAL_CHAIN_POLE_EPS } from './constants';
 
 export interface SphericalChainParams {
   /** Bob masses, length N. */
@@ -60,7 +61,7 @@ export interface SphericalChainParams {
   damping: number;
 }
 
-const POLE_EPS = 1e-6;
+const POLE_EPS = SPHERICAL_CHAIN_POLE_EPS;
 
 export interface SphericalChainWorkspace {
   n: number;
@@ -68,6 +69,8 @@ export interface SphericalChainWorkspace {
   suffix: Float64Array;
   matrix: Float64Array;
   force: Float64Array;
+  /** Cholesky factor scratch (dof×dof); keeps `matrix` intact for the GE fallback. */
+  factor: Float64Array;
   /**
    * Per-link geometric frame buffer, 14 floats per link:
    * u (3), a = ∂u/∂θ (3), b = ∂u/∂φ (3), v = l(θ̇ȧ + φ̇ḃ) (3), sinθ, cosθ.
@@ -111,6 +114,7 @@ export function createSphericalChainWorkspace(n: number): SphericalChainWorkspac
     suffix: new Float64Array(n),
     matrix: new Float64Array(dof * dof),
     force: new Float64Array(dof),
+    factor: new Float64Array(dof * dof),
     frames: new Float64Array(FRAME_STRIDE * n)
   };
 }
@@ -173,7 +177,8 @@ function fillLinkFrames(state: ArrayLike<number>, params: SphericalChainParams, 
 /**
  * Equations of motion for the spherical N-chain. `state` and `out` have
  * length 4N (see header for the layout). Near-pole configurations are chart-
- * regularised; a numerically singular mass matrix yields zero accelerations.
+ * regularised; a numerically singular mass matrix fails loudly with structured
+ * linear-solve diagnostics instead of fabricating zero accelerations.
  */
 export function rhsSphericalChain(
   state: ArrayLike<number>,
@@ -222,8 +227,14 @@ export function rhsSphericalChain(
     }
   }
 
-  const solve = solveLinearInPlace(matrix, force, dof);
-  assertLinearSolve(solve, 'rhsSphericalChain mass matrix');
+  // SPD by construction away from the (regularised) pole chart, so Cholesky
+  // is the primary solver; near-degenerate configurations fall back to
+  // pivoted Gaussian elimination on the untouched matrix and fail loudly.
+  const cholesky = solveCholeskyInPlace(matrix, force, dof, workspace.factor);
+  if (!cholesky.ok) {
+    const solve = solveLinearInPlace(matrix, force, dof);
+    assertLinearSolve(solve, 'rhsSphericalChain mass matrix');
+  }
   for (let i = 0; i < dof; i += 1) {
     const qDot = Number(state[dof + i] ?? 0);
     out[dof + i] = (force[i] ?? 0) - params.damping * qDot;
@@ -260,6 +271,15 @@ export function sphericalChainMassMatrix(state: ArrayLike<number>, params: Spher
     }
   }
   return out;
+}
+
+export function sphericalChainMassMatrixDiagnostics(state: ArrayLike<number>, params: SphericalChainParams): LinearSolveResult {
+  const n = sphericalChainLength(params);
+  const dof = 2 * n;
+  const matrix = sphericalChainMassMatrix(state, params);
+  const probeRhs = new Float64Array(dof);
+  probeRhs.fill(1);
+  return solveLinearInPlace(matrix, probeRhs, dof, { diagnostics: true });
 }
 
 /** Cartesian bob positions (y up, pivot at the origin). */
@@ -375,6 +395,9 @@ export interface SphericalChainDiagnostics {
   energyDrift: number;
   lz: number;
   lzDrift: number;
+  conditionEstimate: number;
+  relativeResidual?: number;
+  massMatrixScale: number;
   method: IntegratorId;
   dt: number;
   caveat: string;
@@ -457,17 +480,22 @@ export class SphericalChain {
   diagnostics(): SphericalChainDiagnostics {
     const energy = sphericalChainEnergy(this.state, this.params).total;
     const lz = sphericalChainLz(this.state, this.params);
-    return {
+    const conditioning = sphericalChainMassMatrixDiagnostics(this.state, this.params);
+    const diagnostics: SphericalChainDiagnostics = {
       time: this.time,
       energy,
       energyDrift: Math.abs((energy - this.initialEnergy) / (Math.abs(this.initialEnergy) || 1)),
       lz,
       lzDrift: Math.abs(lz - this.initialLz) / Math.max(Math.abs(this.initialLz), 1e-12),
+      conditionEstimate: conditioning.conditionEstimate,
+      massMatrixScale: conditioning.matrixScale,
       method: this.method,
       dt: this.dt,
       caveat: this.params.damping > 0
         ? 'Damping active: E and Lz decay physically; drift is not an integrator error metric.'
         : 'Conservative run: E and Lz drift measure integrator error. Chart regularised near the poles (|sinθ| < 1e-6).'
     };
+    if (conditioning.relativeResidual !== undefined) diagnostics.relativeResidual = conditioning.relativeResidual;
+    return diagnostics;
   }
 }

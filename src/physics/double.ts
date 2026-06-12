@@ -1,7 +1,6 @@
 import type { EnergyBreakdown, PendulumParameters } from '../types/domain';
 import type { StateVector } from './types';
-
-const DET_THRESHOLD = 1e-14;
+import { MASS_MATRIX_SINGULARITY_THRESHOLD as DET_THRESHOLD } from './constants';
 
 export function rhsDouble(state: ArrayLike<number>, parameters: PendulumParameters, gamma: number, out: StateVector): StateVector {
   const t1 = Number(state[0] ?? 0);

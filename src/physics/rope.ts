@@ -13,7 +13,15 @@
  *    component continues as l·ω.
  *
  * Angle convention: θ from the downward vertical; x = l·sinθ, y = −l·cosθ.
+ *
+ * Phase transitions are located *inside* the integration substep with the
+ * shared event locator (`eventLocator.ts`), the same primitive that refines
+ * Poincaré crossings: tension zero for taut→slack, |r| = l for capture. The
+ * integrator steps exactly to the transition, switches phase there, and
+ * finishes the remainder of the substep in the new phase, so event times and
+ * states are accurate to the root tolerance instead of one substep.
  */
+import { locateTransition } from './eventLocator';
 
 export type RopePhase = 'taut' | 'slack';
 
@@ -48,6 +56,12 @@ export interface RopeEvent {
   time: number;
   /** Energy lost at the event (J/kg); > 0 only for capture. */
   energyLoss: number;
+  /**
+   * Event-condition residual at the recorded time: |T| (N/kg) for slack
+   * release, | |r| − l | (m) for capture. Near zero when the transition was
+   * located by in-step refinement; up to one substep's drift otherwise.
+   */
+  residual?: number;
 }
 
 export class RopePendulum {
@@ -113,7 +127,7 @@ export class RopePendulum {
     return null;
   }
 
-  private releaseToSlack(): void {
+  private releaseToSlack(atTime = this.time, residual = 0): void {
     const { x, y } = this.position();
     const { vx, vy } = this.velocity();
     this.x = x;
@@ -121,11 +135,12 @@ export class RopePendulum {
     this.vx = vx;
     this.vy = vy;
     this.phase = 'slack';
-    this.events.push({ type: 'slack', time: this.time, energyLoss: 0 });
+    this.events.push({ type: 'slack', time: atTime, energyLoss: 0, residual });
   }
 
-  private captureToTaut(): void {
+  private captureToTaut(atTime = this.time): void {
     const r = Math.hypot(this.x, this.y) || this.params.l;
+    const residual = Math.abs(r - this.params.l);
     // Clamp onto the circle and keep only the tangential velocity.
     const ux = this.x / r;
     const uy = this.y / r;
@@ -139,7 +154,7 @@ export class RopePendulum {
     this.omega = vTangential / this.params.l;
     this.phase = 'taut';
     const after = this.energy();
-    this.events.push({ type: 'capture', time: this.time, energyLoss: Math.max(0, before - after) });
+    this.events.push({ type: 'capture', time: atTime, energyLoss: Math.max(0, before - after), residual });
   }
 
   /** Advance by dt (internally split into RK4 substeps no larger than 2 ms). */
@@ -149,44 +164,119 @@ export class RopePendulum {
     while (remaining > 1e-12) {
       const h = Math.min(maxSub, remaining);
       remaining -= h;
-      if (this.phase === 'taut') this.stepTaut(h);
-      else this.stepSlack(h);
+      if (this.phase === 'taut') this.stepTaut(h, 0);
+      else this.stepSlack(h, 0);
       this.time += h;
     }
   }
 
-  private stepTaut(h: number): void {
+  /** Pure taut-phase RK4 advance from (theta, omega) by h. */
+  private advanceTaut(theta: number, omega: number, h: number): { theta: number; omega: number } {
     const { g, l, damping } = this.params;
-    const accel = (theta: number, omega: number): number => -(g / l) * Math.sin(theta) - damping * omega;
-    const k1t = this.omega;
-    const k1w = accel(this.theta, this.omega);
-    const k2t = this.omega + (h / 2) * k1w;
-    const k2w = accel(this.theta + (h / 2) * k1t, this.omega + (h / 2) * k1w);
-    const k3t = this.omega + (h / 2) * k2w;
-    const k3w = accel(this.theta + (h / 2) * k2t, this.omega + (h / 2) * k2w);
-    const k4t = this.omega + h * k3w;
-    const k4w = accel(this.theta + h * k3t, this.omega + h * k3w);
-    this.theta += (h / 6) * (k1t + 2 * k2t + 2 * k3t + k4t);
-    this.omega += (h / 6) * (k1w + 2 * k2w + 2 * k3w + k4w);
-    if (this.tautTension() < 0) this.releaseToSlack();
+    const accel = (t: number, w: number): number => -(g / l) * Math.sin(t) - damping * w;
+    const k1t = omega;
+    const k1w = accel(theta, omega);
+    const k2t = omega + (h / 2) * k1w;
+    const k2w = accel(theta + (h / 2) * k1t, omega + (h / 2) * k1w);
+    const k3t = omega + (h / 2) * k2w;
+    const k3w = accel(theta + (h / 2) * k2t, omega + (h / 2) * k2w);
+    const k4t = omega + h * k3w;
+    const k4w = accel(theta + h * k3t, omega + h * k3w);
+    return {
+      theta: theta + (h / 6) * (k1t + 2 * k2t + 2 * k3t + k4t),
+      omega: omega + (h / 6) * (k1w + 2 * k2w + 2 * k3w + k4w)
+    };
   }
 
-  private stepSlack(h: number): void {
+  /** Pure slack-phase (linear-drag projectile) RK4 advance by h. */
+  private advanceSlack(x: number, y: number, vx: number, vy: number, h: number): { x: number; y: number; vx: number; vy: number } {
     const { g, damping } = this.params;
-    const ax = (vx: number): number => -damping * vx;
-    const ay = (vy: number): number => -g - damping * vy;
-    // RK4 for the linear-drag projectile.
-    const k1 = { x: this.vx, y: this.vy, vx: ax(this.vx), vy: ay(this.vy) };
-    const k2 = { x: this.vx + (h / 2) * k1.vx, y: this.vy + (h / 2) * k1.vy, vx: ax(this.vx + (h / 2) * k1.vx), vy: ay(this.vy + (h / 2) * k1.vy) };
-    const k3 = { x: this.vx + (h / 2) * k2.vx, y: this.vy + (h / 2) * k2.vy, vx: ax(this.vx + (h / 2) * k2.vx), vy: ay(this.vy + (h / 2) * k2.vy) };
-    const k4 = { x: this.vx + h * k3.vx, y: this.vy + h * k3.vy, vx: ax(this.vx + h * k3.vx), vy: ay(this.vy + h * k3.vy) };
-    this.x += (h / 6) * (k1.x + 2 * k2.x + 2 * k3.x + k4.x);
-    this.y += (h / 6) * (k1.y + 2 * k2.y + 2 * k3.y + k4.y);
-    this.vx += (h / 6) * (k1.vx + 2 * k2.vx + 2 * k3.vx + k4.vx);
-    this.vy += (h / 6) * (k1.vy + 2 * k2.vy + 2 * k3.vy + k4.vy);
-    const r = Math.hypot(this.x, this.y);
-    const radialOutward = (this.x * this.vx + this.y * this.vy) / (r || 1);
-    if (r >= this.params.l && radialOutward > 0) this.captureToTaut();
+    const ax = (v: number): number => -damping * v;
+    const ay = (v: number): number => -g - damping * v;
+    const k1 = { x: vx, y: vy, vx: ax(vx), vy: ay(vy) };
+    const k2 = { x: vx + (h / 2) * k1.vx, y: vy + (h / 2) * k1.vy, vx: ax(vx + (h / 2) * k1.vx), vy: ay(vy + (h / 2) * k1.vy) };
+    const k3 = { x: vx + (h / 2) * k2.vx, y: vy + (h / 2) * k2.vy, vx: ax(vx + (h / 2) * k2.vx), vy: ay(vy + (h / 2) * k2.vy) };
+    const k4 = { x: vx + h * k3.vx, y: vy + h * k3.vy, vx: ax(vx + h * k3.vx), vy: ay(vy + h * k3.vy) };
+    return {
+      x: x + (h / 6) * (k1.x + 2 * k2.x + 2 * k3.x + k4.x),
+      y: y + (h / 6) * (k1.y + 2 * k2.y + 2 * k3.y + k4.y),
+      vx: vx + (h / 6) * (k1.vx + 2 * k2.vx + 2 * k3.vx + k4.vx),
+      vy: vy + (h / 6) * (k1.vy + 2 * k2.vy + 2 * k3.vy + k4.vy)
+    };
+  }
+
+  /** Bounded recursion across in-substep phase switches (taut↔slack chains). */
+  private static readonly MAX_SWITCH_DEPTH = 4;
+
+  private stepTaut(h: number, depth: number): void {
+    const theta0 = this.theta;
+    const omega0 = this.omega;
+    const tension0 = this.tautTension();
+    const end = this.advanceTaut(theta0, omega0, h);
+    this.theta = end.theta;
+    this.omega = end.omega;
+    const tension1 = this.tautTension();
+    if (tension1 >= 0) return;
+
+    if (depth >= RopePendulum.MAX_SWITCH_DEPTH || !(tension0 > 0)) {
+      // Degenerate bracket or too many switches in one substep: legacy
+      // behaviour (switch at the substep end).
+      this.releaseToSlack(this.time + h, Math.abs(tension1));
+      return;
+    }
+    // Refine the tension zero inside the step, switch exactly there, and
+    // finish the remainder of the substep in the slack phase.
+    const tensionAt = (tau: number): number => {
+      const s = this.advanceTaut(theta0, omega0, tau);
+      return this.params.g * Math.cos(s.theta) + this.params.l * s.omega * s.omega;
+    };
+    const crossing = locateTransition(tensionAt, h, tension0, tension1);
+    const s = this.advanceTaut(theta0, omega0, crossing.tAfter);
+    this.theta = s.theta;
+    this.omega = s.omega;
+    this.releaseToSlack(this.time + crossing.tAfter, Math.abs(crossing.gAfter));
+    const rest = h - crossing.tAfter;
+    if (rest > 1e-12) this.stepSlack(rest, depth + 1);
+  }
+
+  private stepSlack(h: number, depth: number): void {
+    const start = { x: this.x, y: this.y, vx: this.vx, vy: this.vy };
+    const r0 = Math.hypot(start.x, start.y);
+    const end = this.advanceSlack(start.x, start.y, start.vx, start.vy, h);
+    this.x = end.x;
+    this.y = end.y;
+    this.vx = end.vx;
+    this.vy = end.vy;
+    const r1 = Math.hypot(this.x, this.y);
+    const radialOutward = (this.x * this.vx + this.y * this.vy) / (r1 || 1);
+    if (!(r1 >= this.params.l && radialOutward > 0)) return;
+
+    if (depth >= RopePendulum.MAX_SWITCH_DEPTH || !(r0 < this.params.l)) {
+      // Legacy capture at the substep end (grazing start or depth limit).
+      this.captureToTaut(this.time + h);
+      return;
+    }
+    // Refine |r| = l inside the step and capture exactly there.
+    const radiusErrorAt = (tau: number): number => {
+      const s = this.advanceSlack(start.x, start.y, start.vx, start.vy, tau);
+      return Math.hypot(s.x, s.y) - this.params.l;
+    };
+    const crossing = locateTransition(radiusErrorAt, h, r0 - this.params.l, r1 - this.params.l);
+    const s = this.advanceSlack(start.x, start.y, start.vx, start.vy, crossing.tAfter);
+    const radialAtCrossing = (s.x * s.vx + s.y * s.vy) / (Math.hypot(s.x, s.y) || 1);
+    if (radialAtCrossing <= 0) {
+      // Grazing contact moving inward at the refined time: keep the end-of-
+      // step state and let the legacy condition handle the capture.
+      this.captureToTaut(this.time + h);
+      return;
+    }
+    this.x = s.x;
+    this.y = s.y;
+    this.vx = s.vx;
+    this.vy = s.vy;
+    this.captureToTaut(this.time + crossing.tAfter);
+    const rest = h - crossing.tAfter;
+    if (rest > 1e-12) this.stepTaut(rest, depth + 1);
   }
 
   snapshot(): RopeStateSnapshot {

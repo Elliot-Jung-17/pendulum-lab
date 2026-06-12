@@ -1,4 +1,5 @@
 import { rhsDouble } from './double';
+import { locateTransition, type RefinedCrossing } from './eventLocator';
 
 export type DoubleStringPhase = 'taut' | 'outer-slack' | 'full-slack';
 
@@ -16,6 +17,13 @@ export interface DoubleStringEvent {
   link: 'inner' | 'outer' | 'both';
   time: number;
   energyLoss: number;
+  /**
+   * Event-condition residual at the recorded time: |T| for a refined slack
+   * release, | |r| − l | for a refined capture. Near the root tolerance when
+   * the transition was located in-step; up to one substep's drift on the
+   * legacy fallback paths.
+   */
+  residual?: number;
 }
 
 export interface DoubleStringSnapshot {
@@ -197,47 +205,102 @@ export class DoubleStringPendulum {
     while (remaining > 1e-12) {
       const h = Math.min(this.maxSubstep, remaining);
       remaining -= h;
-      if (this.phase === 'taut') this.stepTaut(h);
-      else if (this.phase === 'outer-slack') this.stepOuterSlack(h);
-      else this.stepFullSlack(h);
+      if (this.phase === 'taut') this.stepTaut(h, 0);
+      else if (this.phase === 'outer-slack') this.stepOuterSlack(h, 0);
+      else this.stepFullSlack(h, 0);
       this.time += h;
     }
   }
 
-  private stepTaut(h: number): void {
+  /** Bounded recursion across in-substep phase switches. */
+  private static readonly MAX_SWITCH_DEPTH = 4;
+
+  /** Pure taut-phase RK4 advance of `from` by h, written into `out`. */
+  private advanceTautInto(from: ArrayLike<number>, h: number, out: Float64Array): void {
     const [k1, k2, k3, k4, tmp] = this.scratch as [Float64Array, Float64Array, Float64Array, Float64Array, Float64Array];
-    const rhs = (state: Float64Array, out: Float64Array): void => {
-      rhsDouble(state, this.rigidParams, this.params.damping, out);
+    const rhs = (state: Float64Array, o: Float64Array): void => {
+      rhsDouble(state, this.rigidParams, this.params.damping, o);
     };
-    rhs(this.state, k1);
-    for (let i = 0; i < 4; i += 1) tmp[i] = (this.state[i] ?? 0) + 0.5 * h * (k1[i] ?? 0);
+    for (let i = 0; i < 4; i += 1) tmp[i] = Number(from[i] ?? 0);
+    rhs(tmp, k1);
+    for (let i = 0; i < 4; i += 1) tmp[i] = Number(from[i] ?? 0) + 0.5 * h * (k1[i] ?? 0);
     rhs(tmp, k2);
-    for (let i = 0; i < 4; i += 1) tmp[i] = (this.state[i] ?? 0) + 0.5 * h * (k2[i] ?? 0);
+    for (let i = 0; i < 4; i += 1) tmp[i] = Number(from[i] ?? 0) + 0.5 * h * (k2[i] ?? 0);
     rhs(tmp, k3);
-    for (let i = 0; i < 4; i += 1) tmp[i] = (this.state[i] ?? 0) + h * (k3[i] ?? 0);
+    for (let i = 0; i < 4; i += 1) tmp[i] = Number(from[i] ?? 0) + h * (k3[i] ?? 0);
     rhs(tmp, k4);
     for (let i = 0; i < 4; i += 1) {
-      this.state[i] = (this.state[i] ?? 0) + (h / 6) * ((k1[i] ?? 0) + 2 * (k2[i] ?? 0) + 2 * (k3[i] ?? 0) + (k4[i] ?? 0));
+      out[i] = Number(from[i] ?? 0) + (h / 6) * ((k1[i] ?? 0) + 2 * (k2[i] ?? 0) + 2 * (k3[i] ?? 0) + (k4[i] ?? 0));
     }
-    this.cart = tautToCartesian(this.state, this.params);
-    this.checkSlack();
   }
 
-  private stepOuterSlack(h: number): void {
+  private stepTaut(h: number, depth: number): void {
+    const start = Float64Array.from(this.state);
+    const before = doubleStringTensions(start, this.params);
+    this.advanceTautInto(start, h, this.state);
+    this.cart = tautToCartesian(this.state, this.params);
+    const after = doubleStringTensions(this.state, this.params);
+    if (after.tension1 >= 0 && after.tension2 >= 0) return;
+
+    // Refine the earliest in-step tension zero among the violated links; on a
+    // degenerate bracket or at the recursion cap, fall back to the legacy
+    // end-of-substep switch.
+    const refinable1 = after.tension1 < 0 && before.tension1 > 0;
+    const refinable2 = after.tension2 < 0 && before.tension2 > 0;
+    if (depth >= DoubleStringPendulum.MAX_SWITCH_DEPTH || (!refinable1 && !refinable2)) {
+      this.checkSlack(this.time + h);
+      return;
+    }
+    const probe = new Float64Array(4);
+    const tensionAt = (which: 1 | 2) => (tau: number): number => {
+      this.advanceTautInto(start, tau, probe);
+      const tensions = doubleStringTensions(probe, this.params);
+      return which === 1 ? tensions.tension1 : tensions.tension2;
+    };
+    let link: 1 | 2 = refinable1 ? 1 : 2;
+    let crossing: RefinedCrossing = refinable1
+      ? locateTransition(tensionAt(1), h, before.tension1, after.tension1)
+      : locateTransition(tensionAt(2), h, before.tension2, after.tension2);
+    if (refinable1 && refinable2) {
+      const second = locateTransition(tensionAt(2), h, before.tension2, after.tension2);
+      if (second.tAfter < crossing.tAfter) {
+        link = 2;
+        crossing = second;
+      }
+    }
+    this.advanceTautInto(start, crossing.tAfter, this.state);
+    this.cart = tautToCartesian(this.state, this.params);
+    const atTime = this.time + crossing.tAfter;
+    const residual = Math.abs(crossing.gAfter);
+    if (link === 1) this.releaseFull(atTime, residual);
+    else this.releaseOuter(atTime, residual);
+    const rest = h - crossing.tAfter;
+    if (rest > 1e-12) {
+      if (this.phase === 'outer-slack') this.stepOuterSlack(rest, depth + 1);
+      else this.stepFullSlack(rest, depth + 1);
+    }
+  }
+
+  private stepOuterSlack(h: number, depth: number): void {
+    const innerStart: [number, number] = [this.state[0] ?? 0, this.state[2] ?? 0];
+    const projStart = { x: this.cart.x2, y: this.cart.y2, vx: this.cart.vx2, vy: this.cart.vy2 };
+    const gapBefore = Math.hypot(projStart.x - this.cart.x1, projStart.y - this.cart.y1) - this.params.l2;
     this.stepInnerSingleString(h);
     this.stepProjectile2(h);
-    this.tryCaptureOuter();
+    this.tryCaptureOuter(h, depth, innerStart, projStart, gapBefore);
   }
 
-  private stepFullSlack(h: number): void {
+  private stepFullSlack(h: number, depth: number): void {
+    const proj1Start = { x: this.cart.x1, y: this.cart.y1, vx: this.cart.vx1, vy: this.cart.vy1 };
+    const gapBefore = Math.hypot(proj1Start.x, proj1Start.y) - this.params.l1;
+    const proj2Start = { x: this.cart.x2, y: this.cart.y2, vx: this.cart.vx2, vy: this.cart.vy2 };
     this.stepProjectile1(h);
     this.stepProjectile2(h);
-    this.tryCaptureInner();
+    this.tryCaptureInner(h, depth, proj1Start, proj2Start, gapBefore);
   }
 
-  private stepInnerSingleString(h: number): void {
-    const theta = this.state[0] ?? 0;
-    const omega = this.state[2] ?? 0;
+  /** Pure single-string RK4 advance of (θ₁, ω₁) by h. */
+  private advanceInnerSingle(theta: number, omega: number, h: number): { theta: number; omega: number } {
     const accel = (t: number, w: number): number => -(this.params.g / this.params.l1) * Math.sin(t) - this.params.damping * w;
     const k1t = omega;
     const k1w = accel(theta, omega);
@@ -247,14 +310,39 @@ export class DoubleStringPendulum {
     const k3w = accel(theta + 0.5 * h * k2t, omega + 0.5 * h * k2w);
     const k4t = omega + h * k3w;
     const k4w = accel(theta + h * k3t, omega + h * k3w);
-    this.state[0] = theta + (h / 6) * (k1t + 2 * k2t + 2 * k3t + k4t);
-    this.state[2] = omega + (h / 6) * (k1w + 2 * k2w + 2 * k3w + k4w);
+    return {
+      theta: theta + (h / 6) * (k1t + 2 * k2t + 2 * k3t + k4t),
+      omega: omega + (h / 6) * (k1w + 2 * k2w + 2 * k3w + k4w)
+    };
+  }
+
+  /** Sync cart fields 1 from the single-string (θ₁, ω₁) state. */
+  private syncInnerCart(): void {
     const p = tautToCartesian([this.state[0] ?? 0, 0, this.state[2] ?? 0, 0], { ...this.params, l2: 0.000001 });
     this.cart.x1 = p.x1;
     this.cart.y1 = p.y1;
     this.cart.vx1 = p.vx1;
     this.cart.vy1 = p.vy1;
-    if (this.params.g * Math.cos(this.state[0] ?? 0) + this.params.l1 * (this.state[2] ?? 0) ** 2 < 0) this.releaseFull();
+  }
+
+  private stepInnerSingleString(h: number): void {
+    const next = this.advanceInnerSingle(this.state[0] ?? 0, this.state[2] ?? 0, h);
+    this.state[0] = next.theta;
+    this.state[2] = next.omega;
+    this.syncInnerCart();
+    if (this.params.g * Math.cos(this.state[0] ?? 0) + this.params.l1 * (this.state[2] ?? 0) ** 2 < 0) this.releaseFull(this.time + h);
+  }
+
+  /** Pure constant-acceleration projectile advance by h (matches stepProjectile*). */
+  private advanceProjectile(p: { x: number; y: number; vx: number; vy: number }, h: number): { x: number; y: number; vx: number; vy: number } {
+    const ax = -this.params.damping * p.vx;
+    const ay = -this.params.g - this.params.damping * p.vy;
+    return {
+      x: p.x + h * p.vx + 0.5 * h * h * ax,
+      y: p.y + h * p.vy + 0.5 * h * h * ay,
+      vx: p.vx + h * ax,
+      vy: p.vy + h * ay
+    };
   }
 
   private stepProjectile1(h: number): void {
@@ -275,38 +363,36 @@ export class DoubleStringPendulum {
     this.cart.vy2 += h * ay;
   }
 
-  private checkSlack(): void {
+  private checkSlack(atTime = this.time): void {
     if (this.phase !== 'taut') return;
     const { tension1, tension2 } = doubleStringTensions(this.state, this.params);
-    if (tension1 < 0) this.releaseFull();
-    else if (tension2 < 0) this.releaseOuter();
+    if (tension1 < 0) this.releaseFull(atTime, Math.abs(tension1));
+    else if (tension2 < 0) this.releaseOuter(atTime, Math.abs(tension2));
   }
 
-  private releaseOuter(): void {
+  private releaseOuter(atTime = this.time, residual = 0): void {
     if (this.phase !== 'taut') return;
     this.cart = tautToCartesian(this.state, this.params);
     this.phase = 'outer-slack';
-    this.events.push({ type: 'slack', link: 'outer', time: this.time, energyLoss: 0 });
+    this.events.push({ type: 'slack', link: 'outer', time: atTime, energyLoss: 0, residual });
   }
 
-  private releaseFull(): void {
+  private releaseFull(atTime = this.time, residual = 0): void {
     if (this.phase === 'full-slack') return;
     if (this.phase === 'taut') this.cart = tautToCartesian(this.state, this.params);
     this.phase = 'full-slack';
-    this.events.push({ type: 'slack', link: 'inner', time: this.time, energyLoss: 0 });
+    this.events.push({ type: 'slack', link: 'inner', time: atTime, energyLoss: 0, residual });
   }
 
-  private tryCaptureOuter(): void {
+  /** Outer-link capture bookkeeping (clamp + kill the radial relative velocity). */
+  private captureOuterNow(atTime: number): void {
     const dx = this.cart.x2 - this.cart.x1;
     const dy = this.cart.y2 - this.cart.y1;
     const r = Math.hypot(dx, dy) || this.params.l2;
+    const residual = Math.abs(r - this.params.l2);
     const ux = dx / r;
     const uy = dy / r;
-    const rvx = this.cart.vx2 - this.cart.vx1;
-    const rvy = this.cart.vy2 - this.cart.vy1;
-    const radial = dot(rvx, rvy, ux, uy);
-    if (r < this.params.l2 || radial <= 0) return;
-
+    const radial = dot(this.cart.vx2 - this.cart.vx1, this.cart.vy2 - this.cart.vy1, ux, uy);
     const before = this.energy();
     this.cart.x2 = this.cart.x1 + this.params.l2 * ux;
     this.cart.y2 = this.cart.y1 + this.params.l2 * uy;
@@ -317,26 +403,114 @@ export class DoubleStringPendulum {
     this.state[2] = dot(this.cart.vx1, this.cart.vy1, Math.cos(this.state[0] ?? 0), Math.sin(this.state[0] ?? 0)) / this.params.l1;
     this.state[3] = dot(this.cart.vx2 - this.cart.vx1, this.cart.vy2 - this.cart.vy1, Math.cos(this.state[1] ?? 0), Math.sin(this.state[1] ?? 0)) / this.params.l2;
     this.phase = 'taut';
-    this.events.push({ type: 'capture', link: 'outer', time: this.time, energyLoss: Math.max(0, before - this.energy()) });
-    this.checkSlack();
+    this.events.push({ type: 'capture', link: 'outer', time: atTime, energyLoss: Math.max(0, before - this.energy()), residual });
+    this.checkSlack(atTime);
   }
 
-  private tryCaptureInner(): void {
+  private tryCaptureOuter(
+    h: number,
+    depth: number,
+    innerStart: readonly [number, number],
+    projStart: { x: number; y: number; vx: number; vy: number },
+    gapBefore: number
+  ): void {
+    const dx = this.cart.x2 - this.cart.x1;
+    const dy = this.cart.y2 - this.cart.y1;
+    const r = Math.hypot(dx, dy) || this.params.l2;
+    const radial = dot(this.cart.vx2 - this.cart.vx1, this.cart.vy2 - this.cart.vy1, dx / r, dy / r);
+    if (r < this.params.l2 || radial <= 0) return;
+
+    if (depth >= DoubleStringPendulum.MAX_SWITCH_DEPTH || !(gapBefore < 0)) {
+      // Grazing start or recursion cap: legacy end-of-substep capture.
+      this.captureOuterNow(this.time + h);
+      return;
+    }
+    // Refine the |r₂ − r₁| = l₂ crossing: both the inner single-string state
+    // and the outer projectile are re-advanced from the substep start by τ.
+    const gapAt = (tau: number): number => {
+      const inner = this.advanceInnerSingle(innerStart[0], innerStart[1], tau);
+      const x1 = this.params.l1 * Math.sin(inner.theta);
+      const y1 = -this.params.l1 * Math.cos(inner.theta);
+      const proj = this.advanceProjectile(projStart, tau);
+      return Math.hypot(proj.x - x1, proj.y - y1) - this.params.l2;
+    };
+    const crossing = locateTransition(gapAt, h, gapBefore, r - this.params.l2);
+    const inner = this.advanceInnerSingle(innerStart[0], innerStart[1], crossing.tAfter);
+    this.state[0] = inner.theta;
+    this.state[2] = inner.omega;
+    this.syncInnerCart();
+    const proj = this.advanceProjectile(projStart, crossing.tAfter);
+    this.cart.x2 = proj.x;
+    this.cart.y2 = proj.y;
+    this.cart.vx2 = proj.vx;
+    this.cart.vy2 = proj.vy;
+    this.captureOuterNow(this.time + crossing.tAfter);
+    const rest = h - crossing.tAfter;
+    if (rest > 1e-12) this.continueAfterSwitch(rest, depth + 1);
+  }
+
+  private tryCaptureInner(
+    h: number,
+    depth: number,
+    proj1Start: { x: number; y: number; vx: number; vy: number },
+    proj2Start: { x: number; y: number; vx: number; vy: number },
+    gapBefore: number
+  ): void {
     const r = Math.hypot(this.cart.x1, this.cart.y1) || this.params.l1;
-    const ux = this.cart.x1 / r;
-    const uy = this.cart.y1 / r;
-    const radial = dot(this.cart.vx1, this.cart.vy1, ux, uy);
+    const radial = dot(this.cart.vx1, this.cart.vy1, this.cart.x1 / r, this.cart.y1 / r);
     if (r < this.params.l1 || radial <= 0) return;
+
+    const refine = depth < DoubleStringPendulum.MAX_SWITCH_DEPTH && gapBefore < 0;
+    let atTime = this.time + h;
+    let rest = 0;
+    if (refine) {
+      const gapAt = (tau: number): number => {
+        const p = this.advanceProjectile(proj1Start, tau);
+        return Math.hypot(p.x, p.y) - this.params.l1;
+      };
+      const crossing = locateTransition(gapAt, h, gapBefore, r - this.params.l1);
+      const p1 = this.advanceProjectile(proj1Start, crossing.tAfter);
+      const p2 = this.advanceProjectile(proj2Start, crossing.tAfter);
+      this.cart.x1 = p1.x;
+      this.cart.y1 = p1.y;
+      this.cart.vx1 = p1.vx;
+      this.cart.vy1 = p1.vy;
+      this.cart.x2 = p2.x;
+      this.cart.y2 = p2.y;
+      this.cart.vx2 = p2.vx;
+      this.cart.vy2 = p2.vy;
+      atTime = this.time + crossing.tAfter;
+      rest = h - crossing.tAfter;
+    }
+    const rInner = Math.hypot(this.cart.x1, this.cart.y1) || this.params.l1;
+    const residual = Math.abs(rInner - this.params.l1);
+    const ux = this.cart.x1 / rInner;
+    const uy = this.cart.y1 / rInner;
+    const radialNow = dot(this.cart.vx1, this.cart.vy1, ux, uy);
     const before = this.energy();
     this.cart.x1 = this.params.l1 * ux;
     this.cart.y1 = this.params.l1 * uy;
-    this.cart.vx1 -= radial * ux;
-    this.cart.vy1 -= radial * uy;
+    this.cart.vx1 -= radialNow * ux;
+    this.cart.vy1 -= radialNow * uy;
     this.state[0] = Math.atan2(this.cart.x1, -this.cart.y1);
     this.state[2] = dot(this.cart.vx1, this.cart.vy1, Math.cos(this.state[0] ?? 0), Math.sin(this.state[0] ?? 0)) / this.params.l1;
     this.phase = 'outer-slack';
-    this.events.push({ type: 'capture', link: 'inner', time: this.time, energyLoss: Math.max(0, before - this.energy()) });
-    this.tryCaptureOuter();
+    this.events.push({ type: 'capture', link: 'inner', time: atTime, energyLoss: Math.max(0, before - this.energy()), residual });
+    // The outer link may already be at full extension at the same instant:
+    // mirror the legacy immediate chained capture before continuing.
+    const dx = this.cart.x2 - this.cart.x1;
+    const dy = this.cart.y2 - this.cart.y1;
+    const rOuter = Math.hypot(dx, dy) || this.params.l2;
+    const radialOuter = dot(this.cart.vx2 - this.cart.vx1, this.cart.vy2 - this.cart.vy1, dx / rOuter, dy / rOuter);
+    if (rOuter >= this.params.l2 && radialOuter > 0) this.captureOuterNow(atTime);
+    if (rest > 1e-12) this.continueAfterSwitch(rest, depth + 1);
+  }
+
+  /** Finish the remainder of a substep in whatever phase a switch left us in. */
+  private continueAfterSwitch(rest: number, depth: number): void {
+    if (this.phase === 'taut') this.stepTaut(rest, depth);
+    else if (this.phase === 'outer-slack') this.stepOuterSlack(rest, depth);
+    else this.stepFullSlack(rest, depth);
   }
 
   energy(): number {

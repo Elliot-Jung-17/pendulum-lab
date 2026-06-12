@@ -18,6 +18,14 @@
  * The flat re-exports below the namespace exports preserve the pre-10.31
  * import surface (`import { rhsChain } from 'pendulum-lab-core'`) so existing
  * scripts keep working; new code should prefer the grouped namespaces.
+ *
+ * Stability contract:
+ * - `core`, `analysis`, and `research` are stable public namespaces governed
+ *   by semantic versioning.
+ * - `experimental` is tested but may change in minor releases; each change
+ *   must be documented in `CHANGELOG.md`.
+ * - Flat re-exports are compatibility aliases. They remain supported until a
+ *   future major release announces a concrete removal version.
  */
 
 export * as core from './lib/core';
@@ -27,19 +35,22 @@ export * as experimental from './lib/experimental';
 
 // --- Flat compatibility surface (pre-10.31) --------------------------------
 
-export type { PendulumParameters, SystemType, IntegratorId, RunMode, RuntimeSnapshot } from './types/domain';
+export type { EnergyBreakdown, PendulumParameters, SystemType, IntegratorId, RunMode, RuntimeSnapshot } from './types/domain';
 
 // Physics
 export * from './physics/types';
 export * from './physics/integrators';
 export { rhsDouble } from './physics/double';
 export { energyDouble } from './physics/energy';
-export { rhsChain, energyChain, chainMassMatrix, createChainWorkspace, validateChainParameters } from './physics/nPendulum';
+export { rhsChain, energyChain, chainMassMatrix, chainMassMatrixDiagnostics, createChainWorkspace, validateChainParameters } from './physics/nPendulum';
 export type { ChainParameters, ChainWorkspace } from './physics/nPendulum';
 export { assertLinearSolve, solveLinearInPlace } from './physics/linearSolve';
-export type { LinearSolveFailureReason, LinearSolveOptions, LinearSolveResult } from './physics/linearSolve';
+export type { LinearSolveFailureReason, LinearSolveFallbackPolicy, LinearSolveOptions, LinearSolveResult } from './physics/linearSolve';
 export { buildRhs, buildJacobian } from './physics/systemSpec';
 export type { SystemSpec } from './physics/systemSpec';
+export type { CrossingDirection, EventFunction } from './physics/events';
+export { DAMPED_DRIVEN_CHAOS_PRESET, energyDriven, rhsDriven } from './physics/driven';
+export type { DrivenParameters } from './physics/driven';
 export { RopePendulum } from './physics/rope';
 export type { RopeParams, RopePhase, RopeStateSnapshot, RopeEvent } from './physics/rope';
 export { DoubleStringPendulum, doubleStringEnergy, doubleStringEnergyFromTautState, doubleStringTautFraction, doubleStringTensions } from './physics/doubleString';
@@ -72,9 +83,39 @@ export * from './chaos';
 
 // Worker job protocol (pure handlers usable headlessly).
 export { runChaosJob } from './workers/chaosProtocol';
-export type { ChaosRequest, ChaosResponse } from './workers/chaosProtocol';
+export type {
+  BasinRequest,
+  BasinResponse,
+  BifurcationJobSettings,
+  BifurcationRequest,
+  BifurcationResponse,
+  ChaosErrorResponse,
+  ChaosRequest,
+  ChaosResponse,
+  ClvRequest,
+  ClvResponse,
+  CodimTwoRequest,
+  CodimTwoResponse,
+  FtleRequest,
+  FtleResponse,
+  LyapunovRequest,
+  LyapunovResponse,
+  LyapunovSpectrumRequest,
+  LyapunovSpectrumResponse,
+  RqaJobSettings,
+  RqaRequest,
+  RqaResponse,
+  StudyPointJobSettings,
+  StudyPointRequest,
+  StudyPointResponse,
+  WadaConvergenceRequest,
+  WadaConvergenceResponse,
+  ZeroOneJobSettings,
+  ZeroOneRequest,
+  ZeroOneResponse
+} from './workers/chaosProtocol';
 export { JobEngine, jobPhases, JOB_PROTOCOL_V2 } from './workers/jobProtocol';
-export type { JobEventMessage, JobInboundMessage, JobStatus, JobCheckpointState, PhaseRunner } from './workers/jobProtocol';
+export type { JobControlMessage, JobEventMessage, JobInboundMessage, JobStatus, JobCheckpointState, JobSubmitMessage, PhaseRunner } from './workers/jobProtocol';
 
 // Research tooling
 export * from './research/researchSampling';

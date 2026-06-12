@@ -71,6 +71,21 @@ import { clampNumber } from './storage-sync';
 import { append, button, html, numberFrom, setText, toast } from './shared';
 import { logResearchRun, researchActions, researchCard, researchFormRow, researchInput, researchSelect } from './research-workbench';
 import { $ } from './shared';
+import { CHAIN_COLORS, DOUBLE_STRING_PRESETS } from './lab3d-utils';
+import {
+  buildLab3dChainInitialState,
+  buildLab3dChainParams,
+  buildLab3dChainSpec,
+  normalizeLab3dChainMethod,
+  normalizeLab3dChainN,
+  type Lab3dChainInput
+} from './lab3d-chain-config';
+import {
+  normalizeLab3dResearchStep,
+  normalizeLab3dTimingMode,
+  resolveLab3dStepTiming,
+  type Lab3dTimingMode
+} from './lab3d-timing';
 import { attachBadge } from '../resultBadges';
 
 
@@ -97,18 +112,11 @@ export const lab3d = {
   /** One trail per bob (the chain supports N links, not just two). */
   chainTrails: [] as Array<Array<{ x: number; y: number; z: number }>>,
   chainCamera: new OrbitCamera(),
+  timingMode: 'demo' as Lab3dTimingMode,
+  researchStep: 1 / 60,
   rafId: 0,
   lastFrame: 0
 };
-
-/** Per-bob display colours for the N-chain (cycled when N exceeds the palette). */
-const CHAIN_COLORS: Array<{ r: number; g: number; b: number; css: string }> = [
-  { r: 244, g: 162, b: 97, css: '#f4a261' },
-  { r: 76, g: 201, b: 240, css: '#4cc9f0' },
-  { r: 56, g: 232, b: 140, css: '#38e88c' },
-  { r: 240, g: 196, b: 25, css: '#f0c419' },
-  { r: 230, g: 57, b: 70, css: '#e63946' }
-];
 
 export function lab3dRopeParams(): { l: number; g: number; damping: number } {
   return {
@@ -149,14 +157,6 @@ export function resetDoubleStringSim(): void {
   renderDoubleStringSim();
   renderDoubleStringReadout();
 }
-
-/** Named double-string presets covering the three qualitative regimes. */
-export const DOUBLE_STRING_PRESETS: Record<string, { label: string; theta1: number; theta2: number; omega1: number; omega2: number }> = {
-  'gentle-swing': { label: 'Gentle swing (stays taut)', theta1: 0.7, theta2: 0.4, omega1: 0.2, omega2: -0.1 },
-  'chaotic-taut': { label: 'Chaotic but taut', theta1: 2.0, theta2: 2.4, omega1: 0, omega2: 0 },
-  'slack-cascade': { label: 'Near-inverted fold (slack + recapture)', theta1: 2.5, theta2: -2.5, omega1: 0, omega2: 0 },
-  'whirling': { label: 'Fast whirl (centripetally taut)', theta1: 3.0, theta2: 3.0, omega1: 0, omega2: 8 }
-};
 
 export function applyDoubleStringPreset(key: string): void {
   const preset = DOUBLE_STRING_PRESETS[key];
@@ -292,50 +292,46 @@ export function resetSphereSim(): void {
   renderSphereReadout();
 }
 
-/** Parse a comma-separated number list, padded/clamped to exactly `n` entries. */
-function numberList(id: string, n: number, fallback: number, min: number, max: number): number[] {
+/** Read raw text-ish control values; numeric normalization lives in lab3d-chain-config. */
+function textInputValue(id: string): string {
   const el = $(id);
-  const raw = el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement ? el.value : '';
-  const parsed = raw
-    .split(/[,\s]+/)
-    .map((token) => Number.parseFloat(token))
-    .filter((value) => Number.isFinite(value));
-  const out: number[] = [];
-  for (let i = 0; i < n; i += 1) out.push(clampNumber(parsed[i], parsed[i - 1] ?? fallback, min, max));
-  return out;
+  return el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement ? el.value : '';
+}
+
+function lab3dChainInput(): Lab3dChainInput {
+  const method = $('d3Method');
+  return {
+    nValue: numberFrom('d3N', 2),
+    methodValue: method instanceof HTMLSelectElement ? method.value : 'rk4',
+    massesText: textInputValue('d3Masses'),
+    lengthsText: textInputValue('d3Lengths'),
+    thetaText: textInputValue('d3Thetas'),
+    phiText: textInputValue('d3Phis'),
+    thetaDotText: textInputValue('d3ThetaDots'),
+    phiDotText: textInputValue('d3PhiDots'),
+    gravityValue: numberFrom('d3Gravity', 9.81),
+    dampingValue: numberFrom('d3Damping', 0),
+    clampNumber
+  };
 }
 
 export function lab3dChainN(): number {
-  return Math.round(clampNumber(numberFrom('d3N', 2), 2, 1, 5));
+  return normalizeLab3dChainN(numberFrom('d3N', 2), clampNumber);
 }
 
 export function lab3dChainMethod(): IntegratorId {
   const raw = $('d3Method');
   const value = raw instanceof HTMLSelectElement ? raw.value : 'rk4';
-  return (['rk4', 'dopri5', 'gbs', 'gauss2', 'yoshida4'].includes(value) ? value : 'rk4') as IntegratorId;
+  return normalizeLab3dChainMethod(value);
 }
 
 export function lab3dChainParams(): SphericalChainParams {
-  const n = lab3dChainN();
-  return {
-    masses: numberList('d3Masses', n, 1, 0.1, 5),
-    lengths: numberList('d3Lengths', n, 0.8, 0.2, 3),
-    g: clampNumber(numberFrom('d3Gravity', 9.81), 9.81, 0.5, 30),
-    damping: clampNumber(numberFrom('d3Damping', 0), 0, 0, 5)
-  };
+  return buildLab3dChainParams(lab3dChainInput());
 }
 
 /** Full initial state [θ_k, φ_k …, θ̇_k, φ̇_k …] from the per-link IC lists. */
 export function lab3dChainInitialState(): number[] {
-  const n = lab3dChainN();
-  const thetas = numberList('d3Thetas', n, 1.6, -3.05, 3.05);
-  const phis = numberList('d3Phis', n, 0, -Math.PI, Math.PI);
-  const thetaDots = numberList('d3ThetaDots', n, 0, -10, 10);
-  const phiDots = numberList('d3PhiDots', n, 0, -10, 10);
-  const state: number[] = [];
-  for (let k = 0; k < n; k += 1) state.push(thetas[k]!, phis[k]!);
-  for (let k = 0; k < n; k += 1) state.push(thetaDots[k]!, phiDots[k]!);
-  return state;
+  return buildLab3dChainInitialState(lab3dChainInput());
 }
 
 export function resetChainSim(): void {
@@ -352,10 +348,16 @@ export function resetChainSim(): void {
 }
 
 export function lab3dFrame(timestamp: number): void {
-  const dtWall = lab3d.lastFrame > 0 ? Math.min(0.05, (timestamp - lab3d.lastFrame) / 1000) : 0.016;
-  lab3d.lastFrame = timestamp;
+  const timing = resolveLab3dStepTiming({
+    timestamp,
+    lastFrame: lab3d.lastFrame,
+    mode: lab3d.timingMode,
+    researchStep: lab3d.researchStep,
+    clampNumber
+  });
+  lab3d.lastFrame = timing.nextLastFrame;
   if (lab3d.ropeRunning && lab3d.rope) {
-    lab3d.rope.step(dtWall);
+    lab3d.rope.step(timing.elapsed);
     const { x, y } = lab3d.rope.position();
     lab3d.ropeTrail.push({ x, y });
     if (lab3d.ropeTrail.length > 600) lab3d.ropeTrail.shift();
@@ -363,7 +365,7 @@ export function lab3dFrame(timestamp: number): void {
     renderRopeReadout();
   }
   if (lab3d.doubleStringRunning && lab3d.doubleString) {
-    lab3d.doubleString.step(dtWall);
+    lab3d.doubleString.step(timing.elapsed);
     const snapshot = lab3d.doubleString.snapshot();
     lab3d.doubleStringTrail1.push({ x: snapshot.x1, y: snapshot.y1 });
     if (lab3d.doubleStringTrail1.length > 700) lab3d.doubleStringTrail1.shift();
@@ -373,7 +375,7 @@ export function lab3dFrame(timestamp: number): void {
     renderDoubleStringReadout();
   }
   if (lab3d.sphereRunning && lab3d.sphere) {
-    lab3d.sphere.step(dtWall);
+    lab3d.sphere.step(timing.elapsed);
     const position = lab3d.sphere.position();
     lab3d.sphereTrail.push(position);
     if (lab3d.sphereTrail.length > 1200) lab3d.sphereTrail.shift();
@@ -395,7 +397,7 @@ export function lab3dFrame(timestamp: number): void {
     renderSphereReadout();
   }
   if (lab3d.chainRunning && lab3d.chain) {
-    lab3d.chain.step(dtWall);
+    lab3d.chain.step(timing.elapsed);
     const positions = lab3d.chain.positions();
     positions.forEach((position, index) => {
       const trail = lab3d.chainTrails[index];
@@ -722,10 +724,12 @@ export function renderChainReadout(): void {
   const sub = (value: number): string => String(value).replace(/\d/g, (digit) => '₀₁₂₃₄₅₆₇₈₉'[Number(digit)]!);
   const angles = Array.from({ length: n }, (_, k) =>
     `θ${sub(k + 1)}=${(state[2 * k] ?? 0).toFixed(2)}, φ${sub(k + 1)}=${(state[2 * k + 1] ?? 0).toFixed(2)}`).join(' ');
+  const residualText = diag.relativeResidual !== undefined ? `, relres=${diag.relativeResidual.toExponential(1)}` : '';
   setText('d3Readout', [
     `N=${n} | ${angles}`,
     `E=${diag.energy.toFixed(5)} J (drift ${diag.energyDrift.toExponential(2)})`,
     `Lz=${diag.lz.toFixed(5)} (drift ${diag.lzDrift.toExponential(2)})`,
+    `mass-matrix cond~${diag.conditionEstimate.toExponential(2)}${residualText}`,
     `method=${diag.method}, dt=${diag.dt}`,
     diag.caveat
   ].join(' | '));
@@ -742,26 +746,25 @@ export function renderChainReadout(): void {
         nearLink = k + 1;
       }
     }
-    const message = minAbsSin < 5e-3
+    const chartMessage = minAbsSin < 5e-3
       ? `CHART LIMIT: link ${nearLink} is near a pole (|sinθ| = ${minAbsSin.toExponential(1)}). The azimuth φ is ill-conditioned there; with Lz ≠ 0 the chart genuinely diverges (planar Lz = 0 passages are exact).`
       : minAbsSin < 5e-2
         ? `Link ${nearLink} approaching a pole (|sinθ| = ${minAbsSin.toFixed(3)}): azimuth chart accuracy degrades below |sinθ| ≈ 1e-6.`
         : '';
+    const conditionMessage = diag.conditionEstimate > 1e10
+      ? `MASS MATRIX WARNING: condition estimate ${diag.conditionEstimate.toExponential(2)}; reduce dt, avoid pole charts, or switch to a validated CPU reference before treating this as research-grade.`
+      : diag.conditionEstimate > 1e7
+        ? `Mass matrix is getting ill-conditioned (cond~${diag.conditionEstimate.toExponential(2)}); interpret finite-time estimates cautiously.`
+        : '';
+    const message = [chartMessage, conditionMessage].filter(Boolean).join(' | ');
     warningNode.textContent = message;
-    warningNode.style.color = message ? (minAbsSin < 5e-3 ? '#e63946' : '#f4a261') : '';
+    warningNode.style.color = message ? (minAbsSin < 5e-3 || diag.conditionEstimate > 1e10 ? '#e63946' : '#f4a261') : '';
   }
 }
 
 /** Declarative spec of the current chain — the bridge into the research stack. */
 export function chainSpec(): Extract<SystemSpec, { kind: 'spherical-chain' }> {
-  const params = lab3dChainParams();
-  return {
-    kind: 'spherical-chain',
-    masses: [...params.masses],
-    lengths: [...params.lengths],
-    g: params.g,
-    damping: params.damping
-  };
+  return buildLab3dChainSpec(lab3dChainParams());
 }
 
 let chainAnalysisClient: ChaosClient | null = null;
@@ -889,6 +892,33 @@ export function installLab3dTab(): void {
   const left = html('div', { className: 'left-col' });
   left.style.maxWidth = '1180px';
   const wrap = html('div', { className: 'research-workbench' });
+
+  const timingCard = researchCard('3D Lab Run Timing', 'lab3dTimingCard');
+  timingCard.classList.add('research-wide');
+  const timingModeSelect = researchSelect('lab3dTimingMode', [
+    ['demo', 'Demo mode: wall-clock realtime'],
+    ['research', 'Research mode: deterministic fixed quantum']
+  ]);
+  const timingStepInput = researchInput('lab3dResearchStep', 'number', '0.0166667', 's per rendered frame in research mode');
+  const timingReadout = html('div', { id: 'lab3dTimingReadout', className: 'research-summary', text: '' });
+  const syncTiming = (): void => {
+    lab3d.timingMode = normalizeLab3dTimingMode(timingModeSelect.value);
+    lab3d.researchStep = normalizeLab3dResearchStep(Number(timingStepInput.value), clampNumber);
+    lab3d.lastFrame = 0;
+    timingReadout.textContent = lab3d.timingMode === 'research'
+      ? `Research mode active: every render tick advances exactly ${lab3d.researchStep.toFixed(6)} s, independent of browser frame pacing.`
+      : 'Demo mode active: simulations follow wall-clock time with a 50 ms catch-up clamp.';
+  };
+  timingModeSelect.addEventListener('change', syncTiming);
+  timingStepInput.addEventListener('change', syncTiming);
+  timingStepInput.addEventListener('input', syncTiming);
+  append(
+    timingCard,
+    researchFormRow('Run mode', timingModeSelect),
+    researchFormRow('Research quantum', timingStepInput),
+    timingReadout
+  );
+  syncTiming();
 
   const ropeCard = researchCard('Rope / String Pendulum', 'lab3dRopeCard');
   ropeCard.classList.add('research-wide');
@@ -1110,7 +1140,7 @@ export function installLab3dTab(): void {
     html('div', { id: 'd3Readout', className: 'research-summary', text: 'Reset to initialise. Spherical N-chain (ball joints, 2N DOF): manipulator-form equations cross-checked against an independent SymPy derivation; E and Lz are conserved when undamped.' })
   );
 
-  append(wrap, ropeCard, doubleStringCard, sphereCard, chainCard);
+  append(wrap, timingCard, ropeCard, doubleStringCard, sphereCard, chainCard);
   left.append(wrap);
   append(layout, left);
   panel.append(layout);

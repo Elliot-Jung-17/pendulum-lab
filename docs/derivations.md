@@ -165,3 +165,64 @@ with batched standard errors and, for Hamiltonian systems, the symplectic
 pairing self-check (λᵢ + λ_{2n+1−i} ≈ 0 and Σλ ≈ 0) as an internal
 consistency gate. All values are finite-time estimates and are badged as such
 in the UI.
+
+## 7. Conserved quantities by Noether detection (`conservedQuantities.ts`)
+
+For the autonomous (γ = 0) chain Lagrangians, Noether's theorem pairs each
+one-parameter symmetry group with a conserved charge. The detector verifies
+each candidate two independent ways and requires them to agree:
+
+1. **Symmetry of the Hamiltonian.** The group action g_ε (a Rodrigues rotation
+   of every link direction u_k and velocity u̇_k about a fixed axis, converted
+   back to the (θ, φ) chart) is applied to probe states and the directional
+   derivative |dH/dε| is measured by a central difference. Rotations about the
+   vertical (gravity) axis leave the energy invariant; rotations about a
+   horizontal axis change bob heights, so |dH/dε| = O(m·g·l) unless g ≈ 0.
+2. **Conservation along the flow.** The candidate momentum (the axis-projected
+   total angular momentum L·n̂ = Σ mᵢ rᵢ × vᵢ · n̂, or the energy) is sampled
+   along an RK4 trajectory and its relative drift is measured.
+
+A symmetry ⟺ a conserved momentum, so the two verdicts must match; a mismatch
+flags an unconverged trajectory or a derivation bug rather than physics. With
+gravity present only the vertical-axis charge survives; as g → 0 the full
+rotation group SO(3) reappears and all three components are conserved; any
+damping breaks the Lagrangian structure and every charge decays. This is
+numerical detection on finite probes/horizons, not a symbolic proof, and the
+chart conversion degrades near the poles (|sinθ| → 0).
+
+## 8. Variance-based sensitivity (Sobol indices, `sobolSensitivity.ts`)
+
+For an output Y = f(X₁, …, X_d) of independent inputs, the first-order Sobol
+index S_i = Var(E[Y | X_i]) / Var(Y) is the fraction of output variance
+explained by X_i alone, and the total index S_Ti = E[Var(Y | X_{∼i})] / Var(Y)
+adds every interaction involving X_i, so S_Ti ≥ S_i with equality iff X_i has
+no interactions. They are estimated by the Saltelli radial scheme from two
+independent sample matrices A, B (a joint 2d-dimensional Sobol low-discrepancy
+stream split in half) and the radial matrices AB_i (A with column i taken from
+B):
+
+```
+S_i  = (1/N) Σ f(B)·(f(AB_i) − f(A)) / V            (Saltelli 2010)
+S_Ti = (1/2N) Σ (f(A) − f(AB_i))² / V               (Jansen 1999)
+```
+
+with V the sample variance over A ∪ B; cost N·(d + 2) evaluations. The
+estimators carry O(1/√N) Monte-Carlo noise, so small negative S_i and
+S_Ti < S_i within noise are expected, not contradictions. Pinned against the
+analytic additive-linear model and the Ishigami benchmark (whose third input
+has zero first-order but a real total effect through the X₁X₃ interaction).
+
+## 9. WebGPU field scans and the CPU cross-validation contract (`gpuFields.ts`)
+
+The flip-basin, sweep λ_max, and finite-difference FTLE grids optionally run as
+WebGPU f32 compute kernels. Because WebGPU integrates in single precision, the
+per-cell result inherits f32 round-off, which in chaotic regions grows at the
+Lyapunov rate. The accelerator is therefore never trusted blindly: on every GPU
+run a deterministic probe subset (corners, edge midpoints, centre) is recomputed
+on the CPU in f64 *with the same algorithm* and compared. If the discrepancy
+exceeds a per-field tolerance the entire grid is recomputed on the CPU and the
+f64 result is returned instead. Results report their `backend` and carry a
+validated-vs-caveat credibility badge; the sweep kernel uses the two-trajectory
+(finite-separation) Benettin estimator and the FTLE kernel the Shadden-style
+finite-difference flow-map gradient, both of which differ in method from the
+variational CPU references and are documented as such.

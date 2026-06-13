@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-12T04:25:50.317Z",
+  "generatedAt": "2026-06-13T14:10:49.479Z",
   "pass": true,
   "counts": {
     "innerHTML": 0,
@@ -214,6 +214,54 @@
       "globalRuntimeExports": 0
     },
     "src\\app\\parity\\lab3d-chain-config.ts": {
+      "innerHTML": 0,
+      "onclick": 0,
+      "inlineWorkerBlob": 0,
+      "evalLike": 0,
+      "dynamicScript": 0,
+      "globalRuntimeExports": 0
+    },
+    "src\\app\\parity\\lab3d-diagnostics.ts": {
+      "innerHTML": 0,
+      "onclick": 0,
+      "inlineWorkerBlob": 0,
+      "evalLike": 0,
+      "dynamicScript": 0,
+      "globalRuntimeExports": 0
+    },
+    "src\\app\\parity\\lab3d-double-string-ui.ts": {
+      "innerHTML": 0,
+      "onclick": 0,
+      "inlineWorkerBlob": 0,
+      "evalLike": 0,
+      "dynamicScript": 0,
+      "globalRuntimeExports": 0
+    },
+    "src\\app\\parity\\lab3d-exports.ts": {
+      "innerHTML": 0,
+      "onclick": 0,
+      "inlineWorkerBlob": 0,
+      "evalLike": 0,
+      "dynamicScript": 0,
+      "globalRuntimeExports": 0
+    },
+    "src\\app\\parity\\lab3d-render-loop.ts": {
+      "innerHTML": 0,
+      "onclick": 0,
+      "inlineWorkerBlob": 0,
+      "evalLike": 0,
+      "dynamicScript": 0,
+      "globalRuntimeExports": 0
+    },
+    "src\\app\\parity\\lab3d-rope-ui.ts": {
+      "innerHTML": 0,
+      "onclick": 0,
+      "inlineWorkerBlob": 0,
+      "evalLike": 0,
+      "dynamicScript": 0,
+      "globalRuntimeExports": 0
+    },
+    "src\\app\\parity\\lab3d-spherical-chain-ui.ts": {
       "innerHTML": 0,
       "onclick": 0,
       "inlineWorkerBlob": 0,
@@ -669,6 +717,14 @@
       "dynamicScript": 0,
       "globalRuntimeExports": 0
     },
+    "src\\physics\\conservedQuantities.ts": {
+      "innerHTML": 0,
+      "onclick": 0,
+      "inlineWorkerBlob": 0,
+      "evalLike": 0,
+      "dynamicScript": 0,
+      "globalRuntimeExports": 0
+    },
     "src\\physics\\constants.ts": {
       "innerHTML": 0,
       "onclick": 0,
@@ -933,6 +989,14 @@
       "dynamicScript": 0,
       "globalRuntimeExports": 0
     },
+    "src\\research\\sobolSensitivity.ts": {
+      "innerHTML": 0,
+      "onclick": 0,
+      "inlineWorkerBlob": 0,
+      "evalLike": 0,
+      "dynamicScript": 0,
+      "globalRuntimeExports": 0
+    },
     "src\\research\\zipBundle.ts": {
       "innerHTML": 0,
       "onclick": 0,
@@ -974,6 +1038,14 @@
       "globalRuntimeExports": 0
     },
     "src\\runtime\\gpuEnsemble.ts": {
+      "innerHTML": 0,
+      "onclick": 0,
+      "inlineWorkerBlob": 0,
+      "evalLike": 0,
+      "dynamicScript": 0,
+      "globalRuntimeExports": 0
+    },
+    "src\\runtime\\gpuFields.ts": {
       "innerHTML": 0,
       "onclick": 0,
       "inlineWorkerBlob": 0,

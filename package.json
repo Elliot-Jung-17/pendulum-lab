@@ -1,6 +1,6 @@
 {
   "name": "pendulum-lab-v10",
-  "version": "10.32.0",
+  "version": "10.33.0",
   "private": true,
   "type": "module",
   "description": "Typed, modular Pendulum Lab V10 project with legacy runtime compatibility.",

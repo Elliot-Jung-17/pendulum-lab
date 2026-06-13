@@ -6,8 +6,8 @@ authors:
   - family-names: "Jung"
     given-names: "Elliot"
     email: "chanminyoo0417@gmail.com"
-version: "10.32.0"
-date-released: "2026-06-12"
+version: "10.33.0"
+date-released: "2026-06-13"
 license: MIT
 keywords:
   - nonlinear dynamics

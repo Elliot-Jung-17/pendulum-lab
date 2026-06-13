@@ -73,13 +73,12 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
 }
 `;
 
-function cpuEnsemble(params: PendulumParameters, initial: ArrayLike<number>, options: EnsembleOptions): Float64Array {
+function cpuEnsemble(params: PendulumParameters, damping: number, initial: ArrayLike<number>, options: EnsembleOptions): Float64Array {
   const n = Math.floor(initial.length / 4);
   const out = new Float64Array(initial.length);
   out.set(Array.from(initial));
   const state = new Float64Array(4);
   const next = new Float64Array(4);
-  const damping = 0; // damping folded into rhs wrapper below when needed
   const rhs = (s: Float64Array, o: Float64Array): void => {
     rhsDouble(s, params, damping, o);
   };
@@ -134,58 +133,71 @@ interface GPUEncoderLike {
 const GPU_BUFFER_USAGE = { STORAGE: 0x80, COPY_DST: 0x8, COPY_SRC: 0x4, UNIFORM: 0x40, MAP_READ: 0x1 };
 const GPU_MAP_READ = 0x1;
 
-async function webgpuEnsemble(
-  params: PendulumParameters,
-  damping: number,
-  initial: ArrayLike<number>,
-  options: EnsembleOptions
-): Promise<Float64Array | null> {
+/**
+ * Run a one-binding-group WGSL compute job: binding 0 is a read_write f32
+ * storage buffer initialised from `io` and read back after the dispatch,
+ * binding 1 a uniform buffer. Returns null when WebGPU is unavailable or the
+ * device errors, so callers can fall back to their CPU path. Shared by the
+ * ensemble integrator and the basin/sweep field kernels (`gpuFields.ts`).
+ */
+export async function runComputeKernel(code: string, uniformData: Float32Array, io: Float32Array, threads: number): Promise<Float32Array | null> {
+  if (typeof navigator === 'undefined') return null;
   const gpu = (navigator as unknown as { gpu?: GpuLike }).gpu;
   if (!gpu) return null;
   try {
     const adapter = await gpu.requestAdapter();
     if (!adapter) return null;
     const device = await adapter.requestDevice();
-    const n = Math.floor(initial.length / 4);
-    const stateData = new Float32Array(initial.length);
-    stateData.set(Array.from(initial));
 
-    const stateBuffer = device.createBuffer({
-      size: stateData.byteLength,
+    const ioBuffer = device.createBuffer({
+      size: io.byteLength,
       usage: GPU_BUFFER_USAGE.STORAGE | GPU_BUFFER_USAGE.COPY_DST | GPU_BUFFER_USAGE.COPY_SRC
     });
-    device.queue.writeBuffer(stateBuffer, 0, stateData);
+    device.queue.writeBuffer(ioBuffer, 0, io);
 
-    const uniformData = new Float32Array([params.m1, params.m2, params.l1, params.l2, params.g, damping, options.dt, options.steps]);
     const uniformBuffer = device.createBuffer({ size: uniformData.byteLength, usage: GPU_BUFFER_USAGE.UNIFORM | GPU_BUFFER_USAGE.COPY_DST });
     device.queue.writeBuffer(uniformBuffer, 0, uniformData);
 
-    const module = device.createShaderModule({ code: WGSL_KERNEL });
+    const module = device.createShaderModule({ code });
     const pipeline = device.createComputePipeline({ layout: 'auto', compute: { module, entryPoint: 'main' } });
     const bindGroup = device.createBindGroup({
       layout: pipeline.getBindGroupLayout(0),
       entries: [
-        { binding: 0, resource: { buffer: stateBuffer } },
+        { binding: 0, resource: { buffer: ioBuffer } },
         { binding: 1, resource: { buffer: uniformBuffer } }
       ]
     });
 
-    const readBuffer = device.createBuffer({ size: stateData.byteLength, usage: GPU_BUFFER_USAGE.MAP_READ | GPU_BUFFER_USAGE.COPY_DST });
+    const readBuffer = device.createBuffer({ size: io.byteLength, usage: GPU_BUFFER_USAGE.MAP_READ | GPU_BUFFER_USAGE.COPY_DST });
     const encoder = device.createCommandEncoder();
     const pass = encoder.beginComputePass();
     pass.setPipeline(pipeline);
     pass.setBindGroup(0, bindGroup);
-    pass.dispatchWorkgroups(Math.ceil(n / 64));
+    pass.dispatchWorkgroups(Math.ceil(threads / 64));
     pass.end();
-    encoder.copyBufferToBuffer(stateBuffer, 0, readBuffer, 0, stateData.byteLength);
+    encoder.copyBufferToBuffer(ioBuffer, 0, readBuffer, 0, io.byteLength);
     device.queue.submit([encoder.finish()]);
     await readBuffer.mapAsync(GPU_MAP_READ);
     const result = new Float32Array(readBuffer.getMappedRange().slice(0));
     readBuffer.unmap();
-    return new Float64Array(result);
+    return result;
   } catch {
     return null;
   }
+}
+
+async function webgpuEnsemble(
+  params: PendulumParameters,
+  damping: number,
+  initial: ArrayLike<number>,
+  options: EnsembleOptions
+): Promise<Float64Array | null> {
+  const n = Math.floor(initial.length / 4);
+  const stateData = new Float32Array(initial.length);
+  stateData.set(Array.from(initial));
+  const uniformData = new Float32Array([params.m1, params.m2, params.l1, params.l2, params.g, damping, options.dt, options.steps]);
+  const result = await runComputeKernel(WGSL_KERNEL, uniformData, stateData, n);
+  return result ? new Float64Array(result) : null;
 }
 
 /** Integrate an ensemble; WebGPU when present, CPU otherwise. Always resolves. */
@@ -203,7 +215,7 @@ export async function runDoublePendulumEnsemble(
     states = await webgpuEnsemble(params, damping, initialStates, options);
     if (states) backend = 'webgpu';
   }
-  if (!states) states = cpuEnsemble(params, initialStates, options);
+  if (!states) states = cpuEnsemble(params, damping, initialStates, options);
   const elapsed = (typeof performance === 'undefined' ? Date.now() : performance.now()) - started;
   return {
     states,

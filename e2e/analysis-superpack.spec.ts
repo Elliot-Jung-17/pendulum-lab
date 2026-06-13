@@ -31,4 +31,12 @@ test('analysis superpack: Wada convergence, Melnikov, fixed point, shadowing', a
   await expect(page.locator('#rwSuperpackResults')).toContainText('Adjacent deltas');
   await expect(page.locator('#rwSuperpackResults')).toContainText('grid hashes');
   await expect(page.locator('#rwSuperpackResults')).toContainText('does not prove');
+
+  // Sobol global sensitivity of λ_max: first-order + total indices over (A, γ).
+  await page.locator('#rwSpSobol').click();
+  await expect(page.locator('#rwSuperpackResults')).toContainText('Sobol Sensitivity of λ_max (A × γ)', { timeout: 120_000 });
+  await expect(page.locator('#rwSuperpackResults')).toContainText(/drive amplitude A: S=/);
+  await expect(page.locator('#rwSuperpackResults')).toContainText(/damping .: S=/);
+  await expect(page.locator('#rwSuperpackResults')).toContainText('first-order');
+  await expect(page.locator('#rwSuperpackResults')).toContainText('total');
 });

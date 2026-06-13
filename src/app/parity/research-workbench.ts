@@ -16,7 +16,9 @@ import { detectNeimarkSacker } from '../../chaos/neimarkSacker';
 import { recurrenceNetworkMetrics } from '../../chaos/recurrenceNetwork';
 import { extractFtleRidges } from '../../chaos/ftleRidge';
 import { shadowingHorizon } from '../../chaos/shadowing';
-import { melnikovVerdict } from '../../chaos/melnikov';
+import { melnikovCriticalAmplitude, melnikovVerdict } from '../../chaos/melnikov';
+import { maximalLyapunov } from '../../chaos/lyapunov';
+import { sobolIndices } from '../../research/sobolSensitivity';
 import { csvCell, hashText } from '../../research/researchExportUtils';
 import { generateStudyValues } from '../../research/researchSampling';
 import {
@@ -222,6 +224,7 @@ export function installResearchTab(): void {
       button('rwSpBifurcations', 'Detect Bifurcations', () => { void runBifurcationDetectPanel(); }),
       button('rwSpFixedPoint', 'Fixed Point + NS Scan', () => runFixedPointPanel()),
       button('rwSpCodim2', 'Codim-2 Map', () => { void runCodimTwoPanel(); }),
+      button('rwSpSobol', 'Sobol Sensitivity', () => { void runSobolPanel(); }),
       button('rwSpShadowing', 'Shadowing Score', () => runShadowingPanel()),
       button('rwSpMelnikov', 'Melnikov Threshold', () => runMelnikovPanel())
     ),
@@ -1631,6 +1634,17 @@ export async function runCodimTwoPanel(): Promise<void> {
       { n: 11, steps: 2500, dt: 0.02 }
     );
     const result = response.result;
+    // Melnikov first-order threshold A_c(γ) along the damping axis — drawn on
+    // top of the λ-sign map so the analytic prediction and the measured chaos
+    // boundary can be compared in one picture.
+    const gammaLo = result.yValues[0] ?? 0;
+    const gammaHi = result.yValues[result.yValues.length - 1] ?? 1;
+    const melnikovCurve: Array<{ amplitude: number; gamma: number }> = [];
+    for (let s = 0; s <= 60; s += 1) {
+      const gamma = gammaLo + ((gammaHi - gammaLo) * s) / 60;
+      const amplitude = melnikovCriticalAmplitude({ ...base, damping: gamma });
+      if (Number.isFinite(amplitude)) melnikovCurve.push({ amplitude, gamma });
+    }
     const canvas = $('rwSuperpackCanvas');
     if (canvas instanceof HTMLCanvasElement) {
       const ctx = canvas.getContext('2d');
@@ -1644,21 +1658,110 @@ export async function runCodimTwoPanel(): Promise<void> {
           ctx.fillStyle = cell.regime === 1 ? '#e63946' : cell.regime === -1 ? '#4361ee' : '#778da9';
           ctx.fillRect(i * cellW, canvas.height - (j + 1) * cellH, Math.ceil(cellW), Math.ceil(cellH));
         }
+        // Overlay: cell i is centred on xValues[i], so the continuous curve
+        // maps through the cell-centre lattice (same convention vertically).
+        const xLo = result.xValues[0] ?? 0;
+        const xHi = result.xValues[n - 1] ?? 1;
+        const px = (amplitude: number): number => ((amplitude - xLo) / Math.max(xHi - xLo, 1e-12)) * (n - 1) * cellW + cellW / 2;
+        const py = (gamma: number): number => canvas.height - (((gamma - gammaLo) / Math.max(gammaHi - gammaLo, 1e-12)) * (n - 1) * cellH + cellH / 2);
+        ctx.save();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        let started = false;
+        for (const point of melnikovCurve) {
+          const x = px(point.amplitude);
+          if (x < 0 || x > canvas.width) {
+            started = false;
+            continue;
+          }
+          if (!started) {
+            ctx.moveTo(x, py(point.gamma));
+            started = true;
+          } else {
+            ctx.lineTo(x, py(point.gamma));
+          }
+        }
+        ctx.stroke();
+        ctx.restore();
         ctx.fillStyle = '#ffffff';
         ctx.font = '10px system-ui';
-        ctx.fillText('x: drive amplitude, y: damping — red chaotic, blue regular', 6, 12);
+        ctx.fillText('x: drive amplitude, y: damping — red chaotic, blue regular, dashed white: Melnikov A_c(γ)', 6, 12);
       }
     }
+    const melnikovLo = melnikovCurve[0];
+    const melnikovHi = melnikovCurve[melnikovCurve.length - 1];
     superpackSection('codim2', 'Codim-2 Regime Map (A × γ)', [
       `Chaotic fraction ${(result.chaoticFraction * 100).toFixed(1)}%; boundary cells ${result.boundaryCells} (the λ=0 contour)`,
+      melnikovLo && melnikovHi
+        ? `Overlay: first-order Melnikov threshold A_c(γ) (dashed) spans ${melnikovLo.amplitude.toFixed(3)} → ${melnikovHi.amplitude.toFixed(3)} over γ∈[${gammaLo.toFixed(2)}, ${gammaHi.toFixed(2)}]; the measured λ > 0 region should sit at or above it (homoclinic-tangle onset precedes sustained chaos)`
+        : 'Overlay: Melnikov threshold not finite over this damping range',
       `Method: ${result.method}`,
       `Transients: ${result.transientHandling}`,
-      `Caveat: ${result.caveat}`,
+      `Caveat: ${result.caveat} Melnikov curve is perturbative (small δ, f) — treat it as a heuristic away from small damping/drive.`,
       `Reproducibility hash: ${result.reproducibilityHash}`
     ]);
     logResearchRun('probe', 'Codim-2 map', `${(result.chaoticFraction * 100).toFixed(1)}% chaotic, ${result.boundaryCells} boundary cells`);
   } catch (error) {
     superpackSection('codim2', 'Codim-2 Regime Map — FAILED', [String(error instanceof Error ? error.message : error)]);
+  }
+}
+
+/**
+ * Variance-based global sensitivity of λ_max over the (drive amplitude,
+ * damping) box of the driven pendulum: Sobol first-order vs total indices.
+ * Complements the per-study local |Δλ/Δp| slope the batch runner reports —
+ * Sobol indices are global over the box and resolve interactions.
+ */
+export async function runSobolPanel(): Promise<void> {
+  const base = orbitBaseFromControls();
+  const variables = [
+    { name: 'drive amplitude A', min: 0.2, max: 1.6 },
+    { name: 'damping γ', min: 0.05, max: 0.7 }
+  ];
+  const steps = 2500;
+  const dt = 0.02;
+  superpackSection('sobol', 'Sobol Sensitivity of λ_max', ['Sampling the (A, γ) box (Saltelli scheme)…']);
+  try {
+    const result = await sobolIndices(
+      async (point) => {
+        // Yield between model runs so the UI stays responsive on the main thread.
+        await new Promise((resolve) => {
+          window.setTimeout(resolve, 0);
+        });
+        const rhs = buildRhs({
+          kind: 'driven',
+          g: base.g,
+          length: base.length,
+          damping: point[1]!,
+          driveAmplitude: point[0]!,
+          driveFrequency: base.driveFrequency
+        });
+        return maximalLyapunov(new Float64Array([0.3, 0, 0]), rhs, { steps, dt }).lambdaMax;
+      },
+      variables,
+      {
+        samples: 16,
+        onProgress: (done, total) => {
+          if (done % 8 === 0 || done === total) {
+            superpackSection('sobol', 'Sobol Sensitivity of λ_max', [`Evaluating λ_max ${done}/${total} (Saltelli radial design)…`]);
+          }
+        }
+      }
+    );
+    const fmt = (value: number): string => (Number.isFinite(value) ? value.toFixed(3) : 'n/a');
+    superpackSection('sobol', 'Sobol Sensitivity of λ_max (A × γ)', [
+      ...result.variables.map((name, i) =>
+        `${name}: S=${fmt(result.firstOrder[i]!)} (first-order), S_T=${fmt(result.total[i]!)} (total; S_T−S = interaction share)`),
+      `Output: λ_max over A∈[0.2, 1.6], γ∈[0.05, 0.7]; mean ${result.mean.toFixed(4)} /s, variance ${result.variance.toFixed(5)}`,
+      `Method: ${result.method}; per point ${steps} Benettin steps at dt=${dt} (ω=${base.driveFrequency})`,
+      `Caveat: ${result.caveat}${result.nonFiniteOutputs > 0 ? ` ${result.nonFiniteOutputs} non-finite λ evaluations excluded.` : ''}`,
+      `Reproducibility hash: ${hashText(JSON.stringify({ variables, steps, dt, base, samples: result.samples }))}`
+    ]);
+    logResearchRun('probe', 'Sobol sensitivity', result.variables.map((name, i) => `${name}: S=${fmt(result.firstOrder[i]!)}, ST=${fmt(result.total[i]!)}`).join('; '));
+  } catch (error) {
+    superpackSection('sobol', 'Sobol Sensitivity — FAILED', [String(error instanceof Error ? error.message : error)]);
   }
 }
 

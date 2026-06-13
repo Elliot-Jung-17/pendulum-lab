@@ -5,6 +5,7 @@ import { rhsDouble } from '../physics/double';
 import type { PendulumParameters } from '../types/domain';
 import { lambdaColor } from './sweepColor';
 import { downloadDataUrl, downloadText } from './labExport';
+import { sweepLambdaField } from '../runtime/gpuFields';
 
 /**
  * Modern port of the chaos-map (Sweep) tab. It computes the maximal Lyapunov
@@ -46,8 +47,52 @@ export class SweepTab extends TabController {
     this.cursor = 0;
     this.ctx.fillStyle = '#05080d';
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    const useGpu = this.dom.el<HTMLInputElement>('sweepGpu')?.checked ?? false;
+    if (useGpu && !this.quickPreview) {
+      this.dom.setText('sweepStatus', `computing ${this.res}×${this.res} (WebGPU)…`);
+      void this.startGpu();
+      return;
+    }
     this.dom.setText('sweepStatus', `computing ${this.res}×${this.res}…`);
     this.rafId = requestAnimationFrame(() => this.chunk());
+  }
+
+  /**
+   * GPU path: the whole grid in one dispatch via the two-trajectory Benettin
+   * kernel (f32), with the CPU subsample cross-validation contract from
+   * gpuFields.ts. The CPU per-cell path below stays the validated reference.
+   */
+  private async startGpu(): Promise<void> {
+    const canvas = this.canvas;
+    const ctx = this.ctx;
+    if (!canvas || !ctx) return;
+    try {
+      const result = await sweepLambdaField(this.params, { n: this.res, steps: this.steps, dt: 0.02 });
+      const total = this.res * this.res;
+      for (let c = 0; c < total; c += 1) this.grid[c] = result.values[c] ?? 0;
+      this.cursor = total;
+      const cellW = canvas.width / this.res;
+      const cellH = canvas.height / this.res;
+      for (let c = 0; c < total; c += 1) {
+        const i = c % this.res;
+        const j = Math.floor(c / this.res);
+        ctx.fillStyle = lambdaColor(this.grid[c] ?? 0, COLOR_SCALE);
+        ctx.fillRect(Math.floor(i * cellW), Math.floor(j * cellH), Math.ceil(cellW), Math.ceil(cellH));
+      }
+      const bar = this.dom.el('sweepProgress');
+      if (bar) bar.style.width = '100%';
+      const backendNote = result.backend === 'webgpu'
+        ? `WebGPU f32 · probe Δλ≤${(result.validation?.maxAbsDiff ?? 0).toFixed(3)} vs CPU`
+        : 'CPU fallback (f64)';
+      this.dom.setText('sweepStatus', `done · ${this.res}×${this.res} · ${backendNote} · ${result.elapsedMs.toFixed(0)} ms`);
+      this.badge(
+        'sweepStatus',
+        result.backend === 'webgpu' ? (result.validation?.passed ? 'finite-time-estimate' : 'caveat') : 'finite-time-estimate',
+        result.caveat
+      );
+    } catch (err) {
+      this.dom.setText('sweepStatus', `WebGPU sweep failed: ${err instanceof Error ? err.message : String(err)} — use the CPU path`);
+    }
   }
 
   private lambdaAt(theta1: number, theta2: number): number {

@@ -569,6 +569,7 @@
               </p>
               <div class="row"><label>Resolution</label><input id="sweepRes" type="range" min="40" max="400" step="10" value="120"><span class="val" id="sweepResV">120</span></div>
               <div class="row"><label>T (sim)</label><input id="sweepT" type="range" min="5" max="60" step="1" value="20"><span class="val" id="sweepTV">20 s</span></div>
+              <div class="row"><label><input id="sweepGpu" type="checkbox"> WebGPU acceleration (f32, CPU-cross-validated)</label></div>
             </div>
           </details>
         </aside>
@@ -802,6 +803,7 @@
                 Double pendulum only.
               </p>
               <div class="row"><label>Resolution</label><input id="basinRes" type="range" min="40" max="160" step="20" value="100"><span class="val" id="basinResV">100</span></div>
+              <div class="row"><label><input id="basinGpu" type="checkbox"> WebGPU acceleration (f32, CPU-cross-validated)</label></div>
             </div>
           </details>
           <details class="acc" open>
@@ -893,6 +895,8 @@
               </p>
               <div class="row"><label>Resolution</label><input id="ftleRes" type="range" min="30" max="120" step="10" value="70"><span class="val" id="ftleResV">70</span></div>
               <div class="row"><label>Horizon T</label><input id="ftleT" type="range" min="1" max="8" step="0.5" value="3"><span class="val" id="ftleTV">3.0 s</span></div>
+              <div class="row"><label><input id="ftleRidges" type="checkbox" checked> LCS ridge overlay</label></div>
+              <div class="row"><label><input id="ftleGpu" type="checkbox"> WebGPU acceleration (FD flow-map, f32)</label></div>
             </div>
           </details>
           <details class="acc" open>
@@ -902,6 +906,7 @@
                 <div class="srow"><span class="skey has-tip" data-tip="Minimum finite-time Lyapunov exponent over the grid.">σ_T min</span><span class="sval" id="ftleMin">—</span></div>
                 <div class="srow"><span class="skey has-tip" data-tip="Maximum finite-time Lyapunov exponent over the grid.">σ_T max</span><span class="sval" id="ftleMax">—</span></div>
                 <div class="srow"><span class="skey">horizon</span><span class="sval" id="ftleT2">—</span></div>
+                <div class="srow"><span class="skey has-tip" data-tip="Cells flagged by the percentile + transverse local-maximum ridge proxy (repelling LCS candidates).">LCS ridge cells</span><span class="sval" id="ftleRidgeInfo">—</span></div>
               </div>
             </div>
           </details>

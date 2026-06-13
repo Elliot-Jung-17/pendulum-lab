@@ -4,6 +4,8 @@ import { ChaosClient } from '../runtime/ChaosClient';
 import { renderLabelGrid } from './labPlots';
 import { downloadDataUrl } from './labExport';
 import { num, readSystem } from './systemControls';
+import { flipBasinField } from '../runtime/gpuFields';
+import { basinEntropy, boundaryMask, boxCountingDimension, wadaCandidate } from '../chaos/basin';
 
 /**
  * Double-pendulum flip basin + basin entropy + box-counting (fractal) dimension.
@@ -29,8 +31,13 @@ export class BasinTab extends TabController {
       return;
     }
     this.running = true;
-    this.dom.setText('basinStatus', this.client.usesWorker() ? 'computing (worker)…' : 'computing…');
+    const useGpu = this.dom.el<HTMLInputElement>('basinGpu')?.checked ?? false;
+    this.dom.setText('basinStatus', useGpu ? 'computing (WebGPU)…' : this.client.usesWorker() ? 'computing (worker)…' : 'computing…');
     const n = Math.max(20, Math.min(200, Math.round(num('basinRes', 100))));
+    if (useGpu) {
+      await this.runGpu(spec as Extract<SystemSpec, { kind: 'double' }>, n);
+      return;
+    }
     try {
       const result = await this.client.basin(spec as Extract<SystemSpec, { kind: 'double' }>, { n });
       this.labels = result.labels;
@@ -46,6 +53,48 @@ export class BasinTab extends TabController {
       this.badge('basinStatus', 'finite-time-estimate', 'Basin entropy/dimension: finite-resolution estimates with std errors.');
     } catch (err) {
       this.dom.setText('basinStatus', `error: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      this.running = false;
+    }
+  }
+
+  /**
+   * GPU path: the flip-basin label grid is computed by the WebGPU kernel (with
+   * the CPU cross-validation contract in gpuFields.ts), then the *same* entropy
+   * / box-counting / Wada statistics the worker uses are applied on the main
+   * thread. The label grid is identical in semantics, so the statistics carry
+   * over unchanged — only the per-cell integration moved to the GPU.
+   */
+  private async runGpu(spec: Extract<SystemSpec, { kind: 'double' }>, n: number): Promise<void> {
+    try {
+      const field = await flipBasinField(
+        { m1: spec.m1, m2: spec.m2, l1: spec.l1, l2: spec.l2, g: spec.g },
+        { n }
+      );
+      const grid = { labels: field.labels, width: field.width, height: field.height };
+      const entropy = basinEntropy(grid);
+      const box = boxCountingDimension(boundaryMask(grid), grid.width, grid.height);
+      const wada = wadaCandidate(grid);
+      this.labels = Array.from(field.labels);
+      this.gridWidth = field.width;
+      this.gridHeight = field.height;
+      this.dom.setText('basinSb', `${entropy.basinEntropy.toFixed(4)} ± ${entropy.basinEntropyStdError.toFixed(4)}`);
+      this.dom.setText('basinSbb', `${entropy.boundaryBasinEntropy.toFixed(4)} ± ${entropy.boundaryBasinEntropyStdError.toFixed(4)}`);
+      this.dom.setText('basinDim', `${box.dimension.toFixed(3)} ± ${box.stdError.toFixed(3)}`);
+      this.dom.setText('basinFractal', entropy.fractalBoundary ? 'Sbb > ln2 ✓' : `dim≈${box.dimension.toFixed(2)}`);
+      this.render();
+      const wadaText = wada.wadaCandidate ? 'Wada candidate ✓' : `Wada fraction ${(wada.wadaFraction * 100).toFixed(0)}%`;
+      const backendNote = field.backend === 'webgpu'
+        ? `WebGPU f32 · ${(field.validation?.maxAbsDiff ?? 0) === 0 ? 'probes match' : `probe Δ${((field.validation?.maxAbsDiff ?? 0) * 100).toFixed(0)}%`} vs CPU · ${field.elapsedMs.toFixed(0)} ms`
+        : `CPU fallback (f64) · ${field.elapsedMs.toFixed(0)} ms`;
+      this.dom.setText('basinStatus', `done · Sb=${entropy.basinEntropy.toFixed(3)}±${entropy.basinEntropyStdError.toFixed(3)} · dim=${box.dimension.toFixed(3)}±${box.stdError.toFixed(3)} (R²=${box.r2.toFixed(3)}) · ${wadaText} · ${backendNote}`);
+      this.badge(
+        'basinStatus',
+        field.backend === 'webgpu' ? (field.validation?.passed ? 'finite-time-estimate' : 'caveat') : 'finite-time-estimate',
+        field.caveat
+      );
+    } catch (err) {
+      this.dom.setText('basinStatus', `WebGPU basin failed: ${err instanceof Error ? err.message : String(err)} — use the CPU path`);
     } finally {
       this.running = false;
     }

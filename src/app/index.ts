@@ -12,6 +12,9 @@ export { CompareTab } from './CompareTab';
 export { BifurcationTab } from './BifurcationTab';
 export { Phase3DTab } from './Phase3DTab';
 export { DensityTab } from './DensityTab';
+export { ExpansionLabTab } from './ExpansionLabTab';
+export { ResearchMatrixTab } from './ResearchMatrixTab';
+export { GoldenCenterTab } from './GoldenCenterTab';
 export { ZeroOneTab } from './ZeroOneTab';
 export { ClvTab } from './ClvTab';
 export { BasinTab } from './BasinTab';
@@ -29,6 +32,9 @@ import { CompareTab } from './CompareTab';
 import { BifurcationTab } from './BifurcationTab';
 import { Phase3DTab } from './Phase3DTab';
 import { DensityTab } from './DensityTab';
+import { ExpansionLabTab } from './ExpansionLabTab';
+import { ResearchMatrixTab } from './ResearchMatrixTab';
+import { GoldenCenterTab } from './GoldenCenterTab';
 import { ZeroOneTab } from './ZeroOneTab';
 import { ClvTab } from './ClvTab';
 import { BasinTab } from './BasinTab';
@@ -116,7 +122,7 @@ export function maybeMountModernAnalysisTabs(): boolean {
   const w = window as Window & {
     __modernTabs?: {
       lyapunov: LyapunovTab; validation: ValidationTab; sweep: SweepTab;
-      compare: CompareTab; bifurcation: BifurcationTab; phase3d: Phase3DTab; density: DensityTab;
+      compare: CompareTab; bifurcation: BifurcationTab; phase3d: Phase3DTab; density: DensityTab; expansion: ExpansionLabTab; matrix: ResearchMatrixTab; golden: GoldenCenterTab;
       zeroOne: ZeroOneTab; clv: ClvTab; basin: BasinTab; rqa: RqaTab; ftle: FtleTab;
     };
   };
@@ -135,6 +141,12 @@ export function maybeMountModernAnalysisTabs(): boolean {
   phase3d.install();
   const density = new DensityTab();
   density.install();
+  const expansion = new ExpansionLabTab();
+  expansion.install();
+  const matrix = new ResearchMatrixTab();
+  matrix.install();
+  const golden = new GoldenCenterTab();
+  golden.install();
   // Research-grade chaos diagnostics (surfaced as their own tabs). The install
   // calls are no-ops on pages that don't carry their controls, matching the
   // other tabs' takeover pattern.
@@ -148,6 +160,6 @@ export function maybeMountModernAnalysisTabs(): boolean {
   rqa.install();
   const ftle = new FtleTab();
   ftle.install();
-  w.__modernTabs = { lyapunov, validation, sweep, compare, bifurcation, phase3d, density, zeroOne, clv, basin, rqa, ftle };
+  w.__modernTabs = { lyapunov, validation, sweep, compare, bifurcation, phase3d, density, expansion, matrix, golden, zeroOne, clv, basin, rqa, ftle };
   return true;
 }

@@ -15,7 +15,20 @@ export default defineConfig({
     timeout: 120_000
   },
   use: {
-    baseURL: 'http://127.0.0.1:5173'
+    baseURL: 'http://127.0.0.1:5173',
+    // Treat the suite as a returning visitor whose workspace mode is already
+    // chosen, so the first-run mode-selection screen does not cover the UI in
+    // every spec. The dedicated `audience-mode.spec.ts` clears this key in an
+    // init script to exercise the screen itself.
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: 'http://127.0.0.1:5173',
+          localStorage: [{ name: 'pendulum-lab/ui/audience-mode', value: 'research' }]
+        }
+      ]
+    }
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },

@@ -7,11 +7,14 @@
     "src/app/CompareTab.ts",
     "src/app/DensityTab.ts",
     "src/app/DomBinder.ts",
+    "src/app/ExpansionLabTab.ts",
     "src/app/FeatureParityLayer.ts",
     "src/app/FtleTab.ts",
+    "src/app/GoldenCenterTab.ts",
     "src/app/LabApp.ts",
     "src/app/LyapunovTab.ts",
     "src/app/Phase3DTab.ts",
+    "src/app/ResearchMatrixTab.ts",
     "src/app/RqaTab.ts",
     "src/app/Shell.ts",
     "src/app/SweepTab.ts",
@@ -21,6 +24,7 @@
     "src/app/ZeroOneTab.ts",
     "src/app/canvasQuality.ts",
     "src/app/domTakeover.ts",
+    "src/app/expansionWorkerClient.ts",
     "src/app/index.ts",
     "src/app/parity/figure-export.ts",
     "src/app/parity/governance-ui.ts",
@@ -56,6 +60,7 @@
     "src/viz/types.ts",
     "src/worker/sim.worker.ts",
     "src/workers/chaos.worker.ts",
+    "src/workers/expansion.worker.ts",
     "src/workers/physics.worker.ts"
   ]
 }

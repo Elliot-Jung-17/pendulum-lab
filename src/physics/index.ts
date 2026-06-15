@@ -133,3 +133,51 @@ export type {
   FixedStepper
 } from './adaptive';
 export type { Derivative, IntegratorMeta, PhysicsAdapter, StateVector, StepOptions } from './types';
+export {
+  DEFAULT_EXPANSION_METHODS,
+  EXPANSION_MODEL_DEFINITIONS,
+  EXPANSION_MODEL_IDS,
+  EXPANSION_PRESETS,
+  GOLDEN_EXPANSION_PRESET_IDS,
+  buildExpansionReport,
+  configFromPreset,
+  createExpansionSystem,
+  expansionLyapunovProfile,
+  expansionPreset,
+  expansionModelDefinition,
+  parseExpansionShareHash,
+  runGoldenExpansionCenter,
+  runExpansionBatch,
+  runGoldenExpansionChecks,
+  runResearchMatrixStudy,
+  runExpansionSuite,
+  stableExperimentHash
+} from './expandedModels';
+export type {
+  BatchExperimentResult,
+  ExpansionBasinCell,
+  ExpansionBifurcationColumn,
+  ExpansionDimensionlessMetric,
+  ExpansionEnergyCell,
+  ExpansionGhostFrame,
+  ExpansionHeatmap,
+  ExpansionLyapunovProfile,
+  ExpansionLyapunovTimelinePoint,
+  ExpansionMatrixCell,
+  ExpansionMethodResult,
+  ExpansionModelDefinition,
+  ExpansionModelId,
+  ExpansionParameterMap,
+  ExpansionPoincarePoint,
+  ExpansionPoint,
+  ExpansionPreset,
+  ExpansionResearchMatrixResult,
+  ExpansionSweepAxis,
+  ExpansionSuiteConfig,
+  ExpansionSuiteResult,
+  ExpansionTrajectorySample,
+  GoldenCenterMethodResult,
+  GoldenCenterPresetResult,
+  GoldenCenterResult,
+  GoldenExperimentResult
+} from './expandedModels';

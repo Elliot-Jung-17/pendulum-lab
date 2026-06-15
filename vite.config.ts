@@ -61,7 +61,25 @@ export default defineConfig({
       output: {
         entryFileNames: 'assets/[name]-[hash].js',
         chunkFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash][extname]'
+        assetFileNames: 'assets/[name]-[hash][extname]',
+        // Code-split the independent subsystems out of the single application
+        // bundle. Each is a self-contained layer (physics core, chaos
+        // diagnostics, research tooling, and the analysis/governance UI), so
+        // splitting on directory keeps related code together, lets the browser
+        // parse them in parallel, and improves caching — the app no longer ships
+        // as one >500 kB chunk. The parity/governance UI and the analysis tabs
+        // are mutually dependent, so they stay in one `app-tabs` chunk to avoid a
+        // circular chunk split. The standalone single-file build
+        // (vite.config.standalone.ts) inlines everything and is unaffected.
+        manualChunks(id: string) {
+          const path = id.replace(/\\/g, '/');
+          if (!path.includes('/src/')) return undefined;
+          if (path.includes('/src/physics/')) return 'physics';
+          if (path.includes('/src/chaos/')) return 'chaos';
+          if (path.includes('/src/research/')) return 'research';
+          if (path.includes('/src/app/')) return 'app-tabs';
+          return undefined;
+        }
       }
     }
   }

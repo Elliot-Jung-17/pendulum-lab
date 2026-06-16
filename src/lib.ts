@@ -66,6 +66,46 @@ export type {
 export type { CrossingDirection, EventFunction } from './physics/events';
 export { DAMPED_DRIVEN_CHAOS_PRESET, energyDriven, rhsDriven } from './physics/driven';
 export type { DrivenParameters } from './physics/driven';
+// Canonical nonlinear oscillators + escape/phonon/diagnostic helpers.
+export { rhsDuffing, energyDuffing, duffingPotential, duffingDoubleWell, DUFFING_CHAOS_PRESET } from './physics/duffing';
+export type { DuffingParameters, DuffingDoubleWell } from './physics/duffing';
+export { rhsVanDerPol, energyVanDerPol, vanDerPolPeriodEstimate } from './physics/vanDerPol';
+export type { VanDerPolParameters } from './physics/vanDerPol';
+export {
+  rhsKapitza,
+  energyKapitza,
+  kapitzaEffectivePotential,
+  kapitzaInvertedStable,
+  kapitzaInvertedFrequency,
+  KAPITZA_INVERTED_PRESET
+} from './physics/kapitza';
+export type { KapitzaParameters } from './physics/kapitza';
+export {
+  rhsMagneticPendulum,
+  magneticPendulumEnergy,
+  nearestMagnetIndex,
+  magneticPendulumSettle,
+  THREE_MAGNET_PRESET
+} from './physics/magneticPendulum';
+export type { MagneticPendulumParameters, MagnetSpec, MagneticSettleResult, MagneticSettleOptions } from './physics/magneticPendulum';
+export {
+  kramersRateOverdamped,
+  kramersMeanFirstPassage,
+  duffingKramersRate,
+  arrheniusMTTF,
+  simulateQuarticEscape
+} from './physics/kramersEscape';
+export type { OverdampedRateSpec, QuarticEscapeSpec, QuarticEscapeResult } from './physics/kramersEscape';
+export {
+  diatomicDispersion,
+  diatomicBandGap,
+  diatomicDispersionCurve,
+  acousticSoundSpeed,
+  diatomicGroupVelocity
+} from './physics/latticeDispersion';
+export type { DiatomicChainParams, DispersionBranches, DiatomicBandGap, DispersionSample } from './physics/latticeDispersion';
+export { implicitMidpointNewton } from './physics/implicitDiagnostics';
+export type { ImplicitMidpointReport, NewtonStepRecord, ImplicitMidpointNewtonOptions } from './physics/implicitDiagnostics';
 export { RopePendulum } from './physics/rope';
 export type { RopeParams, RopePhase, RopeStateSnapshot, RopeEvent } from './physics/rope';
 export { DoubleStringPendulum, doubleStringEnergy, doubleStringEnergyFromTautState, doubleStringTautFraction, doubleStringTensions } from './physics/doubleString';

@@ -4,6 +4,25 @@
 
 Inverse-problem and uncertainty-quantification library extensions, a symmetry-breaking branch-following step, multiplicative-noise SDEs, reproducibility packaging, and build/line-ending hygiene — followed by **Neimark–Sacker torus continuation**, a **singularity-free embedded spherical-pendulum chart**, and **ensemble statistics**, then a **forward-list pass** that turns the library-only solvers into a full research toolchain: the **embedded spherical *chain*** (pole-clamp-free), the **NS-torus research instruments** (Arnold tongues, torus Lyapunov spectrum, spectral-convergence gate, SciPy cross-validation, Bifurcation-tab UI), **matrix-noise + adaptive SDE schemes**, a **structure-preservation drift profiler**, **transcritical** branch-switching surfacing, a **one-command reproduce pipeline**, expanded **mutation coverage**, and a **Research+ Lab tab** surfacing the inverse problem / PCE surrogate / SDE ensemble. All additive — the 595-test suite grows to 674 with no behavioural change to existing APIs.
 
+### Physics & chaos expansion (additive; suite 707 → 771)
+
+A breadth pass adding canonical nonlinear systems and analysis methods that tie the
+pendulum family to MEMS / solid-state / device-reliability physics — every module
+pinned against closed forms or canonical benchmarks, with no behavioural change to
+existing APIs. All exposed through the `core` / `analysis` namespaces and the flat
+`pendulum-lab-core` surface (public-API snapshot updated).
+
+- **Duffing oscillator** (`src/physics/duffing.ts`): forced double-well x″+δx′+αx+βx³=γcosωt — the MEMS/NEMS-resonator archetype and the smooth bistable potential behind Kramers escape; exposes the analytic well geometry (barrier α²/4β, well/barrier curvatures). Pinned on energy conservation, the linear period, the double-well fixed points and the Ueda attractor's boundedness (`tests/duffing.test.ts`).
+- **Van der Pol oscillator** (`src/physics/vanDerPol.ts`): self-sustained limit cycle (amplitude→2, period→2π as μ→0), globally attracting from inside and outside (`tests/van-der-pol.test.ts`).
+- **Kapitza pendulum** (`src/physics/kapitza.ts`): dynamic stabilization of the *inverted* equilibrium by a fast vertical drive; effective potential + criterion a²Ω²>2gl validated by direct integration and the slow-envelope frequency (`tests/kapitza.test.ts`).
+- **Magnetic pendulum** (`src/physics/magneticPendulum.ts`): N-magnet fractal-basin system with a settling kernel feeding the basin/Wada diagnostics (`tests/magnetic-pendulum.test.ts`).
+- **Kramers escape rate + reliability MTTF** (`src/physics/kramersEscape.ts`): overdamped rate r=(ω₀ω_b/2π)·exp(−ΔU/D) + Arrhenius MTTF (EM/NBTI/HCI analog), Monte-Carlo cross-validated — activation exponent recovered tightly, prefactor to the known first-passage factor (`tests/kramers-escape.test.ts`).
+- **Diatomic phonon dispersion** (`src/physics/latticeDispersion.ts`): acoustic + optical bands with a band gap (the semiconductor phonon picture; the monatomic ring already existed), pinned on the zone-centre/boundary closed forms, the monatomic-fold limit, sound speed and group velocity (`tests/lattice-dispersion.test.ts`).
+- **Correlation dimension** (`src/chaos/correlationDimension.ts`): Grassberger–Procaccia D₂ + delay embedding, an independent cross-check of Kaplan–Yorke; pinned on line/square/circle and the Hénon attractor D₂≈1.22 (`tests/correlation-dimension.test.ts`).
+- **Multifractal spectrum** (`src/chaos/multifractal.ts`): Rényi dimensions D_q + f(α) singularity spectrum, validated to 6 digits against the binomial-cascade closed form (`tests/multifractal.test.ts`).
+- **UPO detection + OGY chaos control** (`src/chaos/chaosControl.ts`): Newton shooting for period-p orbits and Ott–Grebogi–Yorke stabilization of a saddle UPO; on Hénon the fixed point and a period-2 orbit are found to machine precision and OGY drives the orbit onto the UPO with |δa|<0.05 while the uncontrolled orbit escapes (`tests/chaos-control.test.ts`).
+- **Newton-instrumented implicit midpoint** (`src/physics/implicitDiagnostics.ts`): true Newton solve with per-iteration residual history and the ∞-norm condition number of I−(dt/2)J — the convergence/conditioning diagnostic the fixed-point production stepper lacks; pinned on the exact harmonic update and the closed-form 2×2 condition number (`tests/implicit-diagnostics.test.ts`).
+
 ### Research-platform review follow-ups (additive; suite 678 → 707)
 
 A pass over open improvement/extension/risk items: two new physics extensions, two

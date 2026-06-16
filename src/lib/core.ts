@@ -74,6 +74,49 @@ export type { PendulumNetworkParameters, NetworkEdge } from '../physics/pendulum
 // Stochastic resonance (noise-enhanced weak-signal detection).
 export { stochasticResonanceResponse, stochasticResonanceCurve } from '../physics/stochasticResonance';
 export type { BistableSrParameters, SrResponse } from '../physics/stochasticResonance';
+// Canonical nonlinear oscillators: forced double-well, self-sustained, parametric, fractal-basin.
+export { rhsDuffing, energyDuffing, duffingPotential, duffingDoubleWell, DUFFING_CHAOS_PRESET } from '../physics/duffing';
+export type { DuffingParameters, DuffingDoubleWell } from '../physics/duffing';
+export { rhsVanDerPol, energyVanDerPol, vanDerPolPeriodEstimate } from '../physics/vanDerPol';
+export type { VanDerPolParameters } from '../physics/vanDerPol';
+export {
+  rhsKapitza,
+  energyKapitza,
+  kapitzaEffectivePotential,
+  kapitzaInvertedStable,
+  kapitzaInvertedFrequency,
+  KAPITZA_INVERTED_PRESET
+} from '../physics/kapitza';
+export type { KapitzaParameters } from '../physics/kapitza';
+export {
+  rhsMagneticPendulum,
+  magneticPendulumEnergy,
+  nearestMagnetIndex,
+  magneticPendulumSettle,
+  THREE_MAGNET_PRESET
+} from '../physics/magneticPendulum';
+export type { MagneticPendulumParameters, MagnetSpec, MagneticSettleResult, MagneticSettleOptions } from '../physics/magneticPendulum';
+// Noise-activated (Kramers) escape + reliability MTTF analog.
+export {
+  kramersRateOverdamped,
+  kramersMeanFirstPassage,
+  duffingKramersRate,
+  arrheniusMTTF,
+  simulateQuarticEscape
+} from '../physics/kramersEscape';
+export type { OverdampedRateSpec, QuarticEscapeSpec, QuarticEscapeResult } from '../physics/kramersEscape';
+// Diatomic-lattice phonon dispersion (acoustic + optical bands).
+export {
+  diatomicDispersion,
+  diatomicBandGap,
+  diatomicDispersionCurve,
+  acousticSoundSpeed,
+  diatomicGroupVelocity
+} from '../physics/latticeDispersion';
+export type { DiatomicChainParams, DispersionBranches, DiatomicBandGap, DispersionSample } from '../physics/latticeDispersion';
+// Newton-instrumented implicit midpoint (convergence history + conditioning).
+export { implicitMidpointNewton } from '../physics/implicitDiagnostics';
+export type { ImplicitMidpointReport, NewtonStepRecord, ImplicitMidpointNewtonOptions } from '../physics/implicitDiagnostics';
 
 // Non-rigid and 3D systems
 export { RopePendulum } from '../physics/rope';

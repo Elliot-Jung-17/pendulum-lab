@@ -123,6 +123,8 @@ export {
   diatomicGroupVelocity
 } from './latticeDispersion';
 export type { DiatomicChainParams, DispersionBranches, DiatomicBandGap, DispersionSample } from './latticeDispersion';
+export { implicitMidpointNewton } from './implicitDiagnostics';
+export type { ImplicitMidpointReport, NewtonStepRecord, ImplicitMidpointNewtonOptions } from './implicitDiagnostics';
 export {
   rhsPendulumNetwork,
   pendulumNetworkEnergy,

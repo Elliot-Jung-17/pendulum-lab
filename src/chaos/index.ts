@@ -24,6 +24,9 @@ export type { LabelGrid, BasinEntropyResult, BoxCountingResult, FlipBasinOptions
 export { correlationDimension, correlationSum, delayEmbed } from './correlationDimension';
 export type { CorrelationDimensionOptions, CorrelationDimensionResult } from './correlationDimension';
 
+export { findPeriodicOrbit, mapJacobianFD, ogyAnalyze, ogyControlSignal, simulateOgyControl } from './chaosControl';
+export type { MapFn, ParametrizedMapFn, PeriodicOrbitResult, OgySpec, OgyAnalysis, OgySimSpec, OgySimResult } from './chaosControl';
+
 export { covariantLyapunovVectors } from './clv';
 export type { ClvSettings, ClvResult } from './clv';
 

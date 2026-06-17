@@ -1,12 +1,25 @@
-# Pendulum Lab — a research-grade chaotic-pendulum platform
+# Pendulum Lab - Certified Chaotic Dynamics Workbench
 
 A framework-free, zero-runtime-dependency TypeScript platform for nonlinear
 pendulum dynamics: 8 physical systems (double/triple/N-chain, driven, spring,
 rope/string, double-string, **3D spherical N-chain**), 12 measured-order
 integrators, a full chaos-diagnostics stack with uncertainties, and a
 reproducibility pipeline (provenance, SHA-256 bundles, executable notebooks).
-Every quantitative output carries a credibility badge: *visual-only →
-finite-time estimate → validated → publication-ready* (+ *caveat*).
+Every quantitative output carries a clickable Trust Inspector badge:
+*visual-only → finite-time estimate → validated → publication-ready*
+(+ source, parameters, uncertainty, external validation, reproduce command,
+caveat, artifact, and hash).
+
+The flagship result is the **Melnikov threshold vs period-doubling onset gap
+map**: at `omega = 2/3`, the measured ratio `A_PD/A_c` closes and reverses near
+`gamma ~= 0.69`, separating homoclinic-tangle onset from the attractor cascade
+with Floquet, literature, 0-1-test, and reproducibility evidence. See
+[`docs/flagship-result.md`](docs/flagship-result.md) and generate the outside
+review package with `npm run reviewer:kit`.
+
+The Research tab is now a persisted workspace: save/switch workspace profiles,
+toggle compact density, export/import the full session, and keep GPU/scale claims
+behind `npm run validate:gpu-scale` CPU-reference gates.
 
 **Run it:** double-click the project-root `index.html` (self-contained,
 no server) — or:
@@ -14,8 +27,9 @@ no server) — or:
 ```bash
 npm install
 npm run dev        # live dev shell (app.html) at the printed URL
-npm test           # 918 unit tests
+npm test           # 924 unit tests
 npm run reproduce  # reproduce all headline claims headlessly (hash-stamped manifest)
+npm run reviewer:kit # checklist for the flagship paper/reviewer artifacts
 ```
 
 UI modes (rail footer): **Beginner** (simulator only) · **Student** (+ analysis
@@ -90,7 +104,7 @@ Step-by-step paper reproduction:
 | `npm run dev` / `build` / `preview` | Dev server · production build · serve build |
 | `npm run build:standalone` | Self-contained `index.html` (opens via `file://`) |
 | `npm run build:lib` / `docs:api` | Headless core library + TypeDoc API docs |
-| `npm test` / `test:quick` / `test:slow` | Vitest unit suite (918 tests across 135 files; synced from `reports/vitest-results.json`) plus quick/slow tiers for local and CI iteration |
+| `npm test` / `test:quick` / `test:slow` | Vitest unit suite (924 tests across 137 files; synced from `reports/vitest-results.json`) plus quick/slow tiers for local and CI iteration |
 | `npm run test:e2e` / `smoke` | Playwright E2E (Chromium/Firefox/WebKit/mobile Chrome) · smoke subset |
 | `npm run typecheck` / `lint` / `verify` | Strict tsc · source-policy lint · full gate |
 | `npm run validate:reference` / `cross` / `sympy` / `literature` / `julia` | Validation ladder (see claims table) |

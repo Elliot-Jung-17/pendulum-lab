@@ -16,6 +16,10 @@ jobs:
       - run: npm ci
       # Fast PR signal: quick unit tier before the full policy/type/test gate.
       - run: npm run test:quick
+      # Scientific acceleration contract: GPU paths must agree with CPU or fall back.
+      - run: npm run validate:gpu-scale
+      # Reviewer kit manifest must stay generatable from a clean checkout.
+      - run: npm run reviewer:kit
       # Full PR gate: policy lint, typecheck, unit JSON report, synced docs.
       - run: npm run verify
       # Keep the served-app CSP / no-legacy-risk contract from regressing on PRs.

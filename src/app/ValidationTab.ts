@@ -65,7 +65,17 @@ export class ValidationTab extends TabController {
     this.badge(
       'testPassed',
       classifyValidation(passed, failed),
-      failed > 0 ? `${failed} validation case(s) failed — see the table.` : `${passed} independent checks passed (analytic limits, reversibility, dt-halving, replay hash).`
+      failed > 0 ? `${failed} validation case(s) failed — see the table.` : `${passed} independent checks passed (analytic limits, reversibility, dt-halving, replay hash).`,
+      {
+        title: 'Validation suite summary',
+        source: 'Validation tab → src/validation/*',
+        parameters: { passed, failed, elapsedMs: elapsedMs.toFixed(0) },
+        uncertainty: 'Each row reports its own measured value and threshold; this badge summarizes pass/fail status.',
+        externalValidation: 'Includes analytic limits, replay determinism, dt-halving convergence, and reference-suite checks.',
+        reproduce: 'npm run validate:reference && npm test -- tests/reference-validation.test.ts',
+        caveat: failed > 0 ? 'At least one validation case failed; do not quote dependent outputs until the row is resolved.' : 'Browser stress check is shorter than the full headless validation ladder.',
+        artifact: 'reports/validation-reference.json'
+      }
     );
   }
 

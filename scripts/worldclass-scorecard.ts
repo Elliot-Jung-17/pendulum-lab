@@ -9,6 +9,13 @@ interface ScorecardItem {
   remaining: string[];
 }
 
+interface LegacyRiskReport {
+  counts: Record<string, number>;
+  weights?: Record<string, number>;
+  weightedScore: number;
+  delta: number;
+}
+
 async function exists(path: string): Promise<boolean> {
   try {
     await access(path);
@@ -34,8 +41,9 @@ async function readText(path: string): Promise<string> {
   }
 }
 
-const legacy = await readJson('reports/legacy-risk-report.json', {
+const legacy = await readJson<LegacyRiskReport>('reports/legacy-risk-report.json', {
   counts: { innerHTML: -1, onclick: -1, inlineWorkerBlob: -1, dynamicScript: -1, globalRuntimeExports: -1 },
+  weights: { innerHTML: 2, onclick: 2, inlineWorkerBlob: 8, dynamicScript: 12, globalRuntimeExports: 5 },
   weightedScore: -1,
   delta: 0
 });
@@ -49,8 +57,14 @@ const unitTestSummary = Number.isInteger(vitest.numTotalTests) && Array.isArray(
   : 'unit test JSON report missing; run npm run test:json';
 const ciWorkflow = await readText('.github/workflows/ci.yml');
 const mainWorkflow = await readText('.github/workflows/main.yml');
-const legacyCounts = Object.values(legacy.counts) as number[];
-const legacyClean = legacy.weightedScore === 0 && legacyCounts.every((value) => value === 0);
+const resultBadgesSource = await readText('src/app/resultBadges.ts');
+const researchWorkbenchSource = await readText('src/app/parity/research-workbench.ts');
+const storageSyncSource = await readText('src/app/parity/storage-sync.ts');
+const certifiedWorkbenchSource = await readText('src/research/certifiedWorkbench.ts');
+const weightedLegacyCounts = Object.entries(legacy.counts)
+  .filter(([key]) => (legacy.weights?.[key] ?? 1) > 0)
+  .map(([, value]) => value);
+const legacyClean = legacy.weightedScore === 0 && weightedLegacyCounts.every((value) => value === 0);
 const benchmarkHasComparison = Array.isArray(benchmark.comparison?.deltas) && benchmark.comparison.deltas.length > 0;
 
 const has = {
@@ -58,6 +72,14 @@ const has = {
   energy: await exists('reports/energy-benchmark.md'),
   memoryRegression: await exists('reports/memory-regression-report.md'),
   memoryBaseline: await exists('reports/memory-baseline.json'),
+  flagshipDoc: await exists('docs/flagship-result.md'),
+  reviewerKitDoc: await exists('docs/reviewer-kit.md'),
+  reviewerKitManifest: await exists('reports/reviewer-kit-manifest.json'),
+  reviewerKitManifestMd: await exists('reports/reviewer-kit-manifest.md'),
+  reviewerKitScript: await exists('scripts/reviewer-kit.ts'),
+  gpuScaleReport: await exists('reports/gpu-scale-validation.md'),
+  gpuScaleJson: await exists('reports/gpu-scale-validation.json'),
+  gpuScaleScript: await exists('scripts/gpu-scale-validation.ts'),
   mojibakeAudit: await exists('reports/mojibake-audit.md'),
   validation: await exists('reports/validation-report.md'),
   reference: await exists('reports/validation-reference.md'),
@@ -81,11 +103,19 @@ const has = {
   railAutocloseE2e: await exists('e2e/rail-autoclose.spec.ts'),
   visualRegressionE2e: await exists('e2e/visual-regression.spec.ts'),
   visualSnapshots: await exists('e2e/visual-regression.spec.ts-snapshots'),
+  certifiedWorkbenchModule: await exists('src/research/certifiedWorkbench.ts'),
+  trustInspectorUi: resultBadgesSource.includes('openTrustInspector') && resultBadgesSource.includes('trust-inspector-panel'),
+  researchWorkspaceCard: researchWorkbenchSource.includes('researchWorkspaceCard') && researchWorkbenchSource.includes('rwWorkspaceSelect'),
+  researchWorkspaceList: researchWorkbenchSource.includes('workspaces') && storageSyncSource.includes('sanitizeWorkspaceList'),
   visualTier: Boolean(scripts['test:visual']),
   quickTier: Boolean(scripts['test:quick']),
   slowTier: Boolean(scripts['test:slow']),
+  reviewerKitCommand: Boolean(scripts['reviewer:kit']),
+  gpuScaleCommand: Boolean(scripts['validate:gpu-scale']),
   benchmarkMemoryScript: Boolean(scripts['benchmark:memory']),
   ciRunsQuickTier: ciWorkflow.includes('npm run test:quick'),
+  ciRunsGpuScale: ciWorkflow.includes('npm run validate:gpu-scale') || mainWorkflow.includes('npm run validate:gpu-scale'),
+  ciRunsReviewerKit: ciWorkflow.includes('npm run reviewer:kit') || mainWorkflow.includes('npm run reviewer:kit'),
   ciRunsVerify: ciWorkflow.includes('npm run verify'),
   mainRunsSlowTier: mainWorkflow.includes('npm run test:slow'),
   mainRunsBenchmark: mainWorkflow.includes('npm run benchmark'),
@@ -97,8 +127,12 @@ const pagesReady = has.pagesWorkflow && has.distIndex;
 const packagingReady = pagesReady && has.license && has.citation && has.typedocIndex;
 const testTierReady = has.quickTier && has.slowTier && has.ciRunsQuickTier && has.ciRunsVerify && has.mainRunsSlowTier;
 const visualReady = has.visualRegressionE2e && has.visualSnapshots && has.visualTier;
-const memoryReady = has.benchmarkMemoryScript && has.memoryRegression;
+const memoryReady = has.benchmarkMemoryScript && has.memoryRegression && has.memoryBaseline;
 const benchmarkReady = has.benchmark && has.energy && benchmarkHasComparison;
+const flagshipReady = has.certifiedWorkbenchModule && has.flagshipDoc && certifiedWorkbenchSource.includes('melnikov-gap-map');
+const reviewerKitReady = flagshipReady && has.reviewerKitDoc && has.reviewerKitScript && has.reviewerKitCommand && has.reviewerKitManifest && has.reviewerKitManifestMd;
+const gpuScaleReady = has.gpuScaleCommand && has.gpuScaleScript && has.gpuScaleReport && has.gpuScaleJson && has.ciRunsGpuScale;
+const trustWorkspaceReady = has.trustInspectorUi && has.researchWorkspaceCard && has.researchWorkspaceList;
 
 const items: ScorecardItem[] = [
   {
@@ -114,9 +148,36 @@ const items: ScorecardItem[] = [
   },
   {
     area: 'Index simulator UI/UX',
-    status: has.index ? 'partial' : 'gap',
+    status: has.index && trustWorkspaceReady ? 'done' : has.index ? 'partial' : 'gap',
     evidence: ['index.html is the single user-facing simulator with lab, comparison, Lyapunov, sweep, bifurcation, phase-space, density, and validation tabs'],
-    remaining: ['Panel layout persistence, project workspace lists, and a stronger beginner/expert mode still need index-page implementation']
+    remaining: trustWorkspaceReady
+      ? []
+      : ['Research workspace profile list, Trust Inspector wiring, or panel density persistence is incomplete']
+  },
+  {
+    area: 'Flagship result and reviewer kit',
+    status: reviewerKitReady ? 'done' : flagshipReady ? 'partial' : 'gap',
+    evidence: [
+      flagshipReady ? 'flagship module and docs name the Melnikov threshold vs period-doubling gap map as the crown result' : 'flagship result contract missing',
+      has.reviewerKitCommand ? 'npm run reviewer:kit exists' : 'reviewer kit command missing',
+      has.reviewerKitManifest ? 'reviewer-kit manifest exists' : 'reviewer-kit manifest missing',
+      has.reviewerKitDoc ? 'reviewer-kit documentation exists' : 'reviewer-kit documentation missing'
+    ],
+    remaining: [
+      ...(!flagshipReady ? ['Define one flagship result contract and paper-facing doc'] : []),
+      ...(!reviewerKitReady ? ['Generate reports/reviewer-kit-manifest.json and .md with npm run reviewer:kit'] : [])
+    ]
+  },
+  {
+    area: 'Trust Inspector and research workspace UX',
+    status: trustWorkspaceReady ? 'done' : 'partial',
+    evidence: [
+      has.trustInspectorUi ? 'result badges open a Trust Inspector with source, parameters, uncertainty, external validation, reproduce command, caveat, artifact, and hash fields' : 'Trust Inspector badge panel missing',
+      has.researchWorkspaceCard ? 'Research tab includes the Certified Workspace card' : 'Certified Workspace card missing',
+      has.researchWorkspaceList ? 'workspace profile list and storage sanitizer exist' : 'workspace profile list or storage sanitizer missing',
+      'audience modes gate beginner/student/research surfaces'
+    ],
+    remaining: trustWorkspaceReady ? [] : ['Complete Trust Inspector wiring and persisted workspace profile list']
   },
   {
     area: 'Numerics and physics depth',
@@ -124,9 +185,10 @@ const items: ScorecardItem[] = [
     evidence: [
       'RKF45, Dormand-Prince 5(4), DOP853-adjacent GBS extrapolation, Gauss-Legendre 4/6, TR-BDF2, canonical midpoint, N-pendulum, driven, spring systems are present in src',
       'Floquet multipliers, natural + pseudo-arclength continuation, period-doubling branch switching, and the Melnikov analytic threshold are implemented and tested',
-      'external cross-validation vs an independent SciPy DOP853 reference covers the double AND triple pendulum; literature anchors pin the elliptic period, normal modes, and the period-doubling onset'
+      'external cross-validation vs an independent SciPy DOP853 reference covers the double AND triple pendulum; literature anchors pin the elliptic period, normal modes, and the period-doubling onset',
+      gpuScaleReady ? 'GPU/scale validation contract report exists and is wired into CI' : 'GPU/scale validation contract or CI wiring is incomplete'
     ],
-    remaining: ['Sparse/large-unitary Floquet eigensolvers, GPU-side ensemble reductions, and optional MATLAB/Julia second references remain future work']
+    remaining: ['Sparse/large-unitary Floquet eigensolvers and optional MATLAB/Julia second references remain future work']
   },
   {
     area: 'Chaos analysis',
@@ -134,9 +196,22 @@ const items: ScorecardItem[] = [
     evidence: [
       'Maximal Lyapunov convergence, full spectrum, Kaplan-Yorke dimension, SALI/FLI, Poincare, bifurcation modules exist and are tested',
       'covariant Lyapunov vectors (Ginelli), 0-1 test, RQA, FTLE fields, basin entropy and the Wada grid test are implemented as tabs + library APIs',
-      'every non-variational diagnostic reports an uncertainty estimate (bootstrap / block-resampled / regression CI)'
+      'every non-variational diagnostic reports an uncertainty estimate (bootstrap / block-resampled / regression CI)',
+      has.gpuScaleReport ? 'gpu-scale validation report separates acceleration caveats from scientific claims' : 'gpu-scale validation report missing'
     ],
-    remaining: ['CLV and some full-spectrum workflows remain CPU-side; broader GPU acceleration is limited to the existing grid/ensemble kernels']
+    remaining: ['CLV and some full-spectrum workflows remain CPU-side; broader GPU acceleration is limited to the existing grid/ensemble kernels with CPU reference gates']
+  },
+  {
+    area: 'GPU and scale validation',
+    status: gpuScaleReady ? 'done' : 'partial',
+    evidence: [
+      has.gpuScaleCommand ? 'npm run validate:gpu-scale exists' : 'validate:gpu-scale command missing',
+      has.gpuScaleReport ? 'reports/gpu-scale-validation.md exists' : 'gpu-scale validation report missing',
+      has.gpuScaleJson ? 'reports/gpu-scale-validation.json exists' : 'gpu-scale validation JSON missing',
+      has.ciRunsGpuScale ? 'CI runs validate:gpu-scale' : 'CI does not run validate:gpu-scale',
+      'current contract treats CPU f64 as the scientific oracle; WebGPU may accelerate only after agreement or fallback'
+    ],
+    remaining: gpuScaleReady ? [] : ['Run npm run validate:gpu-scale and wire it into CI']
   },
   {
     area: 'Testing and browser coverage',
@@ -149,12 +224,12 @@ const items: ScorecardItem[] = [
       has.longRunE2e ? 'long-run performance/soak e2e spec exists and runs in mainline full validation' : 'long-run performance/soak e2e spec missing',
       has.accessibilityE2e ? 'accessibility e2e spec exists and runs in mainline full validation' : 'accessibility e2e spec missing',
       visualReady ? 'visual regression script, spec, and versioned Chromium snapshots exist' : 'visual regression command or snapshots are missing',
-      memoryReady ? 'memory-regression report exists from benchmark output' : 'memory-regression report missing'
+      memoryReady ? 'memory-regression report and baseline exist from benchmark output' : 'memory-regression report or baseline missing'
     ],
     remaining: [
       ...(!testTierReady ? ['Wire quick/slow/full test tiers into CI'] : []),
       ...(!visualReady ? ['Promote visual regression command and golden snapshots'] : []),
-      ...(!memoryReady ? ['Run npm run benchmark and npm run benchmark:memory to create memory-regression artifacts'] : [])
+      ...(!memoryReady ? ['Run npm run benchmark and npm run benchmark:memory to create memory-regression report + baseline artifacts'] : [])
     ]
   },
   {
@@ -190,9 +265,11 @@ const items: ScorecardItem[] = [
   },
   {
     area: 'Documentation and portfolio readiness',
-    status: has.architecture && has.numerics && has.limitations && has.validation && packagingReady ? 'done' : 'partial',
+    status: has.architecture && has.numerics && has.limitations && has.validation && packagingReady && reviewerKitReady ? 'done' : 'partial',
     evidence: [
       'README, architecture, numerics, security, validation, energy benchmark, changelog, roadmap, and portfolio summary artifacts exist',
+      has.flagshipDoc ? 'flagship result doc exists' : 'flagship result doc missing',
+      has.reviewerKitDoc ? 'reviewer-kit doc exists' : 'reviewer-kit doc missing',
       has.pagesWorkflow ? 'GitHub Pages workflow exists' : 'GitHub Pages workflow missing',
       has.mainWorkflow ? 'mainline full-validation workflow exists' : 'mainline full-validation workflow missing',
       has.nightlyWorkflow ? 'nightly mutation workflow exists' : 'nightly mutation workflow missing',
@@ -204,6 +281,7 @@ const items: ScorecardItem[] = [
     ],
     remaining: [
       ...(packagingReady ? [] : ['Complete missing packaging artifacts reported in evidence']),
+      ...(reviewerKitReady ? [] : ['Complete flagship/reviewer-kit artifacts']),
       'Project introduction video and npm package release remain packaging tasks'
     ]
   }

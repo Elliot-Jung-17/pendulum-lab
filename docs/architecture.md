@@ -76,10 +76,12 @@ but its extraction boundary is now explicit:
   through the grouped `research` public API.
 - Local-storage and IndexedDB schema normalization live in
   `src/app/parity/storage-sync.ts` and `src/research/researchDb.ts`.
-- Visual card/table helpers belong in `research-ui-components.ts`; superpack
-  analysis panels belong in `superpack-panels.ts`.
-- Remaining extraction candidates are the run-log renderer, comparison-matrix
-  builder, design-study state machine, and batch-runner orchestration. Those
+- Visual card/table helpers belong in `research-ui-components.ts` and
+  `research-renderers.ts`; comparison matrix assembly belongs in
+  `research-comparison.ts`; superpack analysis panels belong in
+  `superpack-panels.ts`.
+- Remaining extraction candidates are the run-log renderer, design-study state
+  machine, workspace/session controller, and batch-runner orchestration. Those
   should leave `research-workbench.ts` one at a time with focused unit or e2e
   coverage so persisted study/run-log behavior does not drift.
 

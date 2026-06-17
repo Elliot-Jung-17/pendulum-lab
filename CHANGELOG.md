@@ -4,7 +4,7 @@
 
 Inverse-problem and uncertainty-quantification library extensions, a symmetry-breaking branch-following step, multiplicative-noise SDEs, reproducibility packaging, and build/line-ending hygiene — followed by **Neimark–Sacker torus continuation**, a **singularity-free embedded spherical-pendulum chart**, and **ensemble statistics**, then a **forward-list pass** that turns the library-only solvers into a full research toolchain: the **embedded spherical *chain*** (pole-clamp-free), the **NS-torus research instruments** (Arnold tongues, torus Lyapunov spectrum, spectral-convergence gate, SciPy cross-validation, Bifurcation-tab UI), **matrix-noise + adaptive SDE schemes**, a **structure-preservation drift profiler**, **transcritical** branch-switching surfacing, a **one-command reproduce pipeline**, expanded **mutation coverage**, and a **Research+ Lab tab** surfacing the inverse problem / PCE surrogate / SDE ensemble. All additive — the 595-test suite grows to 674 with no behavioural change to existing APIs.
 
-### FPUT recurrence, kink collisions, trajectory derivatives & restarted Arnoldi (additive; suite 907 -> 918)
+### FPUT recurrence, kink collisions, trajectory derivatives & restarted Arnoldi (additive; suite 907 -> 924)
 
 Four additive research-frontier extensions close the next verified gaps while keeping
 the existing public API stable and explicit.

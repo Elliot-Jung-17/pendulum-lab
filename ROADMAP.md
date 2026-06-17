@@ -9,10 +9,19 @@ The migration is finished: the legacy `js/` runtime (≈8,080 lines) is removed 
 - **Done (v10.12):** unified the runtime behind the `PendulumRuntime` DI container; collapsed the five legacy globals into one adopted namespace with read-only accessors; removed dynamic `<script>` injection. The `globalRuntimeExports` and `dynamicScript` legacy-risk metrics are now `0`.
 - **Done (v10.15, Stage 2 complete):** the modern Lab (`src/app/`) is the **default** lab tab — sim loop + all five side plots + presets, ensemble, visual FX, drag-to-set, export (CSV/JSON/PNG), and replay/scrubber. `?lab=legacy` is the escape hatch. 157 unit tests + 6 chromium e2e. Audio sonification and interpolated render remain legacy-only.
 - **Done (v10.19, Stage 3 tab-ports):** every lab/analysis tab now runs on `src/` — Lab (default) + Lyapunov, Validation, Sweep, Compare, Bifurcation, 3D phase, and density, each gated by unit + e2e coverage and the `?lab=legacy` escape hatch.
-- **In progress (v10.21, Stage 4):** a modern shell + modules are retiring the legacy runtime's responsibilities. Done: **tab navigation** (`Shell.ts`) and **audio sonification** (`AudioSonifier.ts`). Remaining shell duties before `js/` can be archived: slider value displays, presets slider-setting, keyboard shortcuts, header/diagnostics chrome, `CanvasMgr` (canvas sizing), `NaNGuard`, the dev-hub flyout; plus the `?lab=legacy` escape-hatch decision and the smoke test's `window.App` dependency. (Interpolated render is cosmetic and can be dropped.) Then delete `js/01`–`js/11`.
-- Continue shrinking `js/01-core-app.js` into focused `src/runtime`, `src/ui`, `src/render`, and `src/export` modules.
+- **Done (v10.22, Stage 4 complete):** the modern shell retired the remaining legacy runtime duties: slider displays, presets, keyboard shortcuts, header/diagnostics chrome, canvas sizing, fault handling, and dev/governance chrome now live under `src/`. The `?lab=legacy` escape hatch and `window.App` smoke dependency are removed with the archived `js/` runtime.
+- Historical note: the old `js/01-core-app.js` shrink plan is complete; ongoing architecture work now targets known-large TypeScript orchestrators rather than the removed legacy bundle.
 - Historical note: the legacy-risk audit once centered on `innerHTML` and dynamic script usage; the current audit target is to keep the score at 0 as new UI surfaces are added.
 - Move long-running sweep, bifurcation, FFT, and Lyapunov jobs to typed worker messages.
+
+## Certified Chaotic Dynamics Workbench
+
+- **Flagship crown:** the outward-facing research thesis is now the Melnikov threshold vs period-doubling onset gap map. The contract lives in `src/research/certifiedWorkbench.ts`, with the paper-facing narrative in `docs/flagship-result.md`.
+- **Trust Inspector:** result badges now open a provenance panel with source, parameters, uncertainty, external validation, reproduce command, caveat, artifact, and hash fields. Keep extending this to every new quoted number before adding new visual surfaces.
+- **Research workspace UX:** the Research tab has a Certified Workspace card with persisted workspace profiles, density preference, export/import, reviewer-kit handoff, and run-log entries for workspace events.
+- **GPU/scale validation:** `npm run validate:gpu-scale` pins CPU reference behavior, mock WebGPU accept/fallback behavior, and scale-reduction summaries. PR and mainline CI run this contract.
+- **Reviewer kit:** `npm run reviewer:kit` generates `reports/reviewer-kit-manifest.json` and `.md`, tying the paper, notebook, validation reports, GPU contract, and reproducibility manifest into one checklist.
+- **Remaining crown work:** promote real hardware WebGPU CI when runners expose adapters; add a Zenodo DOI/release archive; decide whether the mini-paper becomes a formal preprint or a longer notebook-first artifact.
 
 ## Numerical Research Upgrades
 
@@ -76,17 +85,19 @@ The migration is finished: the legacy `js/` runtime (≈8,080 lines) is removed 
   ratchet list. `tests/expanded-models.test.ts` and
   `tests/expansion-lyapunov-injection.test.ts` cover preserved behavior and profiler injection.
 
-- **`research-workbench.ts`**: UI-component helpers extracted to `research-ui-components.ts`;
-  analysis superpack extracted to `superpack-panels.ts`. **Render coupling unblocked:**
+- **`research-workbench.ts`**: UI-component helpers extracted to `research-ui-components.ts`,
+  table rendering to `research-renderers.ts`, comparison rows/matrix to
+  `research-comparison.ts`, and analysis superpack to `superpack-panels.ts`.
+  **Render coupling unblocked:**
   `logResearchRun` now persists run-log state and emits
   `pendulum-lab:research-workbench-changed`; the Research tab installs a render bridge for that
   event. Remaining extraction candidates: run-log renderer (`renderResearchRunLog`, ~80 lines),
-  comparison matrix builder, design-study state, and batch-runner orchestration.
+  design-study state, workspace/session controller, and batch-runner orchestration.
   The split boundary is now documented in `docs/architecture.md` so the next
   extraction keeps state/storage code in `src/app/parity/storage-sync.ts` and
   pure research helpers in `src/research`.
   - **Deferred deliberately:** the remaining `research-workbench.ts` extractions
-    (run-log renderer, comparison matrix, design-study state, batch runner) are
+    (run-log renderer, design-study state, workspace/session controller, batch runner) are
     UI-orchestration code with **no unit-test coverage** — they are verified only by
     the Playwright e2e suite (visual/interaction parity), which can't be exercised
     headlessly here. A pure extraction without a unit safety net risks a silent UI

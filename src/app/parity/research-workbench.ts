@@ -8,6 +8,7 @@ import { chaosWorkerTransportFactory, JobCancelledError, JobClient } from '../..
 import type { StudyPointResponse } from '../../workers/chaosProtocol';
 import type { SystemSpec } from '../../physics/systemSpec';
 import { csvCell, hashText } from '../../research/researchExportUtils';
+import { CERTIFIED_WORKBENCH_FLAGSHIP } from '../../research/certifiedWorkbench';
 import { generateStudyValues } from '../../research/researchSampling';
 import {
   diffObjects,
@@ -30,18 +31,23 @@ import {
   type MultiStrategy,
   type StudyVariable
 } from '../../research/experimentDesign';
-import { ParameterStudyPlan, ParameterStudyPoint, ResearchBatchStatus, ResearchComparisonRow, ResearchExperiment, ResearchMetrics, ResearchRunLogEntry, ResearchRunType, StudyPointResults, append, button, card, clear, currentParameters, currentSnapshot, detailsCard, downloadText, html, kvGrid, modernLab, numberFrom, researchUid, selectValue, setControl, setText, state, toast } from './shared';
+import { ParameterStudyPlan, ParameterStudyPoint, ResearchBatchStatus, ResearchExperiment, ResearchMetrics, ResearchRunLogEntry, ResearchRunType, ResearchWorkspaceProfile, StudyPointResults, append, button, card, clear, currentParameters, currentSnapshot, detailsCard, downloadText, html, kvGrid, modernLab, numberFrom, researchUid, selectValue, setControl, setText, state, toast } from './shared';
 import { MAX_RESEARCH_EXPERIMENTS, RESEARCH_STUDY_STRATEGIES, clampNumber, clearResearchDb, exportResearchDbArchive, exportWorkspaceJson, finiteNumber, importResearchDbArchive, importWorkspaceJson, persistResearchState, renderResearchStoragePanel, researchDbInstance } from './storage-sync';
 import { orbitBaseFromControls, renderPerfBudgetPanel, runBranchTrace, runEnsembleBenchmark, runLegacyValidationSurface, runNumericalProbe, runOrbitFinder } from './runtime-diagnostics';
 import { FIGURE_CAPTIONS, exportPaperFigureManifestJson, exportPaperFiguresHtml, exportPaperMethodsLatex, exportPaperMethodsMarkdown, exportPaperPackJson, exportProvenanceJson, exportResearchBundleJson, exportResearchBundleZip, exportResearchNotebook, exportScaledCanvases, exportStudyFigureCsv, exportStudyFigurePng, exportStudyFigureSvg, renderFigureStudio, renderProvenanceViewer, saveSelectedFigureCaption } from './figure-export';
 import { exportManifest, setMode } from './governance-ui';
 import { $ } from './shared';
+import { buildComparisonRows, renderComparisonMatrix, renderPaperSummary } from './research-comparison';
+import { renderResearchTable } from './research-renderers';
 import { researchActions, researchCard, researchFormRow, researchInput, researchSelect, researchTextArea } from './research-ui-components';
 export { researchActions, researchCard, researchFormRow, researchInput, researchSelect, researchTextArea } from './research-ui-components';
+export { buildComparisonRows, comparisonRowFromExperiment, comparisonRowFromRun, renderComparisonMatrix, renderPaperSummary } from './research-comparison';
+export { renderResearchTable } from './research-renderers';
 // eslint-disable-next-line import/no-cycle
 import { doubleSpecFromCurrent, runBifurcationDetectPanel, runCodimTwoPanel, runFixedPointPanel, runFtleRidgePanel, runMelnikovPanel, runRecurrenceNetworkPanel, runShadowingPanel, runSobolPanel, runWadaConvergencePanel, superpackChaosClient, superpackClient, superpackSection } from './superpack-panels';
 
 const RESEARCH_WORKBENCH_CHANGED_EVENT = 'pendulum-lab:research-workbench-changed';
+const MAX_WORKSPACE_PROFILES = 24;
 let researchWorkbenchEventBridgeInstalled = false;
 let researchWorkbenchRenderScheduled = false;
 
@@ -83,6 +89,36 @@ export function installResearchTab(): void {
   left.style.maxWidth = '1180px';
 
   const workbench = html('div', { id: 'researchWorkbench', className: 'research-workbench' });
+
+  const workspaceCard = researchCard('Certified Workspace', 'researchWorkspaceCard');
+  workspaceCard.classList.add('research-wide');
+  const workspaceSelect = researchSelect('rwWorkspaceSelect', workspaceOptions());
+  workspaceSelect.value = state.research.workspace.id;
+  workspaceSelect.addEventListener('change', () => switchWorkspaceProfile());
+  const workspaceName = researchInput('rwWorkspaceName', 'text', state.research.workspace.name, 'workspace name');
+  const workspaceObjective = researchTextArea('rwWorkspaceObjective', 'research objective, flagship claim, reviewer goal');
+  workspaceObjective.value = state.research.workspace.objective;
+  append(
+    workspaceCard,
+    researchFormRow('Workspace', workspaceSelect),
+    researchFormRow('Name', workspaceName),
+    workspaceObjective,
+    researchFormRow('Density', researchSelect('rwWorkspaceDensity', [
+      ['comfortable', 'comfortable'],
+      ['compact', 'compact']
+    ])),
+    researchActions(
+      button('rwSaveWorkspaceProfile', 'Save Profile', () => saveWorkspaceProfile(), 'primary'),
+      button('rwNewWorkspaceProfile', 'New Workspace', () => createWorkspaceProfile()),
+      button('rwReviewerKitHint', 'Reviewer Kit', () => {
+        exportWorkspaceJson();
+        toast('Workspace saved. Run npm run reviewer:kit for the external checklist.');
+      }),
+      button('rwWorkspaceExportTop', 'Save Workspace', () => exportWorkspaceJson()),
+      button('rwWorkspaceImportTop', 'Restore Workspace', () => importWorkspaceJson())
+    ),
+    html('div', { id: 'rwWorkspaceSummary', className: 'research-summary', text: '' })
+  );
 
   const experimentCard = researchCard('Experiment Workspace', 'researchExperimentCard');
   const experimentName = researchInput('rwExperimentName', 'text', '', 'e.g. double-rk4-baseline');
@@ -355,7 +391,7 @@ export function installResearchTab(): void {
     html('div', { id: 'rwStorageSummary', className: 'research-summary', text: 'IndexedDB status not loaded yet.' })
   );
 
-  append(workbench, experimentCard, logCard, studyCard, designCard, superpackCard, comparisonCard, orbitCard, paperCard, figureCard, perfCard, storageCard);
+  append(workbench, workspaceCard, experimentCard, logCard, studyCard, designCard, superpackCard, comparisonCard, orbitCard, paperCard, figureCard, perfCard, storageCard);
 
   const grid = html('div', { className: 'rg-grid' });
   append(
@@ -430,6 +466,137 @@ export function selectedResearchExperiment(): ResearchExperiment | undefined {
   const select = $('rwExperimentSelect');
   const id = select instanceof HTMLSelectElement ? select.value : state.research.selectedExperimentId;
   return state.research.experiments.find((experiment) => experiment.id === id);
+}
+
+export function ensureWorkspaceList(): void {
+  const active = state.research.workspace;
+  const byId = new Map<string, ResearchWorkspaceProfile>();
+  if (active?.id) byId.set(active.id, active);
+  for (const workspace of state.research.workspaces ?? []) {
+    if (workspace?.id) byId.set(workspace.id, workspace.id === active.id ? { ...workspace, ...active } : workspace);
+    if (byId.size >= MAX_WORKSPACE_PROFILES) break;
+  }
+  if (!byId.size && active?.id) byId.set(active.id, active);
+  state.research.workspaces = Array.from(byId.values()).slice(0, MAX_WORKSPACE_PROFILES);
+}
+
+export function workspaceOptions(): Array<[string, string]> {
+  ensureWorkspaceList();
+  return state.research.workspaces.map((workspace) => [
+    workspace.id,
+    workspace.name || workspace.id
+  ]);
+}
+
+export function upsertWorkspaceProfile(profile: ResearchWorkspaceProfile): void {
+  ensureWorkspaceList();
+  const next = state.research.workspaces.filter((workspace) => workspace.id !== profile.id);
+  state.research.workspaces = [profile, ...next].slice(0, MAX_WORKSPACE_PROFILES);
+}
+
+export function switchWorkspaceProfile(): void {
+  const select = $('rwWorkspaceSelect');
+  const id = select instanceof HTMLSelectElement ? select.value : '';
+  const workspace = state.research.workspaces.find((entry) => entry.id === id);
+  if (!workspace) {
+    toast('Workspace profile not found');
+    return;
+  }
+  state.research.workspace = { ...workspace, updatedAt: new Date().toISOString() };
+  upsertWorkspaceProfile(state.research.workspace);
+  state.research.layout.lastTab = 'research';
+  persistResearchState();
+  renderWorkspaceProfile();
+  logResearchRun('workspace', 'Switched workspace profile', state.research.workspace.name);
+  toast('Workspace profile loaded');
+}
+
+export function createWorkspaceProfile(): void {
+  const nameInput = $('rwWorkspaceName');
+  const objectiveInput = $('rwWorkspaceObjective');
+  const now = new Date().toISOString();
+  const baseName = nameInput instanceof HTMLInputElement && nameInput.value.trim()
+    ? nameInput.value.trim()
+    : 'Certified Chaotic Dynamics Workbench';
+  const objective = objectiveInput instanceof HTMLTextAreaElement && objectiveInput.value.trim()
+    ? objectiveInput.value.trim()
+    : CERTIFIED_WORKBENCH_FLAGSHIP.thesis;
+  state.research.workspace = {
+    id: researchUid('workspace'),
+    name: `${baseName} ${state.research.workspaces.length + 1}`,
+    objective,
+    flagshipId: CERTIFIED_WORKBENCH_FLAGSHIP.id,
+    createdAt: now,
+    updatedAt: now
+  };
+  upsertWorkspaceProfile(state.research.workspace);
+  state.research.layout.lastTab = 'research';
+  persistResearchState();
+  renderWorkspaceProfile();
+  logResearchRun('workspace', 'Created workspace profile', state.research.workspace.name);
+  toast('Workspace profile created');
+}
+
+export function saveWorkspaceProfile(): void {
+  const nameInput = $('rwWorkspaceName');
+  const objectiveInput = $('rwWorkspaceObjective');
+  const densitySelect = $('rwWorkspaceDensity');
+  const now = new Date().toISOString();
+  const name = nameInput instanceof HTMLInputElement && nameInput.value.trim()
+    ? nameInput.value.trim()
+    : CERTIFIED_WORKBENCH_FLAGSHIP.title;
+  const objective = objectiveInput instanceof HTMLTextAreaElement && objectiveInput.value.trim()
+    ? objectiveInput.value.trim()
+    : CERTIFIED_WORKBENCH_FLAGSHIP.thesis;
+  state.research.workspace = {
+    ...state.research.workspace,
+    name,
+    objective,
+    flagshipId: CERTIFIED_WORKBENCH_FLAGSHIP.id,
+    updatedAt: now
+  };
+  if (!state.research.workspace.createdAt) state.research.workspace.createdAt = now;
+  upsertWorkspaceProfile(state.research.workspace);
+  state.research.layout = {
+    ...state.research.layout,
+    density: densitySelect instanceof HTMLSelectElement && densitySelect.value === 'compact' ? 'compact' : 'comfortable',
+    lastTab: 'research',
+    panelCollapsed: document.body.classList.contains('panel-collapsed')
+  };
+  persistResearchState();
+  renderWorkspaceProfile();
+  logResearchRun('workspace', 'Saved workspace profile', state.research.workspace.name);
+  toast('Workspace profile saved');
+}
+
+export function renderWorkspaceProfile(): void {
+  ensureWorkspaceList();
+  const workspace = state.research.workspace;
+  const workbench = $('researchWorkbench');
+  workbench?.classList.toggle('research-compact', state.research.layout.density === 'compact');
+  const workspaceSelect = $('rwWorkspaceSelect');
+  const nameInput = $('rwWorkspaceName');
+  const objectiveInput = $('rwWorkspaceObjective');
+  const densitySelect = $('rwWorkspaceDensity');
+  if (workspaceSelect instanceof HTMLSelectElement) {
+    const options = workspaceOptions();
+    clear(workspaceSelect);
+    for (const [id, label] of options) workspaceSelect.append(html('option', { value: id, text: label }));
+    workspaceSelect.value = workspace.id;
+  }
+  if (nameInput instanceof HTMLInputElement && nameInput.value !== workspace.name) nameInput.value = workspace.name;
+  if (objectiveInput instanceof HTMLTextAreaElement && objectiveInput.value !== workspace.objective) objectiveInput.value = workspace.objective;
+  if (densitySelect instanceof HTMLSelectElement) densitySelect.value = state.research.layout.density;
+  const readyPieces = [
+    `${state.research.experiments.length} experiment(s)`,
+    `${state.research.runLog.length} run(s)`,
+    `${state.research.parameterStudy?.count ?? 0} study point(s)`,
+    `${state.research.comparisonRows.length || buildComparisonRows().length} comparison row(s)`
+  ];
+  setText(
+    'rwWorkspaceSummary',
+    `${workspace.name} - ${state.research.workspaces.length} workspace profile(s), flagship=${workspace.flagshipId || CERTIFIED_WORKBENCH_FLAGSHIP.id}. ${readyPieces.join(', ')}. Objective: ${workspace.objective}`
+  );
 }
 
 export function defaultExperimentName(snapshot: RuntimeSnapshot): string {
@@ -1429,51 +1596,6 @@ export function exportDesignStudyJson(): void {
 // --- Analysis superpack (extracted to superpack-panels.ts) -------------------
 export { doubleSpecFromCurrent, runBifurcationDetectPanel, runCodimTwoPanel, runFixedPointPanel, runFtleRidgePanel, runMelnikovPanel, runRecurrenceNetworkPanel, runShadowingPanel, runSobolPanel, runWadaConvergencePanel, superpackChaosClient, superpackClient, superpackSection } from './superpack-panels';
 
-
-export function comparisonRowFromExperiment(experiment: ResearchExperiment): ResearchComparisonRow {
-  return {
-    id: experiment.id,
-    label: experiment.name,
-    source: 'experiment',
-    timestamp: experiment.updatedAt,
-    method: experiment.snapshot.method,
-    system: experiment.snapshot.systemType,
-    dt: experiment.snapshot.dt,
-    damping: experiment.snapshot.damping,
-    drift: experiment.metrics.drift,
-    lambdaMax: experiment.metrics.lambdaMax,
-    fps: experiment.metrics.fps,
-    score: experiment.metrics.qualityScore,
-    hash: experiment.snapshot.hash
-  };
-}
-
-export function comparisonRowFromRun(entry: ResearchRunLogEntry): ResearchComparisonRow {
-  const snapshot = currentSnapshot();
-  return {
-    id: entry.id,
-    label: entry.label,
-    source: entry.type,
-    timestamp: entry.timestamp,
-    method: entry.method,
-    system: entry.system,
-    dt: entry.dt ?? snapshot.dt,
-    damping: entry.damping ?? snapshot.damping,
-    drift: entry.metrics.drift,
-    lambdaMax: entry.metrics.lambdaMax,
-    fps: entry.metrics.fps,
-    score: entry.metrics.qualityScore,
-    hash: entry.snapshotHash
-  };
-}
-
-export function buildComparisonRows(): ResearchComparisonRow[] {
-  return [
-    ...state.research.experiments.map(comparisonRowFromExperiment),
-    ...state.research.runLog.slice(0, 24).map(comparisonRowFromRun)
-  ].sort((a, b) => b.timestamp.localeCompare(a.timestamp)).slice(0, 60);
-}
-
 export function rebuildComparisonMatrix(): void {
   state.research.comparisonRows = buildComparisonRows();
   persistResearchState();
@@ -1491,6 +1613,7 @@ export function exportComparisonMatrix(): void {
 }
 
 export function renderResearchWorkbench(): void {
+  renderWorkspaceProfile();
   renderResearchExperiments();
   renderResearchRunLog();
   renderParameterStudy();
@@ -1741,46 +1864,5 @@ export function buildParameterStudyInsights(plan: ParameterStudyPlan | null): st
     `Max local sensitivity |Δλ/Δ${plan.variable}|=${metricValue(maxSlope)} over ${slopeLabel}; sign-change crossings ${signChanges}.`
   ].join(' ');
 }
-
-export function renderComparisonMatrix(): void {
-  const rows = state.research.comparisonRows.map((entry) => [
-    entry.source,
-    entry.label,
-    entry.method,
-    entry.system,
-    String(entry.dt),
-    metricValue(entry.drift),
-    metricValue(entry.lambdaMax),
-    String(entry.score)
-  ]);
-  renderResearchTable('rwComparisonMatrix', ['source', 'label', 'method', 'system', 'dt', 'drift', 'lambda', 'score'], rows, 'No comparison rows yet.');
-}
-
-export function renderPaperSummary(): void {
-  const ready = state.research.experiments.length > 0 || state.research.runLog.length > 0 || Boolean(state.research.parameterStudy);
-  const rowCount = state.research.comparisonRows.length || buildComparisonRows().length;
-  setText('rwPaperSummary', `${ready ? 'ready' : 'not ready'}: ${state.research.experiments.length} experiments, ${state.research.runLog.length} run log entries, ${state.research.parameterStudy?.count ?? 0} study points, ${rowCount} comparison rows.`);
-}
-
-export function renderResearchTable(targetId: string, headers: string[], rows: string[][], emptyText: string): void {
-  const box = $(targetId);
-  clear(box);
-  if (!box) return;
-  if (!rows.length) {
-    box.append(html('div', { className: 'research-summary', text: emptyText }));
-    return;
-  }
-  const table = html('table', { className: 'research-table' });
-  const head = html('tr');
-  headers.forEach((header) => head.append(html('th', { text: header })));
-  table.append(head);
-  rows.forEach((cells) => {
-    const tr = html('tr');
-    cells.forEach((cell) => tr.append(html('td', { text: cell })));
-    table.append(tr);
-  });
-  box.append(table);
-}
-
 
 // --- 3D Lab: rope pendulum + spherical pendulum ------------------------------

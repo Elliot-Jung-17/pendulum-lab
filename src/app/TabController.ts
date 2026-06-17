@@ -8,7 +8,7 @@
  *   started twice from double clicks.
  */
 import { DomBinder, pageDom } from './DomBinder';
-import { attachBadge, type ResultBadgeLevel } from './resultBadges';
+import { attachBadge, type ResultBadgeLevel, type TrustInspection } from './resultBadges';
 
 export abstract class TabController {
   protected readonly dom: DomBinder;
@@ -34,8 +34,8 @@ export abstract class TabController {
    * Stamp the tab's status line with a result-credibility badge (visual-only /
    * finite-time-estimate / validated / publication-ready / caveat).
    */
-  protected badge(statusId: string, level: ResultBadgeLevel, note?: string): void {
-    attachBadge(statusId, level, note);
+  protected badge(statusId: string, level: ResultBadgeLevel, note?: string, inspection?: TrustInspection): void {
+    attachBadge(statusId, level, note, inspection);
   }
 
   /**

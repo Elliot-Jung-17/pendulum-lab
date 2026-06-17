@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { RESULT_BADGES, classifyEstimate, classifyExport, classifyValidation } from '../src/app/resultBadges';
+import { RESULT_BADGES, classifyEstimate, classifyExport, classifyValidation, normalizeTrustInspection, trustInspectionSummary } from '../src/app/resultBadges';
 import { AUDIENCE_MODES, normalizeAudienceMode, visibleRailSections } from '../src/app/audienceMode';
 
 describe('result badge classification', () => {
@@ -27,6 +27,21 @@ describe('result badge classification', () => {
     expect(classifyExport({ hash: 'abc123', validated: true })).toBe('publication-ready');
     expect(classifyExport({ hash: 'abc123', validated: false })).toBe('finite-time-estimate');
     expect(classifyExport({})).toBe('visual-only');
+  });
+
+  it('normalizes Trust Inspector evidence into quoteable fields', () => {
+    const trust = normalizeTrustInspection('validated', 'period-1 branch', {
+      title: 'Floquet onset',
+      source: 'Bifurcation tab',
+      parameters: { gamma: 0.5, tolerance: '1e-10', ignored: null },
+      externalValidation: 'Baker-Gollub anchor',
+      reproduce: 'npm run validate:literature'
+    });
+    expect(trust.title).toBe('Floquet onset');
+    expect(trust.parameters).toEqual({ gamma: '0.5', tolerance: '1e-10' });
+    expect(trust.note).toBe('period-1 branch');
+    expect(trust.externalValidation).toContain('Baker');
+    expect(trustInspectionSummary(trust)).toContain('npm run validate:literature');
   });
 });
 

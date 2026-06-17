@@ -34,7 +34,7 @@ versions evolve and the compatibility matrix for reading old archives.
 
 | Artifact | Current version | Writer | Reader/sanitizer |
 |---|---|---|---|
-| Research workbench (localStorage) | `pendulum-research-workbench/v2` | `storage-sync.persistResearchState` | `normalizeResearchStorage` |
+| Research workbench (localStorage) | `pendulum-research-workbench/v3` | `storage-sync.persistResearchState` | `normalizeResearchStorage` |
 | Workspace file | `pendulum-workspace/v1` | `exportWorkspaceJson` | `importWorkspaceJson` |
 | Design study | `pendulum-design-study/v1` | `persistDesignStudy` | `loadDesignStudy` / workspace import |
 | IndexedDB archive | `pendulum-research-db/v1` | `ResearchDb.exportArchive` | `validateResearchDbArchive` |
@@ -54,18 +54,19 @@ versions evolve and the compatibility matrix for reading old archives.
 
 Rows: artifact version found in a file. Columns: app build reading it.
 
-| Stored artifact | ≤ v10.28 build | v10.29–10.30 build | v10.31+ build (this) |
-|---|---|---|---|
-| workbench `legacy` (no version) | ✅ native | ✅ sanitized + migrated → v2 | ✅ sanitized + migrated → v2 |
-| workbench `/v1` | ✅ native | ✅ migrated → v2 (logged) | ✅ migrated → v2 (logged) |
-| workbench `/v2` | ❌ unknown fields dropped | ✅ native | ✅ native |
-| research-db `/v1` archive | — (store absent) | ✅ native | ✅ native |
-| workspace `/v1` | — | ✅ native | ✅ native |
-| design-study `/v1` | — | ✅ native | ✅ native |
-| checksums `/v1` (crc32+fnv) | n/a (external) | ✅ verifiable | ✅ verifiable (legacy algorithm noted) |
-| checksums `/v2` (sha256+crc32+fnv) | n/a | ⚠️ extra field ignored | ✅ native |
-| snapshot `/v2` | ✅ | ✅ | ✅ |
-| 3d-diagnostics `/v1` | — | ✅ | ✅ |
+| Stored artifact | ≤ v10.28 build | v10.29–10.30 build | v10.31-10.34 build | current build |
+|---|---|---|---|---|
+| workbench `legacy` (no version) | ✅ native | ✅ sanitized + migrated → v2 | ✅ sanitized + migrated → v2 | ✅ sanitized + migrated → v3 |
+| workbench `/v1` | ✅ native | ✅ migrated → v2 (logged) | ✅ migrated → v2 (logged) | ✅ migrated → v3 (logged) |
+| workbench `/v2` | ❌ unknown fields dropped | ✅ native | ✅ native | ✅ migrated → v3; `workspaces[]` synthesized from active workspace |
+| workbench `/v3` | ❌ unknown fields dropped | ⚠️ unknown `workspaces[]` ignored | ⚠️ unknown `workspaces[]` ignored | ✅ native |
+| research-db `/v1` archive | — (store absent) | ✅ native | ✅ native | ✅ native |
+| workspace `/v1` | — | ✅ native | ✅ native | ✅ native |
+| design-study `/v1` | — | ✅ native | ✅ native | ✅ native |
+| checksums `/v1` (crc32+fnv) | n/a (external) | ✅ verifiable | ✅ verifiable (legacy algorithm noted) | ✅ verifiable (legacy algorithm noted) |
+| checksums `/v2` (sha256+crc32+fnv) | n/a | ⚠️ extra field ignored | ✅ native | ✅ native |
+| snapshot `/v2` | ✅ | ✅ | ✅ | ✅ |
+| 3d-diagnostics `/v1` | — | ✅ | ✅ | ✅ |
 
 Legend: ✅ reads cleanly · ⚠️ reads, ignores unknown fields · ❌ not supported
 (export an archive from the old build and re-import instead).

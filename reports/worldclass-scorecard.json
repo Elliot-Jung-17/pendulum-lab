@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-06-17T07:54:15.990Z",
+  "generatedAt": "2026-06-17T12:43:39.014Z",
   "totals": {
-    "done": 4,
-    "partial": 4,
+    "done": 3,
+    "partial": 5,
     "gap": 0
   },
   "legacyRisk": {
@@ -2369,6 +2369,9 @@
   "artifacts": {
     "benchmark": true,
     "energy": true,
+    "memoryRegression": false,
+    "memoryBaseline": false,
+    "mojibakeAudit": true,
     "validation": true,
     "reference": true,
     "architecture": true,
@@ -2388,7 +2391,19 @@
     "bundleBudget": true,
     "longRunE2e": true,
     "accessibilityE2e": true,
-    "railAutocloseE2e": true
+    "railAutocloseE2e": true,
+    "visualRegressionE2e": true,
+    "visualSnapshots": true,
+    "visualTier": true,
+    "quickTier": true,
+    "slowTier": true,
+    "benchmarkMemoryScript": true,
+    "ciRunsQuickTier": true,
+    "ciRunsVerify": true,
+    "mainRunsSlowTier": true,
+    "mainRunsBenchmark": true,
+    "mainRunsMemoryRegression": true,
+    "mainRunsMojibakeStrict": true
   },
   "items": [
     {
@@ -2421,7 +2436,7 @@
         "external cross-validation vs an independent SciPy DOP853 reference covers the double AND triple pendulum; literature anchors pin the elliptic period, normal modes, and the period-doubling onset"
       ],
       "remaining": [
-        "WebGPU ensemble simulation, Neimark-Sacker torus continuation, and optional MATLAB/Julia second references remain future work"
+        "Sparse/large-unitary Floquet eigensolvers, GPU-side ensemble reductions, and optional MATLAB/Julia second references remain future work"
       ]
     },
     {
@@ -2433,34 +2448,38 @@
         "every non-variational diagnostic reports an uncertainty estimate (bootstrap / block-resampled / regression CI)"
       ],
       "remaining": [
-        "Full spectrum, CLV and FTLE are CPU-side; GPU acceleration is not implemented"
+        "CLV and some full-spectrum workflows remain CPU-side; broader GPU acceleration is limited to the existing grid/ensemble kernels"
       ]
     },
     {
       "area": "Testing and browser coverage",
-      "status": "done",
+      "status": "partial",
       "evidence": [
-        "874/874 unit tests across 128 files",
+        "918/918 unit tests across 135 files",
         "unit tests cover integrators, energy drift, determinism, JSON import validation, edge cases, chaos, visualization, repro packages",
-        "PR, mainline, nightly mutation, and release workflows are split by cost and intent",
+        "quick, slow, and full test tiers are wired into PR/mainline workflows",
         "coverage scope guard catches new source files missing from the v8 coverage map",
         "long-run performance/soak e2e spec exists and runs in mainline full validation",
-        "accessibility e2e spec exists and runs in mainline full validation"
+        "accessibility e2e spec exists and runs in mainline full validation",
+        "visual regression script, spec, and versioned Chromium snapshots exist",
+        "memory-regression report missing"
       ],
       "remaining": [
-        "Versioned visual golden artifacts and memory-regression baselines can still be promoted into explicit reviewed assets"
+        "Run npm run benchmark and npm run benchmark:memory to create memory-regression artifacts"
       ]
     },
     {
       "area": "Performance and benchmark reporting",
       "status": "done",
       "evidence": [
-        "benchmark-report.md captures FPS, physics ms/frame, memory, worker latency",
+        "benchmark-report.md captures FPS, physics ms/frame, memory, worker latency, and original-vs-candidate deltas",
         "energy-benchmark.md compares long-run drift by integrator",
-        "bundle budget gate splits initial/chunk/standalone assets across raw/gzip/brotli sizes"
+        "bundle budget gate splits initial/chunk/standalone assets across raw/gzip/brotli sizes",
+        "mainline workflow runs the browser benchmark",
+        "mainline workflow emits memory-regression artifacts"
       ],
       "remaining": [
-        "True original-vs-candidate comparison needs distinct ORIGINAL_URL and CANDIDATE_URL inputs"
+        "Release-to-release comparisons should still pass distinct deployed ORIGINAL_URL and CANDIDATE_URL values"
       ]
     },
     {
@@ -2470,7 +2489,9 @@
         "CSP is present",
         "JSON import validation is tested",
         "eval/new Function count is zero",
-        "legacy risk score is 0 (-482 vs baseline)"
+        "legacy risk score is 0 (-482 vs baseline)",
+        "mojibake audit report exists",
+        "mainline workflow runs strict mojibake audit"
       ],
       "remaining": [
         "innerHTML=0",

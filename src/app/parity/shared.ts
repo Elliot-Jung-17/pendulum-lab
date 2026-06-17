@@ -42,7 +42,7 @@ export interface AuditResult {
   manifest: unknown;
 }
 
-export type ResearchRunType = 'experiment' | 'validation' | 'parameter-study' | 'comparison' | 'export' | 'probe';
+export type ResearchRunType = 'experiment' | 'validation' | 'parameter-study' | 'comparison' | 'export' | 'probe' | 'workspace';
 
 export interface ResearchMetrics {
   drift: number | null;
@@ -152,7 +152,25 @@ export interface ResearchComparisonRow {
   hash: string;
 }
 
+export interface ResearchWorkspaceProfile {
+  id: string;
+  name: string;
+  objective: string;
+  flagshipId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ResearchLayoutPreferences {
+  density: 'comfortable' | 'compact';
+  lastTab: string;
+  panelCollapsed: boolean;
+}
+
 export interface ResearchWorkbenchState {
+  workspace: ResearchWorkspaceProfile;
+  workspaces: ResearchWorkspaceProfile[];
+  layout: ResearchLayoutPreferences;
   experiments: ResearchExperiment[];
   selectedExperimentId: string;
   runLog: ResearchRunLogEntry[];
@@ -166,6 +184,25 @@ export interface ResearchStoragePayload extends ResearchWorkbenchState {
   savedAt: string;
   migrations: string[];
   droppedEntries: number;
+}
+
+export function defaultResearchWorkspaceProfile(now = new Date().toISOString()): ResearchWorkspaceProfile {
+  return {
+    id: 'workspace-certified-chaotic-dynamics',
+    name: 'Certified Chaotic Dynamics Workbench',
+    objective: 'Build a reviewer-ready flagship result around the Melnikov gap map, with every quoted number carrying provenance, uncertainty, validation, and caveats.',
+    flagshipId: 'melnikov-gap-map',
+    createdAt: now,
+    updatedAt: now
+  };
+}
+
+export function defaultResearchLayoutPreferences(): ResearchLayoutPreferences {
+  return {
+    density: 'comfortable',
+    lastTab: 'research',
+    panelCollapsed: false
+  };
 }
 
 
@@ -204,6 +241,8 @@ export const COMPAT_ANCHOR_IDS = [
   'pendulumRodFinal'
 ] as const;
 
+const initialResearchWorkspace = defaultResearchWorkspaceProfile();
+
 export const state = {
   mode: 'demo' as RunMode,
   recoveries: 0,
@@ -214,6 +253,9 @@ export const state = {
   lastAudit: null as AuditResult | null,
   lastFault: 'No runtime faults recorded.',
   research: {
+    workspace: initialResearchWorkspace,
+    workspaces: [initialResearchWorkspace],
+    layout: defaultResearchLayoutPreferences(),
     experiments: [] as ResearchExperiment[],
     selectedExperimentId: '',
     runLog: [] as ResearchRunLogEntry[],
@@ -453,6 +495,10 @@ export function installStyles(): void {
 .rg-table{width:100%;border-collapse:collapse;font-size:10.5px}.rg-table td,.rg-table th{border:1px solid var(--glass-stroke);padding:6px;vertical-align:top}.rg-table th{color:var(--cyan);text-align:left;background:rgba(24,212,248,.04)}
 .rg-log{white-space:pre-wrap;max-height:240px;overflow:auto;background:rgba(0,0,0,.22);border:1px solid var(--glass-stroke);border-radius:7px;padding:8px;font:10px/1.45 var(--font-mono);color:var(--text)}
 .research-workbench{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:10px}
+.research-workbench.research-compact{gap:6px}
+.research-workbench.research-compact .research-card{padding:8px}
+.research-workbench.research-compact .research-actions{margin:5px 0}
+.research-workbench.research-compact .research-table-wrap{max-height:180px}
 .research-card{background:rgba(9,14,25,.84);border:1px solid rgba(24,212,248,.22);border-radius:8px;padding:12px;box-shadow:0 8px 30px rgba(0,0,0,.24)}
 .research-card.research-wide{grid-column:1/-1}
 .research-title{font:800 9.5px/1.2 var(--font-display);letter-spacing:1.5px;text-transform:uppercase;color:var(--cyan);margin-bottom:8px;display:flex;justify-content:space-between;gap:8px;align-items:center}

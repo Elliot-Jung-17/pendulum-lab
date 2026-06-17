@@ -19,9 +19,31 @@ The migration is finished: the legacy `js/` runtime (≈8,080 lines) is removed 
 - Replace finite-difference Hamiltonian gradients with analytic gradients.
 - Add full Newton solve for implicit midpoint with Jacobian diagnostics.
 - Store long-horizon energy drift curves by integrator.
-- Extend Lyapunov output from convergence curves and CPU full-spectrum reports to GPU acceleration and covariant Lyapunov vectors.
+- Extend Lyapunov output from convergence curves and CPU full-spectrum/CLV reports to broader GPU acceleration.
 - Add selectable Poincare section conditions and transient removal for bifurcation analysis.
-- Implement Floquet multipliers after a reliable periodic-orbit correction path exists.
+- **Done (v10.34):** Floquet multipliers are implemented for corrected nonlinear
+  periodic orbits, `floquetLinearSpectrum` covers linear T-periodic Floquet/Hill
+  systems including Mathieu stability tongues, and finite-dimensional quantum
+  Floquet quasi-energies are exposed for the quantum kicked rotor.
+- **Done (frontier arc):** five additive self-validating library modules — the
+  continuum **sine-Gordon** soliton field + Frenkel–Kontorova Peierls–Nabarro
+  barrier (`src/physics/sineGordon.ts`), an **echo state network**
+  (`src/research/reservoir.ts`, closed-form ridge readout — the deferred Tier-A
+  reservoir item), **Hamiltonian learning** (`src/research/hamiltonianLearning.ts`,
+  the closed-form convex cousin of an HNN), **restarted thick-restart Lanczos**
+  (`src/research/lanczos.ts`, matrix-free symmetric eigensolver scale-up), and a
+  headless **Mathieu stability-diagram** sweep (`src/chaos/mathieuStability.ts`).
+  Suite 875 → 907.
+- **Remaining spectral frontier:** sparse/large *non-symmetric* (Arnoldi–Schur)
+  eigensolvers building on the complex Krylov projection — the restarted Lanczos
+  above covers the symmetric case; the unitary-grid scale-up for bigger quantum
+  Floquet problems is the next step.
+- **Deferred (needs resources this environment can't exercise, kept honest):**
+  GPU-execution *validation* of the WebGPU ensemble/field kernels (the kernels +
+  feature detection + CPU fallback are in `src/runtime/gpuEnsemble.ts` /
+  `gpuFields.ts` and the fallback path is unit-tested; a real GPU run is browser/CI
+  only); Hamiltonian/Lagrangian *neural* nets and reservoir variants that require
+  iterative gradient training (the closed-form analogues above are shipped instead).
 
 ## Performance And UX
 
@@ -29,7 +51,21 @@ The migration is finished: the legacy `js/` runtime (≈8,080 lines) is removed 
 - Add trajectory and Poincare memory caps to user-facing settings.
 - Add paper figure export presets and reproducible research bundle export.
 - Evaluate OffscreenCanvas and WebGPU ensemble simulation behind feature detection.
-- Add visual regression, memory leak, and long-runtime browser tests to CI after the UI stabilizes.
+- **Done (v10.34):** quick/slow/full unit-test tiers are exposed and wired into
+  PR/mainline CI; benchmark output now includes original-vs-candidate deltas,
+  and `benchmark:memory` emits a memory-regression baseline/report from the
+  browser benchmark.
+- Keep expanding cross-platform visual baselines beyond the current Chromium
+  snapshots, and decide when memory regression should become a hard CI failure
+  instead of a report-only gate.
+  - **Decision (recorded):** the Firefox/WebKit/mobile-Chrome Playwright projects
+    already exist in `playwright.config.ts`; cross-platform *baselines* must be
+    generated on the actual Linux/macOS/Windows runners (snapshots are
+    pixel-host-specific), so baseline promotion stays a CI task. The memory-
+    regression hard gate (`MEMORY_FAIL_ON_REGRESSION=1`) should flip on only
+    **after** a stable `reports/memory-baseline.json` is committed from a Chromium
+    CI run — flipping it before a baseline exists makes the gate throw
+    "metric missing", so it remains report-only until that baseline lands.
 
 ## Architecture - Module Splits
 
@@ -46,9 +82,29 @@ The migration is finished: the legacy `js/` runtime (≈8,080 lines) is removed 
   `pendulum-lab:research-workbench-changed`; the Research tab installs a render bridge for that
   event. Remaining extraction candidates: run-log renderer (`renderResearchRunLog`, ~80 lines),
   comparison matrix builder, design-study state, and batch-runner orchestration.
+  The split boundary is now documented in `docs/architecture.md` so the next
+  extraction keeps state/storage code in `src/app/parity/storage-sync.ts` and
+  pure research helpers in `src/research`.
+  - **Deferred deliberately:** the remaining `research-workbench.ts` extractions
+    (run-log renderer, comparison matrix, design-study state, batch runner) are
+    UI-orchestration code with **no unit-test coverage** — they are verified only by
+    the Playwright e2e suite (visual/interaction parity), which can't be exercised
+    headlessly here. A pure extraction without a unit safety net risks a silent UI
+    regression, so per the project's verify-first rule it waits until either unit
+    coverage exists for those renderers or the extraction is done alongside an e2e
+    run. The file stays within its 2200-line ratchet in the meantime.
 
 ## Portfolio Packaging
 
 - Keep benchmark, validation, architecture, and limitation reports current for each release.
 - Add a one-page PDF summary and short GIF capture after the UI is finalized.
-- Add GitHub Pages deployment, npm package metadata, and full English API documentation.
+- **Done:** npm package metadata (`keywords`, `license`, `author`, `repository`,
+  `homepage`, `bugs`) is filled in and the headless core is bundled by `build:lib`
+  with `exports`/`types`/`files` set, so the package is **publish-ready**. The repo
+  is kept `private: true` on purpose: the final publish is an irreversible,
+  outward-facing decision (package name/scope — `pendulum-lab-v10` vs a scoped
+  name — version line `10.34.0` vs a `1.0.0` library reset, and npm credentials) that
+  is the author's to make. To publish: set `"private": false`, pick the name/version,
+  then `npm run build:lib && npm publish --access public`.
+- Add GitHub Pages deployment and full English API documentation (TypeDoc is wired via
+  `npm run docs:api`).

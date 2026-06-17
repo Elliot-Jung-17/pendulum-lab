@@ -23,6 +23,11 @@ export interface NewtonStepRecord {
   stepNorm: number;
 }
 
+export type ImplicitMidpointFailureReason =
+  | 'non-finite-input'
+  | 'singular-newton-matrix'
+  | 'max-iterations';
+
 export interface ImplicitMidpointReport {
   /** Whether the residual fell below tolerance within the iteration budget. */
   converged: boolean;
@@ -30,10 +35,16 @@ export interface ImplicitMidpointReport {
   iterations: number;
   /** ‖G(y)‖_∞ at the accepted iterate. */
   finalResidual: number;
+  /** Alias used by UI/API diagnostics: ‖G(y)‖_∞ at the accepted iterate. */
+  residualNorm: number;
   /** Per-iteration convergence record (quadratic for Newton near the root). */
   history: NewtonStepRecord[];
   /** κ_∞(I - (dt/2)J_mid) at the accepted iterate; ≥ 1, → 1 as dt → 0, ∞ if singular. */
   conditionNumber: number;
+  /** Alias used by UI/API diagnostics: κ_∞(I - (dt/2)J_mid). */
+  conditionEstimate: number;
+  /** Present when the Newton solve did not converge. */
+  failureReason?: ImplicitMidpointFailureReason;
   /** The accepted next state y_{n+1}. */
   state: Float64Array;
 }
@@ -46,7 +57,7 @@ export interface ImplicitMidpointNewtonOptions {
 }
 
 /** ∞-norm condition number κ = ‖M‖_∞·‖M⁻¹‖_∞ (M⁻¹ formed column-by-column; small n). */
-function conditionNumberInfinity(m: Float64Array, n: number): number {
+export function newtonMatrixConditionNumber(m: Float64Array, n: number): number {
   let normM = 0;
   for (let r = 0; r < n; r += 1) {
     let rowSum = 0;
@@ -93,6 +104,22 @@ export function implicitMidpointNewton(
   const history: NewtonStepRecord[] = [];
   let converged = false;
   let finalResidual = Infinity;
+  let failureReason: ImplicitMidpointFailureReason | undefined;
+
+  if (![dt, tolerance, maxIterations].every(Number.isFinite) || n === 0) {
+    failureReason = 'non-finite-input';
+    return {
+      converged,
+      iterations: 0,
+      finalResidual,
+      residualNorm: finalResidual,
+      history,
+      conditionNumber: Infinity,
+      conditionEstimate: Infinity,
+      failureReason,
+      state: y
+    };
+  }
 
   for (let iter = 1; iter <= maxIterations; iter += 1) {
     for (let i = 0; i < n; i += 1) mid[i] = 0.5 * ((y0[i] ?? 0) + (y[i] ?? 0));
@@ -105,6 +132,10 @@ export function implicitMidpointNewton(
     const record: NewtonStepRecord = { iteration: iter, residualNorm: residual, stepNorm: 0 };
     history.push(record);
     finalResidual = residual;
+    if (!Number.isFinite(residual)) {
+      failureReason = 'non-finite-input';
+      break;
+    }
     if (residual < tolerance) {
       converged = true;
       break;
@@ -118,7 +149,10 @@ export function implicitMidpointNewton(
       rhsVec[r] = -(g[r] ?? 0);
     }
     const solve = solveLinearInPlace(newtonMatrix, rhsVec, n);
-    if (!solve.ok) break; // singular Newton matrix: stop, report non-convergence
+    if (!solve.ok) {
+      failureReason = solve.reason === 'non-finite-input' ? 'non-finite-input' : 'singular-newton-matrix';
+      break;
+    }
     let stepNorm = 0;
     for (let i = 0; i < n; i += 1) {
       y[i] = (y[i] ?? 0) + (rhsVec[i] ?? 0);
@@ -126,6 +160,7 @@ export function implicitMidpointNewton(
     }
     record.stepNorm = stepNorm;
   }
+  if (!converged && !failureReason) failureReason = 'max-iterations';
 
   // Condition number of the Newton matrix at the accepted iterate.
   for (let i = 0; i < n; i += 1) mid[i] = 0.5 * ((y0[i] ?? 0) + (y[i] ?? 0));
@@ -135,7 +170,17 @@ export function implicitMidpointNewton(
       newtonMatrix[r * n + c] = (r === c ? 1 : 0) - 0.5 * dt * (jac[r * n + c] ?? 0);
     }
   }
-  const conditionNumber = conditionNumberInfinity(newtonMatrix, n);
+  const conditionNumber = newtonMatrixConditionNumber(newtonMatrix, n);
 
-  return { converged, iterations: history.length, finalResidual, history, conditionNumber, state: y };
+  return {
+    converged,
+    iterations: history.length,
+    finalResidual,
+    residualNorm: finalResidual,
+    history,
+    conditionNumber,
+    conditionEstimate: conditionNumber,
+    ...(failureReason ? { failureReason } : {}),
+    state: y
+  };
 }

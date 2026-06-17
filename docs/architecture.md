@@ -67,6 +67,22 @@ deprecated debug alias. Public scripting uses `window.PendulumLab`.
 - `src/workers/`: separate module worker with main-thread fallback through `WorkerBridge`.
 - `app.html`: the live Vite shell (static shell DOM + CSS); it loads `src/main.ts`, which boots the runtime, Lab, analysis tabs, and shell. The project-root `index.html` is the self-contained portable build produced by `npm run build:standalone`.
 
+## Research Workbench Boundary
+
+`src/app/parity/research-workbench.ts` is still a known-large UI orchestrator,
+but its extraction boundary is now explicit:
+
+- Pure, reusable research primitives live in `src/research/` and are exported
+  through the grouped `research` public API.
+- Local-storage and IndexedDB schema normalization live in
+  `src/app/parity/storage-sync.ts` and `src/research/researchDb.ts`.
+- Visual card/table helpers belong in `research-ui-components.ts`; superpack
+  analysis panels belong in `superpack-panels.ts`.
+- Remaining extraction candidates are the run-log renderer, comparison-matrix
+  builder, design-study state machine, and batch-runner orchestration. Those
+  should leave `research-workbench.ts` one at a time with focused unit or e2e
+  coverage so persisted study/run-log behavior does not drift.
+
 ## Module Size Ratchet
 
 `npm run audit:modules` prevents new oversized source files and caps the known

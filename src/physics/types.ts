@@ -11,6 +11,15 @@ export type Derivative = (state: StateVector, out: StateVector) => void;
  */
 export type Jacobian = (state: StateVector, jac: Float64Array) => void;
 
+export interface StepDiagnostics {
+  solver: 'fixed-point' | 'newton' | 'explicit' | 'adaptive';
+  iterations: number;
+  residualNorm: number;
+  conditionEstimate?: number;
+  converged: boolean;
+  failureReason?: string;
+}
+
 export interface StepOptions {
   tolerance?: number;
   previousError?: { value: number };
@@ -21,6 +30,8 @@ export interface StepOptions {
    * by the ~1e-7 finite-difference floor.
    */
   jacobian?: Jacobian;
+  /** Optional sink for solver diagnostics from implicit/adaptive steppers. */
+  diagnostics?: Partial<StepDiagnostics>;
 }
 
 export interface IntegratorMeta {

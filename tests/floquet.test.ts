@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { eigenvalues2x2, floquetAnalysis, drivenPeriodicOrbit } from '../src/chaos/index';
-import type { Derivative } from '../src/physics/types';
+import { eigenvalues2x2, floquetAnalysis, floquetSpectrum, drivenPeriodicOrbit } from '../src/chaos/index';
+import type { Derivative, Jacobian } from '../src/physics/types';
 
 /**
  * Floquet stability is pinned on systems whose monodromy is analytically known.
@@ -66,6 +66,29 @@ describe('Floquet analysis of linear oscillators', () => {
     expect(r.stable).toBe(false);
     // tr A = 0 ⇒ det(M) = 1 ⇒ multipliers are reciprocal (ρ and 1/ρ).
     expect(r.determinant).toBeCloseTo(1, 3);
+  });
+});
+
+describe('general-dimensional Floquet QR spectrum', () => {
+  test('recovers all multipliers of a diagonal 3D linear system', () => {
+    const lambdas = [0.2, -0.1, -0.4];
+    const period = 1.5;
+    const rhs: Derivative = (s, o) => {
+      for (let i = 0; i < 3; i += 1) o[i] = (lambdas[i] ?? 0) * (s[i] ?? 0);
+    };
+    const jac: Jacobian = (_s, j) => {
+      j.fill(0);
+      for (let i = 0; i < 3; i += 1) j[i * 3 + i] = lambdas[i] ?? 0;
+    };
+    const result = floquetSpectrum([1, 1, 1], rhs, period, { dt: 0.001 }, jac, 3);
+    const got = result.multipliers.map((m) => m.re).sort((a, b) => a - b);
+    const expected = lambdas.map((l) => Math.exp(l * period)).sort((a, b) => a - b);
+    expect(result.dimension).toBe(3);
+    expect(result.multipliers).toHaveLength(3);
+    for (let i = 0; i < 3; i += 1) expect(got[i]!).toBeCloseTo(expected[i]!, 4);
+    expect(result.maxModulus).toBeCloseTo(Math.max(...expected), 4);
+    expect(result.stable).toBe(false);
+    expect(result.caveat).toContain('QR');
   });
 });
 

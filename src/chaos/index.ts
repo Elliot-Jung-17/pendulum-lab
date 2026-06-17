@@ -42,8 +42,8 @@ export type { FtleOptions, FlowMapGradient, FtleFieldOptions, FtleField } from '
 export { melnikovScaled, melnikovCriticalAmplitude, melnikovFunction, melnikovFunctionNumeric, melnikovVerdict } from './melnikov';
 export type { MelnikovScaled, MelnikovVerdict } from './melnikov';
 
-export { eigenvalues2x2, monodromyMatrix, floquetAnalysis, drivenPeriodicOrbit } from './floquet';
-export type { FloquetMultiplier, FloquetResult, DrivenOrbitOptions, DrivenOrbitResult } from './floquet';
+export { eigenvalues2x2, monodromyMatrix, floquetAnalysis, floquetSpectrum, drivenPeriodicOrbit } from './floquet';
+export type { FloquetMultiplier, FloquetResult, FloquetSpectrumResult, DrivenOrbitOptions, DrivenOrbitResult } from './floquet';
 
 export { drivenPeriodicOrbitN, switchPeriodDoubling, switchSymmetryBreaking, switchTranscriticalBranch, realEigenvector2x2 } from './branchSwitching';
 export type {
@@ -72,10 +72,13 @@ export type { IndicatorSettings, SaliResult, FliResult } from './indicators';
 export { shadowingHorizon } from './shadowing';
 export type { ShadowingOptions, ShadowingResult } from './shadowing';
 
-export { poincareSection, bifurcationDiagram, distinctValueCount } from './poincare';
+export { buildPoincareSection, poincareSection, poincareSectionPreset, bifurcationDiagram, distinctValueCount } from './poincare';
 export type {
   PoincareOptions,
+  PoincarePresetOptions,
   PoincareResult,
+  PoincareSectionBuilderResult,
+  PoincareSectionPreset,
   BifurcationOptions,
   BifurcationColumn
 } from './poincare';
@@ -139,3 +142,18 @@ export { codimTwoDiagram } from './codimTwo';
 export type { CodimTwoOptions, CodimTwoCell, CodimTwoResult } from './codimTwo';
 
 export { createDrivenStroboscopicMap, continueExpansionNSBranch } from './neimarkSackerBranch';
+
+export { naffDecompose, naffFundamentalFrequency } from './naff';
+export type { NaffComponent, NaffOptions } from './naff';
+
+export { ulamTransitionMatrix1D, invariantMeasure, transferOperatorInvariantDensity, transferOperatorSpectrum } from './transferOperator';
+export type { UlamMatrix, InvariantDensity, TransferOperatorSpectrum } from './transferOperator';
+
+export { perronEigenvalue, subshiftEntropy, coveringTransitionMatrix1D, topologicalEntropy1D } from './topologicalEntropy';
+export type { PerronResult, TopologicalEntropyResult } from './topologicalEntropy';
+
+export { monodromyLinear, floquetLinearSpectrum } from './floquetLinear';
+export type { FloquetLinearConvergenceDiagnostic, FloquetLinearDiagnostics, FloquetLinearOptions, FloquetLinearResult } from './floquetLinear';
+
+export { mathieuCoefficient, mathieuFloquet, mathieuStabilityDiagram, mathieuTongueTips } from './mathieuStability';
+export type { MathieuOptions, MathieuStabilityCell, MathieuStabilityDiagramSpec, MathieuStabilityDiagram } from './mathieuStability';

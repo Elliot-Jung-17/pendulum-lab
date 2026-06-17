@@ -2,6 +2,7 @@ import type { IntegratorId } from '../types/domain';
 import type { Derivative, IntegratorMeta, StateVector, StepOptions } from './types';
 import { dormandPrince54Step, bulirschStoerStep } from './adaptive';
 import { trBdf2Step } from './stiff';
+import { implicitMidpointNewton } from './implicitDiagnostics';
 
 function ensureScratch(n: number): Float64Array[] {
   return Array.from({ length: 5 }, () => new Float64Array(n));
@@ -110,7 +111,10 @@ export const integratorRegistry: Readonly<Record<IntegratorId, IntegratorMeta>> 
     order: 'implicit',
     symplectic: 'canonical-only',
     dampingSupport: 'diagnostic-only',
-    stabilityNotes: ['Canonical symplectic claims require theta/p coordinates, gamma = 0, and residual reporting.'],
+    stabilityNotes: [
+      'Canonical symplectic claims require theta/p coordinates, gamma = 0, and residual reporting.',
+      'Uses Newton iteration when an analytic Jacobian is supplied; otherwise falls back to Picard fixed-point iteration.'
+    ],
     recommendedDt: [0.0005, 0.008]
   },
   gauss2: {
@@ -215,6 +219,23 @@ export function rk4Step(state: StateVector, dt: number, rhs: Derivative, out: St
 }
 
 export function implicitMidpointStep(state: StateVector, dt: number, rhs: Derivative, out: StateVector, options: StepOptions = {}): StateVector {
+  if (options.jacobian) {
+    const newtonOptions: { tolerance?: number; maxIterations: number } = { maxIterations: 25 };
+    if (options.tolerance !== undefined) newtonOptions.tolerance = options.tolerance;
+    const report = implicitMidpointNewton(state, dt, rhs, options.jacobian, newtonOptions);
+    out.set(report.state);
+    if (options.previousError) options.previousError.value = report.residualNorm;
+    if (options.diagnostics) {
+      options.diagnostics.solver = 'newton';
+      options.diagnostics.iterations = report.iterations;
+      options.diagnostics.residualNorm = report.residualNorm;
+      options.diagnostics.conditionEstimate = report.conditionEstimate;
+      options.diagnostics.converged = report.converged;
+      if (report.failureReason) options.diagnostics.failureReason = report.failureReason;
+      else delete options.diagnostics.failureReason;
+    }
+    return out;
+  }
   const n = state.length;
   const scratch = ensureScratch(n);
   const k = scratch[0]!;
@@ -223,7 +244,11 @@ export function implicitMidpointStep(state: StateVector, dt: number, rhs: Deriva
   trial.set(state);
   const tolerance = options.tolerance ?? 1e-10;
   let residual = Infinity;
+  let iterations = 0;
+  let converged = false;
+  let failureReason: string | undefined;
   for (let iter = 0; iter < 10; iter += 1) {
+    iterations = iter + 1;
     for (let i = 0; i < n; i += 1) mid[i] = 0.5 * (Number(state[i] ?? 0) + Number(trial[i] ?? 0));
     rhs(mid, k);
     residual = 0;
@@ -232,10 +257,27 @@ export function implicitMidpointStep(state: StateVector, dt: number, rhs: Deriva
       residual = Math.max(residual, Math.abs(next - Number(trial[i] ?? 0)));
       trial[i] = next;
     }
-    if (residual < tolerance) break;
+    if (!Number.isFinite(residual)) {
+      failureReason = 'non-finite-input';
+      break;
+    }
+    if (residual < tolerance) {
+      converged = true;
+      break;
+    }
   }
+  if (!converged && !failureReason) failureReason = 'max-iterations';
   out.set(trial);
   if (options.previousError) options.previousError.value = residual;
+  if (options.diagnostics) {
+    options.diagnostics.solver = 'fixed-point';
+    options.diagnostics.iterations = iterations;
+    options.diagnostics.residualNorm = residual;
+    options.diagnostics.converged = converged;
+    if (failureReason) options.diagnostics.failureReason = failureReason;
+    else delete options.diagnostics.failureReason;
+    delete options.diagnostics.conditionEstimate;
+  }
   return out;
 }
 

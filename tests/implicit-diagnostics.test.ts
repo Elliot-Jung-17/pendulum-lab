@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { implicitMidpointNewton } from '../src/physics/implicitDiagnostics';
 import { implicitMidpointStep } from '../src/physics/integrators';
-import type { StateVector } from '../src/physics/types';
+import type { StateVector, StepDiagnostics } from '../src/physics/types';
 
 /**
  * Newton-instrumented implicit midpoint. Pinned against the exact linear update
@@ -82,6 +82,32 @@ describe('implicit midpoint Newton — accuracy', () => {
     for (let i = 1; i < report.history.length; i += 1) {
       expect(report.history[i]!.residualNorm).toBeLessThanOrEqual(report.history[i - 1]!.residualNorm);
     }
+  });
+
+  test('production hmidpoint exposes Newton diagnostics when a Jacobian is supplied', () => {
+    const diagnostics: Partial<StepDiagnostics> = {};
+    const out = new Float64Array(2);
+    implicitMidpointStep(Float64Array.from([0.5, 0]), 0.05, harmonicRhs(1), out, {
+      jacobian: harmonicJac(1),
+      diagnostics
+    });
+    expect(diagnostics.solver).toBe('newton');
+    expect(diagnostics.converged).toBe(true);
+    expect(diagnostics.iterations).toBeGreaterThan(0);
+    expect(diagnostics.residualNorm).toBeLessThan(1e-10);
+    expect(diagnostics.conditionEstimate).toBeGreaterThanOrEqual(1);
+    expect(diagnostics.failureReason).toBeUndefined();
+  });
+
+  test('production hmidpoint keeps Picard residual diagnostics without a Jacobian', () => {
+    const diagnostics: Partial<StepDiagnostics> = {};
+    const out = new Float64Array(2);
+    implicitMidpointStep(Float64Array.from([0.5, 0]), 0.05, harmonicRhs(1), out, { diagnostics });
+    expect(diagnostics.solver).toBe('fixed-point');
+    expect(diagnostics.iterations).toBeGreaterThan(0);
+    expect(diagnostics.residualNorm).toBeLessThan(1e-8);
+    expect(diagnostics.converged).toBe(true);
+    expect(diagnostics.conditionEstimate).toBeUndefined();
   });
 });
 

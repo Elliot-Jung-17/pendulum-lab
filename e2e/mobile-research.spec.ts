@@ -8,18 +8,19 @@ import { expect, test } from '@playwright/test';
  */
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
-test('mobile: Govern > Research is reachable and fits the viewport', async ({ page }) => {
+test('mobile: Check > Research+ is reachable and fits the viewport', async ({ page }) => {
   await page.addInitScript(() => {
     window.localStorage.removeItem('pendulum-lab/research-workbench/v1');
   });
   await page.goto('/');
   await page.waitForFunction(() => Boolean((window as unknown as { __modernShell?: unknown }).__modernShell));
 
-  // The Govern rail section opens and exposes the research tab on a phone.
-  const governButton = page.locator('.rail-menu-button[data-rail-section-button="govern"]');
-  await expect(governButton).toBeVisible();
-  await governButton.click();
-  const researchTab = page.locator('#rail-panel-govern .tab[data-tab="research"]');
+  // The Check rail section opens and exposes the Research+ tab on a phone
+  // (data-tab="research" lives in #rail-panel-check, alongside Validate/Floquet).
+  const checkButton = page.locator('.rail-menu-button[data-rail-section-button="check"]');
+  await expect(checkButton).toBeVisible();
+  await checkButton.click();
+  const researchTab = page.locator('#rail-panel-check .tab[data-tab="research"]');
   await expect(researchTab).toBeVisible();
   await researchTab.click();
   await expect(page.locator('#researchWorkbench')).toBeVisible();

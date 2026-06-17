@@ -4,6 +4,31 @@
   "private": true,
   "type": "module",
   "description": "Typed, modular Pendulum Lab V10 research platform for nonlinear pendulum dynamics.",
+  "keywords": [
+    "pendulum",
+    "double-pendulum",
+    "nonlinear-dynamics",
+    "chaos",
+    "lyapunov",
+    "numerical-integration",
+    "symplectic",
+    "floquet",
+    "sindy",
+    "koopman",
+    "reservoir-computing",
+    "sine-gordon",
+    "typescript"
+  ],
+  "license": "MIT",
+  "author": "Elliot Jung",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Elliot-Jung-17/pendulum-lab.git"
+  },
+  "homepage": "https://github.com/Elliot-Jung-17/pendulum-lab#readme",
+  "bugs": {
+    "url": "https://github.com/Elliot-Jung-17/pendulum-lab/issues"
+  },
   "engines": {
     "node": ">=22 <27"
   },
@@ -14,6 +39,22 @@
     ".": {
       "types": "./dist-lib/types/lib.d.ts",
       "import": "./dist-lib/pendulum-lab-core.js"
+    },
+    "./core": {
+      "types": "./dist-lib/types/lib/core.d.ts",
+      "import": "./dist-lib/core.js"
+    },
+    "./analysis": {
+      "types": "./dist-lib/types/lib/analysis.d.ts",
+      "import": "./dist-lib/analysis.js"
+    },
+    "./research": {
+      "types": "./dist-lib/types/lib/research.d.ts",
+      "import": "./dist-lib/research.js"
+    },
+    "./experimental": {
+      "types": "./dist-lib/types/lib/experimental.d.ts",
+      "import": "./dist-lib/experimental.js"
     }
   },
   "files": [
@@ -36,10 +77,14 @@
     "verify": "npm run lint && npm run typecheck && npm run audit:modules && npm run test:json && npm run docs:sync",
     "test": "vitest run",
     "test:json": "vitest run --reporter=json --outputFile=reports/vitest-results.json",
+    "test:quick": "vitest run --config vitest.quick.config.ts",
+    "test:slow": "vitest run --config vitest.slow.config.ts",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:visual": "playwright test e2e/visual-regression.spec.ts --project=chromium",
     "smoke": "playwright test e2e/smoke.spec.ts --project=chromium",
     "benchmark": "tsx scripts/benchmark.ts",
+    "benchmark:memory": "tsx scripts/memory-regression.ts",
     "benchmark:energy": "tsx scripts/energy-benchmark.ts",
     "validate:reference": "tsx scripts/validate-reference.ts",
     "validate:cross": "tsx scripts/cross-validate.ts",
@@ -57,6 +102,8 @@
     "reports": "tsx scripts/generate-validation-report.ts",
     "audit:modules": "tsx scripts/audit-module-size.ts",
     "audit:legacy": "tsx scripts/audit-legacy.ts",
+    "audit:mojibake": "tsx scripts/audit-mojibake.ts",
+    "audit:mojibake:strict": "tsx scripts/audit-mojibake.ts --fail-on-findings",
     "audit:worldclass": "tsx scripts/worldclass-scorecard.ts",
     "docs:sync": "tsx scripts/sync-test-counts.ts",
     "test:coverage": "vitest run --coverage && npm run coverage:scope",

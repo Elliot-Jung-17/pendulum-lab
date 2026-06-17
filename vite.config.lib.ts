@@ -12,10 +12,16 @@ export default defineConfig({
     emptyOutDir: true,
     sourcemap: true,
     lib: {
-      entry: 'src/lib.ts',
+      entry: {
+        'pendulum-lab-core': 'src/lib.ts',
+        core: 'src/lib/core.ts',
+        analysis: 'src/lib/analysis.ts',
+        research: 'src/lib/research.ts',
+        experimental: 'src/lib/experimental.ts'
+      },
       name: 'PendulumLabCore',
       formats: ['es'],
-      fileName: () => 'pendulum-lab-core.js'
+      fileName: (_format, entryName) => `${entryName}.js`
     },
     rollupOptions: {
       output: { exports: 'named' }

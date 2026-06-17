@@ -138,6 +138,48 @@ export function defaultJobPoolSize(concurrency = typeof navigator === 'undefined
   return Math.min(4, Math.max(1, Math.floor(concurrency / 2)));
 }
 
+function estimateChaosWorkUnits(request: ChaosRequest): number | undefined {
+  switch (request.kind) {
+    case 'lyapunov':
+      return request.settings?.steps ?? 20_000;
+    case 'lyapunovSpectrum':
+      return (request.settings?.steps ?? 20_000) * (request.count ?? request.state0.length);
+    case 'bifurcation':
+      return request.amplitudes.length * Math.max(1, Math.round(request.settings.maxTime / request.settings.dt));
+    case 'zeroOne':
+      return (request.settings?.transientSteps ?? 2_000) + (request.settings?.samples ?? 3_000) * (request.settings?.sampleEvery ?? 30);
+    case 'clv':
+      return ((request.settings?.forwardTransient ?? 200) + (request.settings?.window ?? 400) + (request.settings?.backwardTransient ?? 200))
+        * (request.settings?.renormEvery ?? 10)
+        * (request.count ?? request.state0.length);
+    case 'basin': {
+      const n = request.settings?.n ?? 60;
+      return n * n * Math.max(1, Math.round((request.settings?.maxTime ?? 20) / (request.settings?.dt ?? 0.01)));
+    }
+    case 'rqa': {
+      const samples = request.settings?.samples ?? 360;
+      return (request.settings?.transientSteps ?? 2_000) + samples * (request.settings?.sampleEvery ?? 20) + samples * samples;
+    }
+    case 'ftle': {
+      const n = request.settings?.n ?? 60;
+      return n * n * Math.max(1, Math.round((request.settings?.totalTime ?? 3) / (request.settings?.dt ?? 0.01)));
+    }
+    case 'studyPoint':
+      return (request.settings?.lyapunov?.steps ?? 8_000)
+        + ((request.settings?.rqa?.samples ?? 360) ** 2)
+        + Math.max(1, Math.round((request.settings?.ftleHorizon ?? 5) / (request.settings?.ftleDt ?? 0.01)));
+    case 'wadaConvergence':
+      return (request.settings?.resolutions ?? [40, 60, 90])
+        .reduce((sum, n) => sum + n * n * Math.max(1, Math.round((request.settings?.maxTime ?? 20) / (request.settings?.dt ?? 0.01))), 0);
+    case 'codim2': {
+      const n = request.settings?.n ?? 12;
+      return n * n * (request.settings?.steps ?? 4_000);
+    }
+    default:
+      return undefined;
+  }
+}
+
 export class JobClient {
   private workers: { transport: JobTransport; busyJobId: string | null }[] = [];
   private jobs = new Map<string, PendingJob>();
@@ -170,6 +212,16 @@ export class JobClient {
 
   submit(request: ChaosRequest, options: JobSubmitOptions = {}): JobHandle {
     this.ensurePool();
+    if (!this.workers.some((entry) => entry.transport.usesWorker)) {
+      const estimatedWorkUnits = estimateChaosWorkUnits(request);
+      if (estimatedWorkUnits !== undefined && estimatedWorkUnits >= 100_000) {
+        notifyWorkerFallback('chaos-job-worker', 'large job running on main thread', {
+          once: false,
+          estimatedWorkUnits,
+          jobLabel: request.kind
+        });
+      }
+    }
     if (this.jobs.size >= this.maxQueued) {
       const error = new Error(`job queue full (${this.maxQueued})`);
       return {

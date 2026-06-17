@@ -73,7 +73,11 @@ export function installResearchWorkbenchEventBridge(): void {
 export function installResearchTab(): void {
   installResearchWorkbenchEventBridge();
   const panel = $('tab-research');
-  if (!panel || panel.childElementCount > 0) return;
+  // Idempotency guard: build the workbench once. The panel already holds the
+  // static Research+ (Inverse · Surrogate · Stochastic) content, so we must key
+  // off the workbench's own marker — not childElementCount — or the build is
+  // wrongly skipped and #researchWorkbench/#researchExperimentCard never appear.
+  if (!panel || panel.querySelector('#researchWorkbench')) return;
   const layout = html('div', { className: 'layout' });
   const left = html('div', { className: 'left-col' });
   left.style.maxWidth = '1180px';

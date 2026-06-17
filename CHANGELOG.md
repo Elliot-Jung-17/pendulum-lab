@@ -4,6 +4,28 @@
 
 Inverse-problem and uncertainty-quantification library extensions, a symmetry-breaking branch-following step, multiplicative-noise SDEs, reproducibility packaging, and build/line-ending hygiene — followed by **Neimark–Sacker torus continuation**, a **singularity-free embedded spherical-pendulum chart**, and **ensemble statistics**, then a **forward-list pass** that turns the library-only solvers into a full research toolchain: the **embedded spherical *chain*** (pole-clamp-free), the **NS-torus research instruments** (Arnold tongues, torus Lyapunov spectrum, spectral-convergence gate, SciPy cross-validation, Bifurcation-tab UI), **matrix-noise + adaptive SDE schemes**, a **structure-preservation drift profiler**, **transcritical** branch-switching surfacing, a **one-command reproduce pipeline**, expanded **mutation coverage**, and a **Research+ Lab tab** surfacing the inverse problem / PCE surrogate / SDE ensemble. All additive — the 595-test suite grows to 674 with no behavioural change to existing APIs.
 
+### FPUT recurrence, kink collisions, trajectory derivatives & restarted Arnoldi (additive; suite 907 -> 918)
+
+Four additive research-frontier extensions close the next verified gaps while keeping
+the existing public API stable and explicit.
+
+- **Fermi-Pasta-Ulam-Tsingou lattice** (`src/physics/fput.ts`, `core`): alpha/beta
+  anharmonic chains with fixed-end normal modes, modal energy accounting, symplectic
+  velocity-Verlet stepping, and a recurrence tracker. Tests pin the harmonic mode
+  energy decomposition, total-energy conservation, nonlinear mode spreading, and a
+  measured single-mode recurrence window.
+- **Sine-Gordon kink-antikink collision helpers** (`src/physics/sineGordon.ts`,
+  `core`): a neutral kink-antikink field builder plus multi-crossing kink-position
+  detection, tested through topological charge conservation and collision approach.
+- **Trajectory-derived Hamiltonian learning inputs** (`src/research/hamiltonianLearning.ts`,
+  `research`): uniform-time phase-space samples can now be converted to centered
+  finite-difference derivatives, enabling recovery from real trajectories rather than
+  only analytic vector fields.
+- **Restarted Arnoldi for non-symmetric operators** (`src/research/arnoldi.ts`,
+  `research`): a matrix-free Krylov eigensolver companion to restarted Lanczos, tested
+  against `eigenvaluesGeneral` for real spectra and dominant complex-conjugate pairs
+  with direct residual checks.
+
 ### Physics & chaos expansion (additive; suite 707 → 771)
 
 A breadth pass adding canonical nonlinear systems and analysis methods that tie the

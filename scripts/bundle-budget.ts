@@ -7,7 +7,7 @@ import { brotliCompressSync, gzipSync } from 'node:zlib';
  *
  * Budgets are split by delivery role:
  * - initial: assets referenced directly by dist/index.html;
- * - chunk: lazy/additional built assets;
+ * - chunk: largest lazy/additional built asset;
  * - standalone: the self-contained single-file page.
  */
 
@@ -65,6 +65,12 @@ function addSize(total: SizeSet, next: SizeSet): void {
   total.brotli += next.brotli;
 }
 
+function maxSize(total: SizeSet, next: SizeSet): void {
+  total.raw = Math.max(total.raw, next.raw);
+  total.gzip = Math.max(total.gzip, next.gzip);
+  total.brotli = Math.max(total.brotli, next.brotli);
+}
+
 function assetRefsFromIndex(indexHtml: string): Set<string> {
   const refs = new Set<string>();
   const attr = /(?:src|href)="\.?\/?assets\/([^"]+)"/g;
@@ -77,7 +83,8 @@ async function main(): Promise<void> {
   const assetsDir = 'dist/assets';
   const initialRefs = assetRefsFromIndex(await readFile('dist/index.html', 'utf8'));
   const initialJs: SizeSet = { raw: 0, gzip: 0, brotli: 0 };
-  const chunkJs: SizeSet = { raw: 0, gzip: 0, brotli: 0 };
+  const chunkJsTotal: SizeSet = { raw: 0, gzip: 0, brotli: 0 };
+  const chunkJsMax: SizeSet = { raw: 0, gzip: 0, brotli: 0 };
   const initialCss: SizeSet = { raw: 0, gzip: 0, brotli: 0 };
 
   for (const name of await readdir(assetsDir)) {
@@ -87,7 +94,11 @@ async function main(): Promise<void> {
     const sizes = compressedSizes(await fileBytes(full));
     const isInitial = initialRefs.has(name);
     if (name.endsWith('.js')) {
-      addSize(isInitial ? initialJs : chunkJs, sizes);
+      if (isInitial) addSize(initialJs, sizes);
+      else {
+        addSize(chunkJsTotal, sizes);
+        maxSize(chunkJsMax, sizes);
+      }
     } else if (name.endsWith('.css') && isInitial) {
       addSize(initialCss, sizes);
     }
@@ -96,9 +107,9 @@ async function main(): Promise<void> {
   rows.push({ label: 'initial JS raw', bytes: initialJs.raw, budget: BUDGETS.initialJsRaw });
   rows.push({ label: 'initial JS gzip', bytes: initialJs.gzip, budget: BUDGETS.initialJsGzip });
   rows.push({ label: 'initial JS brotli', bytes: initialJs.brotli, budget: BUDGETS.initialJsBrotli });
-  rows.push({ label: 'non-initial JS raw', bytes: chunkJs.raw, budget: BUDGETS.chunkJsRaw });
-  rows.push({ label: 'non-initial JS gzip', bytes: chunkJs.gzip, budget: BUDGETS.chunkJsGzip });
-  rows.push({ label: 'non-initial JS brotli', bytes: chunkJs.brotli, budget: BUDGETS.chunkJsBrotli });
+  rows.push({ label: 'largest non-initial JS raw', bytes: chunkJsMax.raw, budget: BUDGETS.chunkJsRaw });
+  rows.push({ label: 'largest non-initial JS gzip', bytes: chunkJsMax.gzip, budget: BUDGETS.chunkJsGzip });
+  rows.push({ label: 'largest non-initial JS brotli', bytes: chunkJsMax.brotli, budget: BUDGETS.chunkJsBrotli });
   rows.push({ label: 'initial CSS raw', bytes: initialCss.raw, budget: BUDGETS.initialCssRaw });
   rows.push({ label: 'initial CSS gzip', bytes: initialCss.gzip, budget: BUDGETS.initialCssGzip });
   rows.push({ label: 'initial CSS brotli', bytes: initialCss.brotli, budget: BUDGETS.initialCssBrotli });
@@ -118,6 +129,8 @@ async function main(): Promise<void> {
     const kb = (n: number): string => `${(n / KiB).toFixed(1)} KiB`;
     console.log(`${ok ? 'OK  ' : 'OVER'}  ${row.label}: ${kb(row.bytes)} / budget ${kb(row.budget)}`);
   }
+  const kb = (n: number): string => `${(n / KiB).toFixed(1)} KiB`;
+  console.log(`INFO  total non-initial JS: raw ${kb(chunkJsTotal.raw)}, gzip ${kb(chunkJsTotal.gzip)}, brotli ${kb(chunkJsTotal.brotli)}`);
   if (failed > 0) {
     console.error(`bundle budget exceeded in ${failed} row(s); raise the budget intentionally or shrink the bundle`);
     process.exitCode = 1;

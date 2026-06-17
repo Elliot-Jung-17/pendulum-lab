@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, rename, writeFile } from 'node:fs/promises';
 
 interface VitestJsonReport {
   numTotalTests?: number;
@@ -31,10 +31,11 @@ async function readReport(path: string): Promise<TestSummary> {
   if (!Number.isInteger(report.numTotalTests) || !Number.isInteger(report.numPassedTests) || !Array.isArray(report.testResults)) {
     throw new Error(`Invalid Vitest JSON report at ${path}`);
   }
-  const totalTests = Number(report.numTotalTests);
-  const passedTests = Number(report.numPassedTests);
-  const testFiles = report.testResults.length;
-  return { totalTests, passedTests, testFiles };
+  return {
+    totalTests: Number(report.numTotalTests),
+    passedTests: Number(report.numPassedTests),
+    testFiles: report.testResults.length
+  };
 }
 
 async function readPackageVersion(path: string): Promise<string> {
@@ -47,11 +48,14 @@ async function readPackageVersion(path: string): Promise<string> {
 
 async function replaceInFile({ file, pattern, replace }: Replacement, metadata: ProjectMetadata): Promise<void> {
   const original = await readFile(file, 'utf8');
-  // Distinguish "marker missing" (an error) from "already up to date" (fine):
-  // a no-op replacement used to throw and fail `npm run verify` spuriously.
   if (!pattern.test(original)) throw new Error(`No test-count marker matched in ${file}`);
+
   const updated = original.replace(pattern, replace(metadata));
-  if (updated !== original) await writeFile(file, updated);
+  if (updated === original) return;
+
+  const tempFile = `${file}.tmp-${process.pid}`;
+  await writeFile(tempFile, updated);
+  await rename(tempFile, file);
 }
 
 const summary = await readReport('reports/vitest-results.json');
@@ -60,42 +64,51 @@ const metadata: ProjectMetadata = {
   version: await readPackageVersion('package.json')
 };
 
-await Promise.all([
-  replaceInFile({
+const replacements: Replacement[] = [
+  {
     file: 'src/runtime/version.ts',
     pattern: /export const APP_VERSION = '[^']+';/,
     replace: ({ version }) => `export const APP_VERSION = '${version}';`
-  }, metadata),
-  replaceInFile({
+  },
+  {
     file: 'README.md',
-    pattern: /\| `npm test` \| Vitest unit suite \([^)]*\) \|/,
-    replace: ({ totalTests, testFiles }) => `| \`npm test\` | Vitest unit suite (${totalTests} tests across ${testFiles} files; synced from \`reports/vitest-results.json\`) |`
-  }, metadata),
-  replaceInFile({
+    pattern: /\| `npm test`(?: \/ `test:quick` \/ `test:slow`)? \| Vitest unit suite \([^)]*\)(?: plus quick\/slow tiers for local and CI iteration)? \|/,
+    replace: ({ totalTests, testFiles }) => `| \`npm test\` / \`test:quick\` / \`test:slow\` | Vitest unit suite (${totalTests} tests across ${testFiles} files; synced from \`reports/vitest-results.json\`) plus quick/slow tiers for local and CI iteration |`
+  },
+  {
     file: 'README.md',
     pattern: /npm test\s+# [^\n]+/,
     replace: ({ totalTests }) => `npm test           # ${totalTests} unit tests`
-  }, metadata),
-  replaceInFile({
+  },
+  {
+    file: 'CHANGELOG.md',
+    pattern: /(### [^\n]*\(additive; suite\s+\d+[^\d\n]+)\d+(\))/,
+    replace: ({ totalTests }) => `$1${totalTests}$2`
+  },
+  {
     file: 'docs/engine-overview.md',
     pattern: /layer is unit-tested \([^)]*\) and the build, typecheck, and Playwright/,
     replace: ({ totalTests, testFiles }) => `layer is unit-tested (${totalTests} tests across ${testFiles} files, synced from \`reports/vitest-results.json\`) and the build, typecheck, and Playwright`
-  }, metadata),
-  replaceInFile({
+  },
+  {
     file: 'docs/tutorial-reproduce-paper.md',
     pattern: /npm test\s+# [^\n]+/,
     replace: ({ totalTests }) => `npm test                      # ${totalTests} unit tests (physics, chaos, research tooling)`
-  }, metadata),
-  replaceInFile({
+  },
+  {
     file: 'docs/portfolio-korean.md',
-    pattern: /단위 테스트 [0-9]+(?:\+)?개/,
-    replace: ({ totalTests }) => `단위 테스트 ${totalTests}개`
-  }, metadata),
-  replaceInFile({
+    pattern: /^  - .*Playwright E2E\(Chromium\/Firefox\/WebKit\/모바일\)$/m,
+    replace: ({ totalTests }) => `  - 단위 테스트 ${totalTests}개, Playwright E2E(Chromium/Firefox/WebKit/모바일)`
+  },
+  {
     file: 'docs/api-overview.md',
     pattern: /\| Surface \| Status in [^|]+ \| Migration target \| Earliest removal \|/,
     replace: ({ version }) => `| Surface | Status in ${version} | Migration target | Earliest removal |`
-  }, metadata)
-]);
+  }
+];
+
+for (const replacement of replacements) {
+  await replaceInFile(replacement, metadata);
+}
 
 console.log(`Synced project metadata: v${metadata.version}, ${metadata.passedTests}/${metadata.totalTests} tests across ${metadata.testFiles} files.`);

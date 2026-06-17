@@ -11,6 +11,14 @@ export interface SubmissionManifest {
     jsonImport: 'strict-schema';
     workerPolicy: 'module-worker-with-main-thread-fallback';
   };
+  reproducibility: {
+    dt: number;
+    tolerance: number;
+    seedPolicy: string;
+    transientPolicy: string;
+    horizonPolicy: string;
+    precisionCaveat: string;
+  };
   limitations: string[];
 }
 
@@ -25,9 +33,18 @@ export function createSubmissionManifest(runtime: RuntimeSnapshot): SubmissionMa
       jsonImport: 'strict-schema',
       workerPolicy: 'module-worker-with-main-thread-fallback'
     },
+    reproducibility: {
+      dt: runtime.dt,
+      tolerance: runtime.tolerance,
+      seedPolicy: 'Seeded stochastic/chaos jobs must include their seed in the per-result settings; unseeded browser interaction exports are not bitwise replay claims.',
+      transientPolicy: 'Long-horizon chaotic diagnostics must report transient discard in the per-result settings before publication use.',
+      horizonPolicy: 'Finite-time horizons must be interpreted as finite-time estimates; extend/refine horizon before quoting asymptotic claims.',
+      precisionCaveat: 'Browser JavaScript uses float64 for CPU paths; WebGPU paths may use f32 and must carry their own validation/caveat metadata.'
+    },
     limitations: [
       'Browser floating point and scheduling can affect exact reproducibility.',
       'Symplectic claims require canonical coordinates, gamma = 0, and residual/step metadata.',
+      'Chaotic long-horizon exports must include seed, dt, transient discard, horizon, tolerance, and precision caveat metadata.',
       'With damping enabled, energy change is physical dissipation plus numerical error, not a conservation diagnostic.',
       'Triple pendulum mode remains more sensitive and should be independently benchmarked for research claims.'
     ]

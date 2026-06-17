@@ -16,8 +16,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run verify
+      - run: npm run test:slow
       - run: npm run test:coverage
       - run: npm run audit:legacy
+      - run: npm run audit:mojibake:strict
       - run: npm run reports
       - run: npm run build
       - run: npm run build:standalone
@@ -30,6 +32,8 @@ jobs:
           python-version: '3.12'
       - run: npm run notebook:validate
       - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npm run benchmark
+      - run: npm run benchmark:memory
       # Full browser suite: includes visual fingerprints, storage, design,
       # superpack, 3D lab, accessibility, and long-run performance specs.
       - run: npm run test:e2e

@@ -126,6 +126,52 @@ export type { DiatomicChainParams, DispersionBranches, DiatomicBandGap, Dispersi
 export { implicitMidpointNewton } from './implicitDiagnostics';
 export type { ImplicitMidpointReport, NewtonStepRecord, ImplicitMidpointNewtonOptions } from './implicitDiagnostics';
 export {
+  SINE_GORDON_KINK_REST_ENERGY,
+  sineGordonKink,
+  sineGordonKinkRate,
+  kinkEnergy,
+  kinkMomentum,
+  sineGordonBreather,
+  breatherEnergy,
+  sineGordonDispersion,
+  sineGordonGroupVelocity,
+  sineGordonPhaseVelocity,
+  sineGordonResidual,
+  topologicalCharge,
+  createSineGordonField,
+  stepSineGordon,
+  sineGordonFieldEnergy,
+  kinkCenter,
+  sineGordonKinkPositions,
+  createKinkAntikinkField,
+  frenkelKontorovaEnergy,
+  relaxFrenkelKontorovaKink,
+  peierlsNabarroBarrier
+} from './sineGordon';
+export type {
+  KinkSign,
+  SineGordonKinkParams,
+  SineGordonBreatherParams,
+  SineGordonBoundary,
+  SineGordonGrid,
+  SineGordonFieldSpec,
+  KinkAntikinkSpec,
+  RelaxedKinkResult,
+  RelaxKinkOptions,
+  PeierlsNabarroResult
+} from './sineGordon';
+export {
+  fputAcceleration,
+  fputEnergy,
+  fputModeFrequency,
+  fputModeEnergies,
+  createFputModeState,
+  createFputVerletScratch,
+  fputVelocityVerletStep,
+  fputRecurrence
+} from './fput';
+export type { FputParameters, FputVerletScratch, FputRecurrenceResult } from './fput';
+export {
   rhsPendulumNetwork,
   pendulumNetworkEnergy,
   pendulumNetworkStiffnessMatrix,

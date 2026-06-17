@@ -27,6 +27,12 @@ export type { SystemSpec } from '../physics/systemSpec';
 // Stochastic (Langevin) dynamics — seeded, so deterministic for a given seed.
 export { gaussianSampler, eulerMaruyamaStep, milsteinStep, stochasticHeunStratonovichStep, commutativeMilsteinStep, runLangevinEnsemble, buildBrownianGrid, runAdaptiveLangevinPath, fixedGridLangevinPath } from '../physics/stochastic';
 export { commutativityDefect } from '../physics/noiseCommutativity';
+// Quantum chaos & Hamiltonian maps (frontier physics): the Chirikov standard map
+// and its quantisation, the quantum kicked rotor (dynamical localization).
+export { fftInPlace, ifftInPlace } from '../physics/fft';
+export { STANDARD_MAP_KC, standardMapStep, standardMapEnsembleEnergy, standardMapDiffusionRate } from '../physics/standardMap';
+export { createQkrPlan, createQkrState, qkrStep, qkrNorm, qkrMeanSquareMomentum, runQuantumKickedRotor } from '../physics/quantumKickedRotor';
+export type { QuantumKickedRotorParams, QkrPlan, QkrState, QkrRun } from '../physics/quantumKickedRotor';
 export type {
   GaussianSampler,
   StateDependentVector,
@@ -34,6 +40,7 @@ export type {
   DiffusionMatrixJacobian,
   MatrixSdeScratch,
   MultiplicativeNoise,
+  LangevinScheme,
   LangevinEnsembleSpec,
   LangevinEnsembleResult,
   BrownianGrid,
@@ -117,6 +124,56 @@ export type { DiatomicChainParams, DispersionBranches, DiatomicBandGap, Dispersi
 // Newton-instrumented implicit midpoint (convergence history + conditioning).
 export { implicitMidpointNewton } from '../physics/implicitDiagnostics';
 export type { ImplicitMidpointReport, NewtonStepRecord, ImplicitMidpointNewtonOptions } from '../physics/implicitDiagnostics';
+// Continuum sine-Gordon field: topological solitons (kink/breather), the
+// nonlinear continuum limit of the coupled-pendulum lattice + the discrete
+// Frenkel–Kontorova Peierls–Nabarro depinning barrier.
+export {
+  SINE_GORDON_KINK_REST_ENERGY,
+  sineGordonKink,
+  sineGordonKinkRate,
+  kinkEnergy,
+  kinkMomentum,
+  sineGordonBreather,
+  breatherEnergy,
+  sineGordonDispersion,
+  sineGordonGroupVelocity,
+  sineGordonPhaseVelocity,
+  sineGordonResidual,
+  topologicalCharge,
+  createSineGordonField,
+  stepSineGordon,
+  sineGordonFieldEnergy,
+  kinkCenter,
+  sineGordonKinkPositions,
+  createKinkAntikinkField,
+  frenkelKontorovaEnergy,
+  relaxFrenkelKontorovaKink,
+  peierlsNabarroBarrier
+} from '../physics/sineGordon';
+export type {
+  KinkSign,
+  SineGordonKinkParams,
+  SineGordonBreatherParams,
+  SineGordonBoundary,
+  SineGordonGrid,
+  SineGordonFieldSpec,
+  KinkAntikinkSpec,
+  RelaxedKinkResult,
+  RelaxKinkOptions,
+  PeierlsNabarroResult
+} from '../physics/sineGordon';
+// Fermi–Pasta–Ulam–Tsingou anharmonic lattice (mode coupling, FPUT recurrence).
+export {
+  fputAcceleration,
+  fputEnergy,
+  fputModeFrequency,
+  fputModeEnergies,
+  createFputModeState,
+  createFputVerletScratch,
+  fputVelocityVerletStep,
+  fputRecurrence
+} from '../physics/fput';
+export type { FputParameters, FputVerletScratch, FputRecurrenceResult } from '../physics/fput';
 
 // Non-rigid and 3D systems
 export { RopePendulum } from '../physics/rope';

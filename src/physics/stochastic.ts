@@ -20,7 +20,10 @@
  */
 
 import { mulberry32 } from './variational';
+import { stochasticSchemeMetadata, type LangevinScheme } from './stochasticMetadata';
 import type { Derivative, StateVector } from './types';
+
+export type { LangevinScheme };
 
 /** A standard-normal generator. */
 export type GaussianSampler = () => number;
@@ -484,7 +487,7 @@ export interface LangevinEnsembleSpec {
    */
   diffusion: readonly number[];
   /** Integration scheme. Default 'euler-maruyama' (strong order ½). */
-  scheme?: 'euler-maruyama' | 'milstein' | 'heun-stratonovich' | 'commutative-milstein';
+  scheme?: LangevinScheme;
   /** State-dependent diagonal noise; when present it overrides `diffusion`. */
   multiplicative?: MultiplicativeNoise;
   /**
@@ -522,6 +525,11 @@ export interface LangevinEnsembleResult {
   realizations: number;
   /** Dimension of the state. */
   dimension: number;
+  scheme: LangevinScheme;
+  /** Human-readable strong-order contract for the selected scheme. */
+  strongOrder: string;
+  /** Limitations that should travel with exported stochastic statistics. */
+  caveats: string[];
 }
 
 /** Decorrelate per-realisation seeds with a SplitMix-style odd-constant mix. */
@@ -626,11 +634,15 @@ export function runLangevinEnsemble(spec: LangevinEnsembleSpec): LangevinEnsembl
 
   const denom = spec.realizations - 1;
   const variance = m2.map((row) => row.map((v) => v / denom));
+  const metadata = stochasticSchemeMetadata(scheme, Boolean(matrixNoise));
   return {
     times: recordSteps.map((s) => s * spec.dt),
     mean,
     variance,
     realizations: spec.realizations,
-    dimension: dim
+    dimension: dim,
+    scheme,
+    strongOrder: metadata.strongOrder,
+    caveats: metadata.caveats
   };
 }

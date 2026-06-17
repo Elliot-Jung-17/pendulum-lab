@@ -26,6 +26,62 @@ export interface PoincareResult {
   times: number[];
 }
 
+export type PoincareSectionPreset =
+  | { kind: 'coordinate'; index: number; value: number; direction?: CrossingDirection }
+  | { kind: 'theta'; index?: number; value: number; direction?: CrossingDirection }
+  | { kind: 'energy'; value: number; energy: (state: StateVector) => number; direction?: CrossingDirection }
+  | { kind: 'stroboscopic'; phaseIndex: number; period: number; phase?: number; direction?: CrossingDirection };
+
+export interface PoincareSectionBuilderResult {
+  section: EventFunction;
+  direction: CrossingDirection;
+  label: string;
+}
+
+export interface PoincarePresetOptions extends Omit<PoincareOptions, 'section' | 'direction' | 'transientCrossings'> {
+  preset: PoincareSectionPreset;
+  /** Drop this many initial crossings as transient (alias for UI/API clarity). */
+  transientDiscard?: number;
+}
+
+function centeredModulo(value: number, period: number): number {
+  const wrapped = ((value + period / 2) % period + period) % period;
+  return wrapped - period / 2;
+}
+
+export function buildPoincareSection(preset: PoincareSectionPreset): PoincareSectionBuilderResult {
+  if (preset.kind === 'coordinate') {
+    return {
+      section: (state) => (state[preset.index] ?? 0) - preset.value,
+      direction: preset.direction ?? 'both',
+      label: `x[${preset.index}]=${preset.value}`
+    };
+  }
+  if (preset.kind === 'theta') {
+    const index = preset.index ?? 0;
+    return {
+      section: (state) => (state[index] ?? 0) - preset.value,
+      direction: preset.direction ?? 'both',
+      label: `theta[${index}]=${preset.value}`
+    };
+  }
+  if (preset.kind === 'energy') {
+    return {
+      section: (state) => preset.energy(state) - preset.value,
+      direction: preset.direction ?? 'both',
+      label: `energy=${preset.value}`
+    };
+  }
+  return {
+    section: (state) => centeredModulo((state[preset.phaseIndex] ?? 0) - (preset.phase ?? 0), preset.period),
+    // The centered modulo crosses upward at the target phase and has a
+    // discontinuous downward jump opposite the section; rising avoids that false
+    // hit for monotonically advancing drive phases.
+    direction: preset.direction ?? 'rising',
+    label: `phase[${preset.phaseIndex}]=${preset.phase ?? 0} mod ${preset.period}`
+  };
+}
+
 export function poincareSection(state0: ArrayLike<number>, rhs: Derivative, options: PoincareOptions): PoincareResult {
   const transient = options.transientCrossings ?? 0;
   const maxPoints = options.maxPoints ?? Infinity;
@@ -40,6 +96,16 @@ export function poincareSection(state0: ArrayLike<number>, rhs: Derivative, opti
     points: kept.map((e) => e.state),
     times: kept.map((e) => e.time)
   };
+}
+
+export function poincareSectionPreset(state0: ArrayLike<number>, rhs: Derivative, options: PoincarePresetOptions): PoincareResult {
+  const built = buildPoincareSection(options.preset);
+  return poincareSection(state0, rhs, {
+    ...options,
+    section: built.section,
+    direction: built.direction,
+    transientCrossings: options.transientDiscard ?? 0
+  });
 }
 
 export interface BifurcationOptions<P> {

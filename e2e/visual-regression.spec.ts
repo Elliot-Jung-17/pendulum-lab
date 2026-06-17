@@ -1,5 +1,5 @@
 /**
- * Visual regression tests — chromium-only to avoid cross-browser font/rendering
+ * Visual regression tests are chromium-only to avoid cross-browser font/rendering
  * differences. Canvas elements are masked because their pixel content is
  * simulation-state-dependent and not deterministic across runs.
  *
@@ -20,23 +20,33 @@ test('rail sidebar renders correctly', async ({ page }) => {
 test('lab tab control panel renders correctly', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(() => Boolean((window as unknown as { __modernShell?: unknown }).__modernShell));
-  // Navigate to the lab tab
   const labBtn = page.locator('.rail-menu-button[data-rail-section-button="lab"]').first();
   if (await labBtn.isVisible()) await labBtn.click();
   await page.waitForTimeout(300);
-  await expect(page.locator('#content-right')).toHaveScreenshot('lab-controls.png', {
+  await expect(page.getByRole('region', { name: 'controls' })).toHaveScreenshot('lab-controls.png', {
     mask: [page.locator('canvas')]
   });
 });
 
-test('research tab cards render correctly', async ({ page }) => {
+test('research workbench card renders correctly', async ({ page }) => {
+  // Clear persisted research state so the experiment card is deterministic.
+  await page.addInitScript(() => {
+    window.localStorage.removeItem('pendulum-lab/research-workbench/v1');
+  });
   await page.goto('/');
   await page.waitForFunction(() => Boolean((window as unknown as { __modernShell?: unknown }).__modernShell));
-  // Navigate to the research section
-  await page.locator('.rail-menu-button[data-rail-section-button="govern"]').click();
-  await page.locator('#rail-panel-govern .tab[data-tab="research"]').click();
-  await expect(page.locator('#researchExperimentCard')).toBeVisible();
-  await expect(page.locator('#researchExperimentCard')).toHaveScreenshot('research-experiment-card.png', {
+  // #researchExperimentCard is built by installResearchTab into #tab-research
+  // (the panel also holds the static Research+ tools). Wait for the lazily-built
+  // card to attach, activate the tab via the shell's own switchTo (the exact
+  // path a tab click takes — robust against the hover-driven rail accordion),
+  // then shoot the card.
+  await page.locator('#researchExperimentCard').waitFor({ state: 'attached' });
+  await page.evaluate(() => {
+    (window as unknown as { __modernShell?: { switchTo(name: string): void } }).__modernShell?.switchTo('research');
+  });
+  const card = page.locator('#researchExperimentCard');
+  await expect(card).toBeVisible();
+  await expect(card).toHaveScreenshot('research-experiment-card.png', {
     mask: [page.locator('canvas')]
   });
 });

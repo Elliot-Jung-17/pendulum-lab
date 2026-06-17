@@ -5,12 +5,15 @@ import {
   kaplanYorkeDimension,
   saliIndicator,
   fliIndicator,
+  buildPoincareSection,
   poincareSection,
+  poincareSectionPreset,
   bifurcationDiagram,
   distinctValueCount
 } from '../src/chaos/index';
 import { rhsDriven, DAMPED_DRIVEN_CHAOS_PRESET, type DrivenParameters } from '../src/physics/driven';
 import { rhsDouble, energyDouble } from '../src/physics/double';
+import type { Derivative } from '../src/physics/types';
 
 const driven = (s: Float64Array, o: Float64Array): void => {
   rhsDriven(s, DAMPED_DRIVEN_CHAOS_PRESET, o);
@@ -107,6 +110,30 @@ describe('Poincare section sampler', () => {
       expect(p[3] ?? -1).toBeGreaterThan(0); // rising => omega2 > 0
       expect(Math.abs((energyDouble(p, dpParams).total - e0) / e0)).toBeLessThan(1e-4);
     }
+  });
+
+  test('preset builder supports theta, energy, stroboscopic sections, and transient discard', () => {
+    const theta = buildPoincareSection({ kind: 'theta', index: 1, value: 0, direction: 'rising' });
+    expect(theta.label).toContain('theta[1]');
+    expect(theta.direction).toBe('rising');
+    expect(theta.section(new Float64Array([0, 0.25]))).toBeCloseTo(0.25);
+
+    const energy = buildPoincareSection({ kind: 'energy', value: 1, energy: (s) => (s[0] ?? 0) ** 2 });
+    expect(energy.section(new Float64Array([2]))).toBe(3);
+
+    const rhs: Derivative = (s, o) => {
+      o[0] = 1;
+    };
+    const strobe = poincareSectionPreset(new Float64Array([-0.1]), rhs, {
+      preset: { kind: 'stroboscopic', phaseIndex: 0, period: 1, phase: 0 },
+      dt: 0.01,
+      maxTime: 3.2,
+      transientDiscard: 1,
+      maxPoints: 2
+    });
+    expect(strobe.points).toHaveLength(2);
+    expect(strobe.times[0]).toBeCloseTo(1.1, 2);
+    expect(strobe.times[1]).toBeCloseTo(2.1, 2);
   });
 });
 

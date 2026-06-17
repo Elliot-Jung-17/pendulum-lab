@@ -1,21 +1,70 @@
 {
-  "generatedAt": "2026-06-09T07:08:51.152Z",
+  "generatedAt": "2026-06-17T08:09:49.206Z",
   "results": [
     {
       "label": "original",
       "url": "http://127.0.0.1:5173/",
-      "fps": 31.30543671084211,
-      "physicsMsPerFrame": 0.10000000149011612,
-      "memoryBytes": 10000000,
-      "workerLatencyMs": 0
+      "fps": 9.324299123498609,
+      "physicsMsPerFrame": 0.20000001788139343,
+      "memoryBytes": 11900000,
+      "workerLatencyMs": null
     },
     {
       "label": "candidate",
       "url": "http://127.0.0.1:5173/",
-      "fps": 31.033412640943403,
-      "physicsMsPerFrame": 0.10000000149011612,
-      "memoryBytes": 10000000,
-      "workerLatencyMs": 0.10000000149011612
+      "fps": 10.278196519180412,
+      "physicsMsPerFrame": 0,
+      "memoryBytes": 11200000,
+      "workerLatencyMs": null
     }
-  ]
+  ],
+  "comparison": {
+    "originalUrl": "http://127.0.0.1:5173/",
+    "candidateUrl": "http://127.0.0.1:5173/",
+    "sameUrl": true,
+    "failOnRegression": false,
+    "deltas": [
+      {
+        "metric": "fps",
+        "original": 9.324299123498609,
+        "candidate": 10.278196519180412,
+        "delta": 0.9538973956818033,
+        "relativeDelta": 0.10230231602907731,
+        "threshold": 0.25,
+        "direction": "higher-is-better",
+        "status": "pass"
+      },
+      {
+        "metric": "physicsMsPerFrame",
+        "original": 0.20000001788139343,
+        "candidate": 0,
+        "delta": -0.20000001788139343,
+        "relativeDelta": -1,
+        "threshold": 0.25,
+        "direction": "lower-is-better",
+        "status": "pass"
+      },
+      {
+        "metric": "memoryBytes",
+        "original": 11900000,
+        "candidate": 11200000,
+        "delta": -700000,
+        "relativeDelta": -0.058823529411764705,
+        "threshold": 50000000,
+        "direction": "lower-is-better",
+        "status": "pass"
+      },
+      {
+        "metric": "workerLatencyMs",
+        "original": null,
+        "candidate": null,
+        "delta": null,
+        "relativeDelta": null,
+        "threshold": 0.25,
+        "direction": "lower-is-better",
+        "status": "missing"
+      }
+    ],
+    "status": "pass"
+  }
 }

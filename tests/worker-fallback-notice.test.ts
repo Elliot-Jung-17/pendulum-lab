@@ -68,4 +68,19 @@ describe('worker fallback notice', () => {
     expect(events[0]!.detail.protocol).toBe('http:');
     expect(events[0]!.detail.guidance).toContain('job size');
   });
+
+  test('carries explicit job-size warnings for large main-thread fallbacks', () => {
+    const { events, toasts } = installFakeWindow('file:');
+
+    const detail = notifyWorkerFallback('chaos-job-worker', 'large job running on main thread', {
+      estimatedWorkUnits: 1_500_000,
+      jobLabel: 'ftle',
+      once: false
+    });
+
+    expect(detail.estimatedWorkUnits).toBe(1_500_000);
+    expect(detail.jobSizeWarning).toContain('Large ftle job');
+    expect(events[0]!.detail.jobSizeWarning).toContain('block rendering');
+    expect(toasts[0]).toContain('Large ftle job');
+  });
 });

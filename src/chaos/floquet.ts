@@ -1,7 +1,7 @@
 import type { Derivative, Jacobian } from '../physics/types';
 import { rk4Step } from '../physics/integrators';
 import { rhsDriven, type DrivenParameters } from '../physics/driven';
-import { flowMapGradient, type FtleOptions } from './ftle';
+import { determinant, flowMapGradient, type FtleOptions } from './ftle';
 
 /**
  * Floquet analysis of periodic orbits.
@@ -39,6 +39,21 @@ export interface FloquetResult {
   determinant: number;
 }
 
+export interface FloquetSpectrumResult {
+  /** stateDim x stateDim monodromy block, row-major. */
+  monodromy: Float64Array;
+  dimension: number;
+  multipliers: FloquetMultiplier[];
+  maxModulus: number;
+  stable: boolean;
+  determinant: number;
+  /** QR sweeps used to reduce the monodromy to real Schur-like form. */
+  qrIterations: number;
+  /** Infinity norm of the strict lower triangle after QR sweeps. */
+  qrResidual: number;
+  caveat: string;
+}
+
 /** Eigenvalues of a 2×2 real matrix [[a,b],[c,d]] (row-major) — a real or complex-conjugate pair. */
 export function eigenvalues2x2(M: ArrayLike<number>): FloquetMultiplier[] {
   const a = Number(M[0] ?? 0);
@@ -64,6 +79,80 @@ export function eigenvalues2x2(M: ArrayLike<number>): FloquetMultiplier[] {
     { re, im, modulus },
     { re, im: -im, modulus }
   ];
+}
+
+function qrDecompose(A: Float64Array, n: number): { q: Float64Array; r: Float64Array } {
+  const q = new Float64Array(n * n);
+  const r = new Float64Array(n * n);
+  const v = new Float64Array(n);
+  for (let j = 0; j < n; j += 1) {
+    for (let i = 0; i < n; i += 1) v[i] = A[i * n + j] ?? 0;
+    for (let k = 0; k < j; k += 1) {
+      let dot = 0;
+      for (let i = 0; i < n; i += 1) dot += (q[i * n + k] ?? 0) * (v[i] ?? 0);
+      r[k * n + j] = dot;
+      for (let i = 0; i < n; i += 1) v[i] = (v[i] ?? 0) - dot * (q[i * n + k] ?? 0);
+    }
+    let norm = 0;
+    for (let i = 0; i < n; i += 1) norm += (v[i] ?? 0) ** 2;
+    norm = Math.sqrt(norm);
+    if (norm <= 1e-14) {
+      r[j * n + j] = 0;
+      for (let i = 0; i < n; i += 1) q[i * n + j] = i === j ? 1 : 0;
+    } else {
+      r[j * n + j] = norm;
+      for (let i = 0; i < n; i += 1) q[i * n + j] = (v[i] ?? 0) / norm;
+    }
+  }
+  return { q, r };
+}
+
+function multiply(A: Float64Array, B: Float64Array, n: number): Float64Array {
+  const out = new Float64Array(n * n);
+  for (let r = 0; r < n; r += 1) {
+    for (let c = 0; c < n; c += 1) {
+      let sum = 0;
+      for (let k = 0; k < n; k += 1) sum += (A[r * n + k] ?? 0) * (B[k * n + c] ?? 0);
+      out[r * n + c] = sum;
+    }
+  }
+  return out;
+}
+
+function strictLowerNorm(A: Float64Array, n: number): number {
+  let norm = 0;
+  for (let r = 1; r < n; r += 1) {
+    for (let c = 0; c < r - 1; c += 1) norm = Math.max(norm, Math.abs(A[r * n + c] ?? 0));
+  }
+  return norm;
+}
+
+function qrEigenvalues(A: Float64Array, n: number, maxIterations = 160, tolerance = 1e-10): { multipliers: FloquetMultiplier[]; iterations: number; residual: number } {
+  let work: Float64Array = Float64Array.from(A);
+  let iterations = 0;
+  for (; iterations < maxIterations; iterations += 1) {
+    const { q, r } = qrDecompose(work, n);
+    work = multiply(r, q, n);
+    if (strictLowerNorm(work, n) < tolerance) break;
+  }
+  const multipliers: FloquetMultiplier[] = [];
+  for (let i = 0; i < n; i += 1) {
+    const subdiag = i < n - 1 ? Math.abs(work[(i + 1) * n + i] ?? 0) : 0;
+    const scale = Math.max(1, Math.abs(work[i * n + i] ?? 0), i < n - 1 ? Math.abs(work[(i + 1) * n + i + 1] ?? 0) : 0);
+    if (i < n - 1 && subdiag > 1e-8 * scale) {
+      multipliers.push(...eigenvalues2x2([
+        work[i * n + i] ?? 0,
+        work[i * n + i + 1] ?? 0,
+        work[(i + 1) * n + i] ?? 0,
+        work[(i + 1) * n + i + 1] ?? 0
+      ]));
+      i += 1;
+    } else {
+      const value = work[i * n + i] ?? 0;
+      multipliers.push({ re: value, im: 0, modulus: Math.abs(value) });
+    }
+  }
+  return { multipliers, iterations, residual: strictLowerNorm(work, n) };
 }
 
 /**
@@ -101,6 +190,35 @@ export function floquetAnalysis(
   const maxModulus = Math.max(multipliers[0]!.modulus, multipliers[1]!.modulus);
   const determinant = (M[0] ?? 0) * (M[3] ?? 0) - (M[1] ?? 0) * (M[2] ?? 0);
   return { monodromy: M, multipliers, maxModulus, stable: maxModulus <= 1 + 1e-6, determinant };
+}
+
+/**
+ * General-dimensional Floquet spectrum. The monodromy block is reduced with QR
+ * iteration and interpreted as real Schur blocks, so real multipliers and
+ * complex-conjugate 2x2 pairs are both reported.
+ */
+export function floquetSpectrum(
+  x0: ArrayLike<number>,
+  rhs: Derivative,
+  period: number,
+  options: FtleOptions = {},
+  jacobian?: Jacobian,
+  stateDim = x0.length
+): FloquetSpectrumResult {
+  const M = monodromyMatrix(x0, rhs, period, options, jacobian, stateDim);
+  const { multipliers, iterations, residual } = qrEigenvalues(M, stateDim);
+  const maxModulus = multipliers.reduce((max, item) => Math.max(max, item.modulus), 0);
+  return {
+    monodromy: M,
+    dimension: stateDim,
+    multipliers,
+    maxModulus,
+    stable: maxModulus <= 1 + 1e-6,
+    determinant: determinant(M, stateDim),
+    qrIterations: iterations,
+    qrResidual: residual,
+    caveat: 'Finite-step monodromy spectrum from QR iteration; refine dt/period and inspect qrResidual for near-defective or stiff orbits.'
+  };
 }
 
 export interface DrivenOrbitOptions {

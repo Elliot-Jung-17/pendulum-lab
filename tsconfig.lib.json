@@ -7,5 +7,5 @@
     "outDir": "dist-lib/types",
     "types": ["node"]
   },
-  "include": ["src/lib.ts"]
+  "include": ["src/lib.ts", "src/lib/**/*.ts"]
 }

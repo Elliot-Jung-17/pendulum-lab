@@ -23,6 +23,8 @@ or durable evidence for a README claim.
   should be regenerated through `npm run paper:build`.
 - Portfolio summaries under `docs/` may be tracked when they are intended for
   review outside the dev server.
+- External reference claims should cite `docs/reference-manifest.md`, including
+  runtime pins, dependency pins, and source-file checksums.
 
 ## Ignored Build Output
 
@@ -39,4 +41,5 @@ or durable evidence for a README claim.
 2. Regenerate claim evidence intentionally (`npm run reports`,
    `npm run reproduce`, `npm run paper:build`) only when the corresponding
    claims changed.
-3. Review generated-file diffs separately from source diffs.
+3. Run `npm run audit:mojibake` when public-facing source or docs change.
+4. Review generated-file diffs separately from source diffs.

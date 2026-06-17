@@ -9,8 +9,7 @@ import { installPerformanceProbe } from './render/performance';
 import { installAccessibilityEnhancements } from './ui/accessibility';
 import { workerBridge } from './runtime/WorkerBridge';
 import { installPendulumRuntime } from './runtime/PendulumRuntime';
-import { maybeMountModernAnalysisTabs, maybeMountModernLab, maybeMountModernLabProbe, maybeMountModernShell } from './app';
-import { installFeatureParityLayer, currentSnapshot } from './app/FeatureParityLayer';
+import { maybeMountModernAnalysisTabs, maybeMountModernLab, maybeMountModernLabProbe, maybeMountModernShell } from './app/bootstrap';
 import { installUiPolish } from './app/UiPolish';
 import { publishPublicApi } from './runtime/globalApi';
 import { installAudienceMode } from './app/audienceMode';
@@ -23,7 +22,10 @@ function installIndexCommands(): void {
     description: 'Export a typed submission manifest with security and limitation metadata.',
     // Use the live snapshot (UI controls + running sim state + diagnostics) so
     // the manifest captures the actual run rather than state-store defaults.
-    run: () => downloadJson('pendulum_submission_manifest_v10_ts.json', createSubmissionManifest(currentSnapshot()))
+    run: async () => {
+      const { currentSnapshot } = await import('./app/parity/shared');
+      downloadJson('pendulum_submission_manifest_v10_ts.json', createSubmissionManifest(currentSnapshot()));
+    }
   });
   commandRegistry.upsert({
     id: 'index.validationReport',
@@ -92,17 +94,18 @@ function bootSafety(): void {
  * `?modernLabProbe` mounts a standalone probe canvas; `?lab=modern` takes over
  * the real lab canvases (legacy lab render stands down). Both are feature flags.
  */
-function bootSimulation(): void {
+async function bootSimulation(): Promise<void> {
   maybeMountModernLabProbe();
   maybeMountModernLab();
-  maybeMountModernAnalysisTabs();
+  await maybeMountModernAnalysisTabs();
 }
 
 /**
  * Boot stage 4 — the research/governance/audit surfaces (parity modules),
  * keeping the CSP and no-inline-handler improvements.
  */
-function bootResearch(): void {
+async function bootResearch(): Promise<void> {
+  const { installFeatureParityLayer } = await import('./app/FeatureParityLayer');
   installFeatureParityLayer();
 }
 
@@ -117,16 +120,16 @@ function bootShell(): void {
   installUiPolish();
 }
 
-function boot(): void {
+async function boot(): Promise<void> {
   bootCoreRuntime();
   bootSafety();
-  bootSimulation();
-  bootResearch();
+  await bootSimulation();
+  await bootResearch();
   bootShell();
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', boot, { once: true });
+  document.addEventListener('DOMContentLoaded', () => { void boot(); }, { once: true });
 } else {
-  boot();
+  void boot();
 }

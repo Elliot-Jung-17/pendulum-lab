@@ -52,6 +52,7 @@ export default defineConfig({
   },
   build: {
     sourcemap: true,
+    modulePreload: false,
     target: 'es2022',
     rollupOptions: {
       input: {
@@ -63,21 +64,20 @@ export default defineConfig({
         chunkFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash][extname]',
         // Code-split the independent subsystems out of the single application
-        // bundle. Each is a self-contained layer (physics core, chaos
-        // diagnostics, research tooling, and the analysis/governance UI), so
-        // splitting on directory keeps related code together, lets the browser
-        // parse them in parallel, and improves caching — the app no longer ships
-        // as one >500 kB chunk. The parity/governance UI and the analysis tabs
-        // are mutually dependent, so they stay in one `app-tabs` chunk to avoid a
-        // circular chunk split. The standalone single-file build
-        // (vite.config.standalone.ts) inlines everything and is unaffected.
+        // bundle. Runtime app orchestration stays with the entry, while the
+        // heavyweight analysis tabs and parity/research UI sit behind dynamic
+        // imports. The standalone single-file build (vite.config.standalone.ts)
+        // inlines everything and is unaffected.
         manualChunks(id: string) {
           const path = id.replace(/\\/g, '/');
           if (!path.includes('/src/')) return undefined;
+          if (path.includes('/src/app/parity/') || path.endsWith('/src/app/FeatureParityLayer.ts')) return 'research-ui';
+          if (/\/src\/app\/(?:LyapunovTab|ValidationTab|SweepTab|CompareTab|BifurcationTab|Phase3DTab|DensityTab|ExpansionLabTab|ResearchMatrixTab|GoldenCenterTab|ZeroOneTab|ClvTab|BasinTab|RqaTab|FtleTab|ResearchPlusTab|TabController|resultBadges|DomBinder)\.ts$/.test(path)) {
+            return 'app-tabs';
+          }
           if (path.includes('/src/physics/')) return 'physics';
           if (path.includes('/src/chaos/')) return 'chaos';
           if (path.includes('/src/research/')) return 'research';
-          if (path.includes('/src/app/')) return 'app-tabs';
           return undefined;
         }
       }

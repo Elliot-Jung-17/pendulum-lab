@@ -43,9 +43,10 @@ export class ResearchPlusTab extends TabController {
       this.dom.setText(
         'rpOut',
         `Stochastic ensemble (Euler–Maruyama, additive torque noise σ=${sigma}):\n` +
-          result.times.map((t, k) => `t=${t.toFixed(2)}  Var[θ₁]=${(result.variance[k]![0] ?? 0).toExponential(3)}  E[θ₁]=${(result.mean[k]![0] ?? 0).toFixed(4)}`).join('\n')
+          result.times.map((t, k) => `t=${t.toFixed(2)}  Var[θ₁]=${(result.variance[k]![0] ?? 0).toExponential(3)}  E[θ₁]=${(result.mean[k]![0] ?? 0).toFixed(4)}`).join('\n') +
+          `\n\nScheme: ${result.scheme}; ${result.strongOrder}\nCaveat: ${result.caveats.join(' ')}`
       );
-      this.badge('rpSdeStatus', 'validated', 'Langevin ensemble (additive noise) — mean/variance via Welford, the same runLangevinEnsemble validated against Brownian/OU/GBM closed forms.');
+      this.badge('rpSdeStatus', 'validated', `Langevin ensemble (additive noise) — mean/variance via Welford. ${result.strongOrder}. Matrix-noise commutative Milstein reports when non-commutative noise is not strong order 1.`);
     }, 'rpSdeStatus');
   }
 

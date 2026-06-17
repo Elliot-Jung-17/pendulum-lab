@@ -50,6 +50,11 @@ export { buildRhs, buildJacobian } from './physics/systemSpec';
 export type { SystemSpec } from './physics/systemSpec';
 export { gaussianSampler, eulerMaruyamaStep, milsteinStep, stochasticHeunStratonovichStep, commutativeMilsteinStep, runLangevinEnsemble, buildBrownianGrid, runAdaptiveLangevinPath, fixedGridLangevinPath } from './physics/stochastic';
 export { commutativityDefect } from './physics/noiseCommutativity';
+// Quantum chaos & Hamiltonian maps: Chirikov standard map + quantum kicked rotor.
+export { fftInPlace, ifftInPlace } from './physics/fft';
+export { STANDARD_MAP_KC, standardMapStep, standardMapEnsembleEnergy, standardMapDiffusionRate } from './physics/standardMap';
+export { createQkrPlan, createQkrState, qkrStep, qkrNorm, qkrMeanSquareMomentum, runQuantumKickedRotor } from './physics/quantumKickedRotor';
+export type { QuantumKickedRotorParams, QkrPlan, QkrState, QkrRun } from './physics/quantumKickedRotor';
 export type {
   GaussianSampler,
   StateDependentVector,
@@ -57,6 +62,7 @@ export type {
   DiffusionMatrixJacobian,
   MatrixSdeScratch,
   MultiplicativeNoise,
+  LangevinScheme,
   LangevinEnsembleSpec,
   LangevinEnsembleResult,
   BrownianGrid,
@@ -106,6 +112,52 @@ export {
 export type { DiatomicChainParams, DispersionBranches, DiatomicBandGap, DispersionSample } from './physics/latticeDispersion';
 export { implicitMidpointNewton } from './physics/implicitDiagnostics';
 export type { ImplicitMidpointReport, NewtonStepRecord, ImplicitMidpointNewtonOptions } from './physics/implicitDiagnostics';
+export {
+  SINE_GORDON_KINK_REST_ENERGY,
+  sineGordonKink,
+  sineGordonKinkRate,
+  kinkEnergy,
+  kinkMomentum,
+  sineGordonBreather,
+  breatherEnergy,
+  sineGordonDispersion,
+  sineGordonGroupVelocity,
+  sineGordonPhaseVelocity,
+  sineGordonResidual,
+  topologicalCharge,
+  createSineGordonField,
+  stepSineGordon,
+  sineGordonFieldEnergy,
+  kinkCenter,
+  sineGordonKinkPositions,
+  createKinkAntikinkField,
+  frenkelKontorovaEnergy,
+  relaxFrenkelKontorovaKink,
+  peierlsNabarroBarrier
+} from './physics/sineGordon';
+export type {
+  KinkSign,
+  SineGordonKinkParams,
+  SineGordonBreatherParams,
+  SineGordonBoundary,
+  SineGordonGrid,
+  SineGordonFieldSpec,
+  KinkAntikinkSpec,
+  RelaxedKinkResult,
+  RelaxKinkOptions,
+  PeierlsNabarroResult
+} from './physics/sineGordon';
+export {
+  fputAcceleration,
+  fputEnergy,
+  fputModeFrequency,
+  fputModeEnergies,
+  createFputModeState,
+  createFputVerletScratch,
+  fputVelocityVerletStep,
+  fputRecurrence
+} from './physics/fput';
+export type { FputParameters, FputVerletScratch, FputRecurrenceResult } from './physics/fput';
 export { RopePendulum } from './physics/rope';
 export type { RopeParams, RopePhase, RopeStateSnapshot, RopeEvent } from './physics/rope';
 export { DoubleStringPendulum, doubleStringEnergy, doubleStringEnergyFromTautState, doubleStringTautFraction, doubleStringTensions } from './physics/doubleString';
@@ -199,6 +251,18 @@ export * from './research/researchSampling';
 export * from './research/experimentDesign';
 export * from './research/surrogate';
 export * from './research/parameterEstimation';
+export * from './research/sindy';
+export * from './research/complexEig';
+export * from './research/eigenGeneral';
+export * from './research/unitaryFloquet';
+export * from './research/svd';
+export * from './research/dmd';
+export * from './research/havok';
+export * from './research/qkrFloquet';
+export * from './research/reservoir';
+export * from './research/hamiltonianLearning';
+export * from './research/lanczos';
+export * from './research/arnoldi';
 export * from './research/zipBundle';
 export * from './research/provenance';
 export * from './research/notebookBuilder';

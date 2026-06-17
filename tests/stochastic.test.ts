@@ -365,6 +365,9 @@ describe('matrix-noise ensemble schemes (Heun / commutative Milstein wired into 
     expect(result.mean[last]![0]!).toBeLessThan(expectedMean * 1.03);
     expect(result.variance[last]![0]!).toBeGreaterThan(expectedVar * 0.85);
     expect(result.variance[last]![0]!).toBeLessThan(expectedVar * 1.15);
+    expect(result.scheme).toBe('commutative-milstein');
+    expect(result.strongOrder).toContain('only when');
+    expect(result.caveats.join(' ')).toMatch(/non-commutative.*not strong order 1/i);
   });
 
   it('heun-stratonovich with additive matrix noise reproduces Brownian variance σ²t', () => {

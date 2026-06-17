@@ -14,10 +14,13 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      # Fast PR signal: policy lint, typecheck, unit JSON report, synced docs.
+      # Fast PR signal: quick unit tier before the full policy/type/test gate.
+      - run: npm run test:quick
+      # Full PR gate: policy lint, typecheck, unit JSON report, synced docs.
       - run: npm run verify
       # Keep the served-app CSP / no-legacy-risk contract from regressing on PRs.
       - run: npm run audit:legacy
+      - run: npm run audit:mojibake:strict
       # Coverage ratchet also runs on PRs, including the coverage-scope guard
       # that catches newly added source files missing from the v8 coverage map.
       - run: npm run test:coverage
@@ -26,4 +29,4 @@ jobs:
       - run: npm run budget
       - run: npx playwright install --with-deps chromium
       - run: npm run smoke
-      - run: npx playwright test e2e/accessibility.spec.ts e2e/research-storage.spec.ts e2e/research-bundle-zip.spec.ts --project=chromium
+      - run: npx playwright test e2e/accessibility.spec.ts e2e/research-storage.spec.ts e2e/research-bundle-zip.spec.ts e2e/ui-polish.spec.ts --project=chromium

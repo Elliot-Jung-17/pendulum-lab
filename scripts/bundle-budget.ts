@@ -84,8 +84,10 @@ function maxSize(total: SizeSet, next: SizeSet): void {
 
 function assetRefsFromIndex(indexHtml: string): Set<string> {
   const refs = new Set<string>();
-  const attr = /(?:src|href)="\.?\/?assets\/([^"]+)"/g;
-  for (const match of indexHtml.matchAll(attr)) refs.add(match[1]!);
+  const script = /<script\b[^>]*\bsrc="\.?\/?assets\/([^"]+)"/g;
+  const stylesheet = /<link\b(?=[^>]*\brel="stylesheet")[^>]*\bhref="\.?\/?assets\/([^"]+)"/g;
+  for (const match of indexHtml.matchAll(script)) refs.add(match[1]!);
+  for (const match of indexHtml.matchAll(stylesheet)) refs.add(match[1]!);
   return refs;
 }
 

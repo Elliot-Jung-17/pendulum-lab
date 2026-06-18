@@ -1,45 +1,56 @@
 name: Publish npm package
 
-# Manual-only: publishing the headless `pendulum-lab-core` library to npm is an
-# explicit, irreversible action, so this never runs automatically.
-#
-# Prerequisites (one-time, owner decisions, intentionally NOT automated):
-#   1. Confirm the package `name` and `version` are the desired public release
-#      coordinates. The package is publishable, but this workflow is manual-only
-#      so a release still requires an explicit owner action.
-#   2. Add an `NPM_TOKEN` repository secret (an npm automation token with publish
-#      rights).
-#   3. Run this workflow from the Actions tab (workflow_dispatch). It re-runs the
-#      full verify gate and the library build before publishing, so only a green,
-#      reproducible artifact is ever pushed.
 on:
   workflow_dispatch:
     inputs:
       dry-run:
-        description: 'Run npm publish with --dry-run (no upload)'
+        description: Run npm publish without uploading
         type: boolean
         default: true
+      expected-version:
+        description: Exact package version expected at publish time
+        type: string
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment: npm
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
-          registry-url: 'https://registry.npmjs.org'
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - name: Pin OIDC-capable npm
+        run: npm install --global npm@11.5.1
+      - name: Verify release coordinate
+        shell: bash
+        run: |
+          actual="$(node -p "require('./package.json').version")"
+          test "$actual" = "${{ inputs.expected-version }}" || {
+            echo "Expected ${{ inputs.expected-version }}, found $actual" >&2
+            exit 1
+          }
+          npm view "pendulum-lab-v10@$actual" version >/dev/null 2>&1 && {
+            echo "pendulum-lab-v10@$actual is already published" >&2
+            exit 1
+          }
+          true
       - run: npm ci
       - run: npm run verify
       - run: npm run build:lib
-      - name: Publish (dry-run)
+      - name: Publish dry-run
         if: ${{ inputs.dry-run }}
         run: npm publish --access public --dry-run
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Publish
+      - name: Publish with npm Trusted Publishing
         if: ${{ !inputs.dry-run }}
         run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        # npm >=11.5.1 detects the GitHub OIDC token. Configure the package's
+        # trusted publisher for this exact workflow filename and `npm`
+        # environment. Public OIDC publishes receive npm provenance by default.

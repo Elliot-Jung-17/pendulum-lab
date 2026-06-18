@@ -66,6 +66,9 @@ npm run validate:literature
   `reports/paper-study.json`.
 - Figure 1 is certified separately by `reports/flagship-certification.json`,
   `reports/flagship-certification.md`, and `reports/flagship-figure1.svg`.
+- The paper's Appendix A-C embeds the onset uncertainty table, independent
+  Python A_PD measurements, caveat ledger, and Figure 1 SHA-256 prefix, so the
+  figure and machine-readable evidence cross-reference each other.
 - A dependency-free Python external check recomputes `A_c`, recomputes the ratio
   crossing, and independently remeasures selected `A_PD` values by RK4
   stroboscopic integration plus finite-difference Floquet bisection in

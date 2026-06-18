@@ -47,7 +47,7 @@ interface SpectrumHorizonRow {
 }
 
 interface GpuBenchmarkLadderReport {
-  schemaVersion: 'pendulum-gpu-benchmark-ladder/v1';
+  schemaVersion: 'pendulum-gpu-benchmark-ladder/v2';
   generatedAt: string;
   channel: string;
   url: string;
@@ -80,6 +80,22 @@ interface GpuBenchmarkLadderReport {
     height: number;
     min: number;
     max: number;
+    caveat: string;
+  } | null;
+  nChainVariational: {
+    backend: string;
+    comparison: {
+      passed: boolean;
+      clv: ComparisonMetrics;
+      ftleAbsDiff: number;
+      ftleTolerance: number;
+    } | null;
+    links: number;
+    dimension: number;
+    ftle: number;
+    cpuFtle: number;
+    elapsedMs: number | null;
+    method: string;
     caveat: string;
   } | null;
   error?: string;
@@ -203,6 +219,18 @@ function markdown(report: GpuBenchmarkLadderReport): string {
     `| field max abs diff | ${fmt(report.variationalFtleField?.comparison?.metrics?.fieldMaxAbsDiff)} |`,
     `| field mean abs diff | ${fmt(report.variationalFtleField?.comparison?.metrics?.fieldMeanAbsDiff)} |`,
     '',
+    '## N-chain Tiled STM/QR Promotion',
+    '',
+    '| Metric | Value |',
+    '|---|---:|',
+    `| backend | ${report.nChainVariational?.backend ?? 'n/a'} |`,
+    `| pass | ${String(report.nChainVariational?.comparison?.passed ?? false)} |`,
+    `| links / dimension | ${report.nChainVariational ? `${report.nChainVariational.links} / ${report.nChainVariational.dimension}` : 'n/a'} |`,
+    `| CLV exponent max abs diff | ${fmt(report.nChainVariational?.comparison?.clv.metrics?.exponentMaxAbsDiff)} |`,
+    `| FTLE abs diff | ${fmt(report.nChainVariational?.comparison?.ftleAbsDiff)} |`,
+    `| GPU ms | ${report.nChainVariational?.elapsedMs?.toFixed(2) ?? 'n/a'} |`,
+    `| method | ${report.nChainVariational?.method ?? 'n/a'} |`,
+    '',
     report.status === 'pass'
       ? 'The hardware ladder validates GPU-side reductions and promoted chaos diagnostics against CPU f64 oracles while recording horizon drift separately.'
       : `Failure: ${report.error ?? 'comparison failed'}`,
@@ -249,9 +277,11 @@ try {
     const ensembleModulePath = '/src/runtime/gpuEnsemble.ts';
     const spectrumModulePath = '/src/runtime/gpuLyapunov.ts';
     const chaosModulePath = '/src/runtime/gpuChaosPromotion.ts';
+    const nChainModulePath = '/src/runtime/gpuNChainVariational.ts';
     const ensembleMod = await import(/* @vite-ignore */ ensembleModulePath) as typeof import('../src/runtime/gpuEnsemble');
     const spectrumMod = await import(/* @vite-ignore */ spectrumModulePath) as typeof import('../src/runtime/gpuLyapunov');
     const chaosMod = await import(/* @vite-ignore */ chaosModulePath) as typeof import('../src/runtime/gpuChaosPromotion');
+    const nChainMod = await import(/* @vite-ignore */ nChainModulePath) as typeof import('../src/runtime/gpuNChainVariational');
     const params = { m1: 1, m2: 1, l1: 1, l2: 1, g: 9.81 };
     const initial = ensembleMod.ensembleGrid(5, [-1.2, 1.2]);
     const ensembleHorizons = [];
@@ -333,6 +363,20 @@ try {
         tolerances: { field: 0.12, aggregate: 0.08 }
       }
     );
+    const nChainVariational = await nChainMod.promotedNChainVariational(
+      { masses: [1, 0.9, 0.8], lengths: [1, 0.85, 0.7], g: 9.81 },
+      [1.2, 0.7, -0.45, 0.12, -0.08, 0.05],
+      {
+        dt: 0.006,
+        renormEvery: 3,
+        forwardTransient: 3,
+        window: 8,
+        backwardTransient: 2,
+        clvTolerances: { exponents: 0.2, angle: 0.4 },
+        ftleTolerance: 0.16
+      },
+      0.01
+    );
     return {
       adapter: adapterMetadata,
       ensembleHorizons,
@@ -352,6 +396,17 @@ try {
         min: variationalFtleField.field.min,
         max: variationalFtleField.field.max,
         caveat: variationalFtleField.caveat
+      },
+      nChainVariational: {
+        backend: nChainVariational.backend,
+        comparison: nChainVariational.comparison,
+        links: nChainVariational.result.links,
+        dimension: nChainVariational.result.dimension,
+        ftle: nChainVariational.result.variationalFtle,
+        cpuFtle: nChainVariational.cpuOracle.variationalFtle,
+        elapsedMs: nChainVariational.gpuCandidate?.elapsedMs ?? null,
+        method: nChainVariational.result.method,
+        caveat: nChainVariational.caveat
       }
     };
   });
@@ -367,16 +422,19 @@ try {
   const allSpectrumPromotionsPassed = spectrumHorizons.every((row) => row.backend === 'webgpu' && row.comparison?.passed === true);
   const clv = payload.clv as GpuBenchmarkLadderReport['clv'];
   const variationalFtleField = payload.variationalFtleField as GpuBenchmarkLadderReport['variationalFtleField'];
+  const nChainVariational = payload.nChainVariational as GpuBenchmarkLadderReport['nChainVariational'];
   const status: Status = allReductionComparisonsPassed
     && allSpectrumPromotionsPassed
     && clv?.backend === 'webgpu'
     && clv.comparison?.passed === true
     && variationalFtleField?.backend === 'webgpu'
     && variationalFtleField.comparison?.passed === true
+    && nChainVariational?.backend === 'webgpu'
+    && nChainVariational.comparison?.passed === true
     ? 'pass'
     : 'fail';
   report = {
-    schemaVersion: 'pendulum-gpu-benchmark-ladder/v1',
+    schemaVersion: 'pendulum-gpu-benchmark-ladder/v2',
     generatedAt,
     channel,
     url,
@@ -396,11 +454,12 @@ try {
       caveat: 'Full-spectrum rows are promoted only after same-run CPU f64 oracle comparison; adjacent-horizon shift is a convergence/stability diagnostic, not a pass/fail tolerance.'
     },
     clv,
-    variationalFtleField
+    variationalFtleField,
+    nChainVariational
   };
 } catch (error) {
   report = {
-    schemaVersion: 'pendulum-gpu-benchmark-ladder/v1',
+    schemaVersion: 'pendulum-gpu-benchmark-ladder/v2',
     generatedAt,
     channel,
     url,
@@ -421,6 +480,7 @@ try {
     },
     clv: null,
     variationalFtleField: null,
+    nChainVariational: null,
     error: error instanceof Error ? error.message : String(error)
   };
 } finally {

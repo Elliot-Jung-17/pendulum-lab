@@ -57,6 +57,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         app: 'app.html',
+        reviewer: 'reviewer.html',
         indexRuntime: 'src/main.ts'
       },
       output: {

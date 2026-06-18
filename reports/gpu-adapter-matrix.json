@@ -1,0 +1,100 @@
+{
+  "schemaVersion": "pendulum-gpu-adapter-matrix/v1",
+  "generatedAt": "2026-06-18T17:08:48.187Z",
+  "status": "partial",
+  "requiredVendors": [
+    "intel",
+    "nvidia",
+    "amd"
+  ],
+  "coverage": {
+    "passed": 1,
+    "required": 3,
+    "missing": 2,
+    "failed": 0
+  },
+  "rows": [
+    {
+      "vendor": "intel",
+      "status": "pass",
+      "source": "C:/Users/junge/Desktop/pendulum_lab_modular/reports/gpu-benchmark-ladder.json",
+      "generatedAt": "2026-06-18T16:45:48.879Z",
+      "adapter": {
+        "vendor": "intel",
+        "architecture": "xe-2lpg",
+        "device": "",
+        "description": "",
+        "features": [
+          "bgra8unorm-storage",
+          "chromium-experimental-multi-draw-indirect",
+          "chromium-experimental-timestamp-query-inside-passes",
+          "clip-distances",
+          "core-features-and-limits",
+          "depth-clip-control",
+          "depth32float-stencil8",
+          "dual-source-blending",
+          "float32-blendable",
+          "float32-filterable",
+          "indirect-first-instance",
+          "primitive-index",
+          "rg11b10ufloat-renderable",
+          "shader-f16",
+          "subgroups",
+          "texture-component-swizzle",
+          "texture-compression-bc",
+          "texture-compression-bc-sliced-3d",
+          "texture-formats-tier1",
+          "texture-formats-tier2",
+          "timestamp-query"
+        ],
+        "limits": {}
+      },
+      "nChainPassed": true,
+      "nChainDimension": 6,
+      "caveat": "Real-adapter ladder passed reductions, 4D diagnostics, and the N-chain STM/QR oracle gate."
+    },
+    {
+      "vendor": "nvidia",
+      "status": "missing",
+      "source": null,
+      "generatedAt": null,
+      "adapter": null,
+      "nChainPassed": false,
+      "nChainDimension": null,
+      "caveat": "No nvidia hardware ladder artifact was supplied. This row is not simulated or inferred."
+    },
+    {
+      "vendor": "amd",
+      "status": "missing",
+      "source": null,
+      "generatedAt": null,
+      "adapter": null,
+      "nChainPassed": false,
+      "nChainDimension": null,
+      "caveat": "No amd hardware ladder artifact was supplied. This row is not simulated or inferred."
+    }
+  ],
+  "reproduce": "npm run benchmark:gpu-matrix",
+  "collectionContract": {
+    "runnerLabels": [
+      [
+        "self-hosted",
+        "webgpu",
+        "intel"
+      ],
+      [
+        "self-hosted",
+        "webgpu",
+        "nvidia"
+      ],
+      [
+        "self-hosted",
+        "webgpu",
+        "amd"
+      ]
+    ],
+    "artifactName": "gpu-ladder-<vendor>",
+    "rule": "Only reports produced on a real adapter and passing same-run CPU f64 oracle gates count as vendor evidence."
+  },
+  "caveat": "The matrix is intentionally incomplete until missing physical vendor runners upload evidence. Software adapters do not satisfy this contract."
+}

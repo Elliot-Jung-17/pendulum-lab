@@ -136,3 +136,45 @@ test('real WebGPU CLV and variational-FTLE candidates pass CPU oracle promotion 
   expect(Number.isFinite(result.ftleRange[0])).toBe(true);
   expect(Number.isFinite(result.ftleRange[1])).toBe(true);
 });
+
+test('real WebGPU N-chain tiled STM/QR pipeline passes its f64 oracle gate', async ({ page, browserName }) => {
+  test.skip(browserName !== 'chromium', 'WebGPU hardware validation is Chromium-only.');
+  await page.goto('/');
+  const result = await page.evaluate(async () => {
+    if (!(navigator as unknown as { gpu?: unknown }).gpu) {
+      throw new Error('navigator.gpu unavailable; this runner is not a WebGPU hardware CI target.');
+    }
+    const modulePath = '/src/runtime/gpuNChainVariational.ts';
+    const mod = await import(/* @vite-ignore */ modulePath) as typeof import('../src/runtime/gpuNChainVariational');
+    const promotion = await mod.promotedNChainVariational(
+      { masses: [1, 0.9, 0.8], lengths: [1, 0.85, 0.7], g: 9.81 },
+      [1.2, 0.7, -0.45, 0.12, -0.08, 0.05],
+      {
+        dt: 0.006,
+        renormEvery: 3,
+        forwardTransient: 3,
+        window: 8,
+        backwardTransient: 2,
+        clvTolerances: { exponents: 0.2, angle: 0.4 },
+        ftleTolerance: 0.16
+      },
+      0.01
+    );
+    return {
+      backend: promotion.backend,
+      passed: promotion.comparison?.passed ?? false,
+      clvPassed: promotion.comparison?.clv.passed ?? false,
+      ftleAbsDiff: promotion.comparison?.ftleAbsDiff ?? null,
+      ftleTolerance: promotion.comparison?.ftleTolerance ?? null,
+      dimension: promotion.result.dimension,
+      method: promotion.result.method
+    };
+  });
+  expect(result.backend).toBe('webgpu');
+  expect(result.passed).toBe(true);
+  expect(result.clvPassed).toBe(true);
+  expect(result.ftleAbsDiff).not.toBeNull();
+  expect(result.ftleAbsDiff!).toBeLessThanOrEqual(result.ftleTolerance!);
+  expect(result.dimension).toBe(6);
+  expect(result.method).toBe('piecewise-jacobian-rk2-stm-qr');
+});

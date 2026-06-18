@@ -1,6 +1,6 @@
 # Certified Chaotic Dynamics Workbench - Reviewer Kit
 
-Generated: 2026-06-18T12:26:00.408Z
+Generated: 2026-06-18T17:07:32.574Z
 
 Status: **READY**
 
@@ -47,7 +47,11 @@ Reproduce the study with `npm run paper:study`, then render the paper with `npm 
 | optional | yes | `reports/research-notebook.html` | `npm run notebook` | Figure-rich notebook driven through the same analysis handlers. |
 | recommended | yes | `reports/gpu-scale-validation.md` | `npm run validate:gpu-scale` | CPU reference plus mocked-WebGPU contract for accelerated field/ensemble paths. |
 | recommended | yes | `reports/webgpu-hardware-validation.md` | `npm run validate:webgpu-hardware` | Real-adapter WebGPU reduction comparison against the CPU f64 oracle. |
-| recommended | yes | `reports/gpu-benchmark-ladder.md` | `npm run benchmark:gpu-ladder` | Real-adapter GPU ladder with adapter metadata, f32/f64 horizon drift, and CLV/FTLE promotion metrics. |
+| recommended | yes | `reports/gpu-benchmark-ladder.md` | `npm run benchmark:gpu-ladder` | Real-adapter GPU ladder with f32/f64 drift, 4D diagnostics, and N-chain STM/QR promotion metrics. |
+| recommended | yes | `reports/gpu-adapter-matrix.json` | `npm run benchmark:gpu-matrix` | Intel/NVIDIA/AMD physical-adapter evidence matrix with explicit missing rows. |
+| required | yes | `reviewer.html` | `npm run build` | GitHub Pages reviewer console that reads the machine-readable report artifacts. |
+| recommended | yes | `reports/publication-status.json` | `npm run release:status` | Public npm, Zenodo DOI, GitHub release, and Pages resolution audit. |
+| recommended | yes | `reports/npm-pack-dry-run.json` | `npm pack --dry-run --json` | Exact npm tarball coordinate, integrity digest, size, and included-file inventory. |
 | required | yes | `reports/release-readiness.json` | `npm run release:package` | Machine-readable DOI/Pages/npm/PDF/GIF release readiness manifest. |
 | recommended | yes | `reports/release-one-page.pdf` | `npm run release:package` | One-page reviewer handout for release notes and external review. |
 | recommended | yes | `reports/walkthrough-30s.gif` | `npm run release:package` | Thirty-second walkthrough artifact for the GitHub release and project page. |

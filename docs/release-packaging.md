@@ -14,8 +14,10 @@ npm run flagship:external
 npm run validate:gpu-scale
 npm run validate:webgpu-hardware
 npm run benchmark:gpu-ladder
+npm run benchmark:gpu-matrix
 npm run release:package
 npm run reviewer:kit
+npm run release:status
 ```
 
 Required outputs:
@@ -27,6 +29,8 @@ Required outputs:
 - `reports/gpu-scale-validation.md`
 - `reports/webgpu-hardware-validation.md`
 - `reports/gpu-benchmark-ladder.md`
+- `reports/gpu-adapter-matrix.md`
+- `reports/publication-status.json`
 - `reports/release-readiness.md`
 - `reports/release-one-page.pdf`
 - `reports/walkthrough-30s.gif`
@@ -36,10 +40,13 @@ Required outputs:
 
 - Generated locally by `npm run release:package`: one-page PDF summary,
   30-second walkthrough GIF, SVG storyboard, and release-readiness manifest.
-- Wired for owner-authenticated release: GitHub release archive with the exact
-  commit SHA, Zenodo DOI linked to that release, GitHub Pages build serving
-  `paper/index.html` plus docs/reviewer reports, and npm package release for
-  the headless `core` / `analysis` / `research` / `experimental` API groups.
+- The Pages build serves `reviewer.html`, the paper, and the report JSON.
+- The npm workflow uses OIDC trusted publishing (`npm >= 11.5.1`) and automatic
+  npm provenance. The release workflow attests the packed tgz and CycloneDX
+  SBOM with GitHub's SLSA/in-toto `actions/attest@v4` path.
+- `npm run zenodo:publish` creates, uploads, and publishes a token-authenticated
+  Zenodo deposition. `npm run doi:sync` writes a real minted DOI into citation
+  surfaces; it refuses to write a placeholder DOI.
 
 ## Promotion Gates
 
@@ -49,6 +56,7 @@ Required outputs:
 - `npm run validate:gpu-scale`
 - `npm run validate:webgpu-hardware`
 - `npm run benchmark:gpu-ladder`
+- `npm run benchmark:gpu-matrix`
 - `npm run benchmark:memory`
 - `npm run release:package`
 - `npm run reviewer:kit`

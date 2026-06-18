@@ -1,48 +1,75 @@
-# Releasing & Publishing
+# Releasing and Publishing
 
-## GitHub push + Pages
-
-The repository ships two workflows under `.github/workflows/`:
-
-- `ci.yml` — lint, typecheck, unit tests, audits, build, Playwright E2E,
-  Python cross-validation, plus `npm run notebook:validate` and the long-run
-  performance spec (part of `npm run test:e2e`).
-- `pages.yml` — builds `dist/` and deploys it to GitHub Pages on every push to
-  `main`/`master`.
-
-To publish from this machine:
+## Preflight
 
 ```bash
-git remote add origin https://github.com/<you>/pendulum-lab.git
-git push -u origin master
+npm ci
+npm run verify
+npm run build
+npm run build:lib
+npm run release:package
+npm run release:status
 ```
 
-Pages must be enabled once in the repository settings (Build and deployment →
-GitHub Actions). After that every push deploys automatically.
+The public package coordinate is read directly from `package.json`. Never reuse
+an npm version or a Git tag.
+
+## GitHub Release and Pages
+
+Push the release commit and tag. `.github/workflows/release.yml` builds the npm
+tgz, generates a CycloneDX SBOM, and records SLSA/in-toto attestations through
+`actions/attest@v4`. Verify a downloaded package with:
+
+```bash
+gh attestation verify pendulum-lab-v10-<version>.tgz --repo Elliot-Jung-17/pendulum-lab
+```
+
+`.github/workflows/pages.yml` deploys the workbench, paper, report JSON, and
+`reviewer.html` console from `dist/`.
+
+## npm Trusted Publishing
+
+Configure npm's trusted publisher for:
+
+- owner: `Elliot-Jung-17`
+- repository: `pendulum-lab`
+- workflow filename: `publish-npm.yml`
+- environment: `npm`
+- allowed action: publish
+
+Then dispatch **Publish npm package** with the exact expected version and
+`dry-run=false`. The workflow pins Node 24 and npm 11.5.1, requests
+`id-token: write`, rejects an existing registry version, and publishes without
+a long-lived token. Public OIDC publishing adds npm provenance automatically.
 
 ## Zenodo DOI
 
-1. Log in to Zenodo with GitHub and enable the repository in
-   <https://zenodo.org/account/settings/github/>.
-2. `.zenodo.json` (repo root) supplies the deposit metadata; `CITATION.cff`
-   gives the citation text shown by GitHub.
-3. Create a GitHub release (`git tag v10.29.0 && git push --tags`, then draft
-   the release). Zenodo archives the release and mints a DOI.
-4. Paste the minted DOI back into `CITATION.cff` (`doi:` field) and into the
-   Research Workbench experiment citations where relevant.
+Production API publishing is explicit and irreversible:
 
-## npm library
+```bash
+$env:ZENODO_TOKEN = '<owner token with deposit:write and deposit:actions>'
+npm run zenodo:publish
+npm run doi:sync
+```
 
-`npm run build:lib` emits `dist-lib/pendulum-lab-core.js` (ESM) plus type
-declarations under `dist-lib/types/`. `npm run docs:api` generates TypeDoc API
-documentation in `docs/api/`. To publish the core as a package, copy
-`dist-lib/` into a `pendulum-lab-core` package directory with its own
-`package.json` (`"main": "pendulum-lab-core.js"`, `"types": "types/lib.d.ts"`)
-and `npm publish` from there.
+The deposition contains the packed library, paper PDF, reviewer manifest, GPU
+matrix, and flagship certification. `doi:sync` accepts only a real production
+`10.x/zenodo.x` DOI from `reports/zenodo-deposition.json`, then updates
+`CITATION.cff`, the README badge, and release packaging documentation.
 
-## External Julia reference
+Use `ZENODO_SANDBOX_TOKEN` plus `npm run zenodo:draft -- --sandbox` to validate
+the API without minting a production DOI.
 
-`npm run validate:julia` regenerates `reports/julia-vern9-reference.json` via
-`scripts/julia_reference.jl` (requires Julia + OrdinaryDiffEq + JSON) and
-compares the TypeScript GBS integrator against the Vern9 solution. Without
-Julia the step reports SKIPPED and exits 0, so CI stays green on plain runners.
+## Hardware Evidence
+
+Each physical runner carries `self-hosted`, `webgpu`, and one vendor label:
+`intel`, `nvidia`, or `amd`. Dispatch **WebGPU Vendor Evidence** per vendor,
+download the three ladder artifacts into one directory, and run:
+
+```bash
+$env:GPU_MATRIX_INPUT_DIR = '<artifact directory>'
+$env:GPU_MATRIX_REQUIRE_COMPLETE = '1'
+npm run benchmark:gpu-matrix
+```
+
+Software adapters never satisfy the vendor matrix.

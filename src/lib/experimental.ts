@@ -7,7 +7,8 @@
  * Currently: the WebGPU/CPU double-pendulum ensemble runner, WebGPU-accelerated
  * field scans (flip basin, sweep lambda_max, finite-difference FTLE), the 4D
  * double-pendulum full-spectrum Lyapunov promotion path, and CPU-oracle-gated
- * CLV / variational-FTLE WebGPU promotion paths.
+ * CLV / variational-FTLE WebGPU promotion paths, including the hybrid N-chain
+ * STM/QR pipeline for planar chains up to eight links.
  */
 
 export { runComputeKernel, runDoublePendulumEnsemble, ensembleGrid, ensembleStatistics, webgpuEnsembleStatistics, compareEnsembleStatistics } from '../runtime/gpuEnsemble';
@@ -28,6 +29,14 @@ export type {
   WebgpuFtleFieldOptions,
   WebgpuFtleFieldPromotion
 } from '../runtime/gpuChaosPromotion';
+export { buildNChainJacobianTape, nChainVariationalCpuOracle, promotedNChainVariational, webgpuNChainVariationalCandidate } from '../runtime/gpuNChainVariational';
+export type {
+  NChainVariationalComparison,
+  NChainVariationalOptions,
+  NChainVariationalPromotion,
+  NChainVariationalSummary,
+  WebgpuNChainVariationalCandidate
+} from '../runtime/gpuNChainVariational';
 export { flipBasinField, sweepLambdaField, ftleFieldFiniteDifference } from '../runtime/gpuFields';
 export type {
   FlipBasinFieldOptions,

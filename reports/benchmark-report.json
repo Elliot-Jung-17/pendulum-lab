@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2026-06-18T12:22:57.416Z",
+  "generatedAt": "2026-06-18T16:54:19.233Z",
   "results": [
     {
       "label": "original",
       "url": "http://127.0.0.1:5173/",
-      "fps": 11.059092417197565,
-      "physicsMsPerFrame": 0.10000002384185791,
-      "memoryBytes": 12700000,
+      "fps": 8.759379835968595,
+      "physicsMsPerFrame": 0.09999996423721313,
+      "memoryBytes": 11900000,
       "workerLatencyMs": null
     },
     {
       "label": "candidate",
       "url": "http://127.0.0.1:5173/",
-      "fps": 11.156563778356265,
-      "physicsMsPerFrame": 0.20000004768371582,
-      "memoryBytes": 12700000,
+      "fps": 8.847208705560057,
+      "physicsMsPerFrame": 0.19999998807907104,
+      "memoryBytes": 13400000,
       "workerLatencyMs": null
     }
   ],
@@ -26,30 +26,30 @@
     "deltas": [
       {
         "metric": "fps",
-        "original": 11.059092417197565,
-        "candidate": 11.156563778356265,
-        "delta": 0.09747136115869992,
-        "relativeDelta": 0.00881368538046811,
+        "original": 8.759379835968595,
+        "candidate": 8.847208705560057,
+        "delta": 0.08782886959146197,
+        "relativeDelta": 0.010026836515390136,
         "threshold": 0.25,
         "direction": "higher-is-better",
         "status": "pass"
       },
       {
         "metric": "physicsMsPerFrame",
-        "original": 0.10000002384185791,
-        "candidate": 0.20000004768371582,
+        "original": 0.09999996423721313,
+        "candidate": 0.19999998807907104,
         "delta": 0.10000002384185791,
-        "relativeDelta": 1,
+        "relativeDelta": 1.000000596046661,
         "threshold": 0.25,
         "direction": "lower-is-better",
         "status": "warn"
       },
       {
         "metric": "memoryBytes",
-        "original": 12700000,
-        "candidate": 12700000,
-        "delta": 0,
-        "relativeDelta": 0,
+        "original": 11900000,
+        "candidate": 13400000,
+        "delta": 1500000,
+        "relativeDelta": 0.12605042016806722,
         "threshold": 50000000,
         "direction": "lower-is-better",
         "status": "pass"

@@ -282,6 +282,14 @@ export {
   webgpuDoublePendulumClvCandidate,
   webgpuDoublePendulumVariationalFtleFieldCandidate
 } from './runtime/gpuChaosPromotion';
+export { buildNChainJacobianTape, nChainVariationalCpuOracle, promotedNChainVariational, webgpuNChainVariationalCandidate } from './runtime/gpuNChainVariational';
+export type {
+  NChainVariationalComparison,
+  NChainVariationalOptions,
+  NChainVariationalPromotion,
+  NChainVariationalSummary,
+  WebgpuNChainVariationalCandidate
+} from './runtime/gpuNChainVariational';
 export type {
   WebgpuClvCandidate,
   WebgpuClvOptions,

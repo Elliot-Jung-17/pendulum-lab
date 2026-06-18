@@ -12,24 +12,28 @@ endobj
 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
 endobj
 5 0 obj
-<< /Length 979 >>
+<< /Length 1043 >>
 stream
 BT
 /F1 18 Tf
 72 748 Td
 (Pendulum Lab Certified Chaotic Dynamics Workbench) Tj
-/F1 10 Tf
-0 -18 Td (Generated: 2026-06-18T12:28:52.529Z) Tj
-0 -18 Td () Tj
-0 -18 Td (Flagship: Melnikov threshold vs period-doubling onset gap map.) Tj
-0 -18 Td (Reviewer path: npm run validate:gpu-scale; npm run validate:webgpu-hardware; npm run flagship:certify; npm run flagship:external; npm run reviewer:kit.) Tj
-0 -18 Td (Trust model: every headline number carries source, params, uncertainty, reproduce command, artifact hash, and caveat.) Tj
-0 -18 Td (GPU rule: accelerated results must match CPU f64 or fail closed to CPU; benchmark ladder records adapter metadata and horizon drift.) Tj
-0 -18 Td (Release surfaces: GitHub Pages workflow, manual npm publish workflow, Zenodo metadata, paper PDF, reviewer manifest.) Tj
-0 -18 Td () Tj
-0 -18 Td (Reviewer manifest hash: 126afcaaef6f32) Tj
-0 -18 Td (Scorecard hash: 0ef1d25aac4c31) Tj
-0 -18 Td (Flagship certification hash: 0c77b3bd030dad) Tj
+/F1 9.5 Tf
+0 -16 Td (Generated: 2026-06-18T17:08:15.168Z) Tj
+0 -16 Td () Tj
+0 -16 Td (Flagship: Melnikov threshold vs period-doubling onset gap map.) Tj
+0 -16 Td (Reviewer path: npm run validate:gpu-scale; npm run validate:webgpu-hardware; npm run) Tj
+0 -16 Td (flagship:certify; npm run flagship:external; npm run reviewer:kit.) Tj
+0 -16 Td (Trust model: every headline number carries source, params, uncertainty, reproduce) Tj
+0 -16 Td (command, artifact hash, and caveat.) Tj
+0 -16 Td (GPU rule: 4D and N-chain accelerated results must match CPU f64 or fail closed; the) Tj
+0 -16 Td (vendor matrix never simulates missing hardware.) Tj
+0 -16 Td (Release surfaces: Pages reviewer console, npm OIDC provenance, Zenodo deposition API,) Tj
+0 -16 Td (SLSA/SBOM attestations, and paper PDF.) Tj
+0 -16 Td () Tj
+0 -16 Td (Reviewer manifest hash: 0f727f3f087da8) Tj
+0 -16 Td (Scorecard hash: 06acb5a49de45e) Tj
+0 -16 Td (Flagship certification hash: 1f342d2cb314d6) Tj
 ET
 endstream
 endobj
@@ -44,5 +48,5 @@ xref
 trailer
 << /Size 6 /Root 1 0 R >>
 startxref
-1341
+1406
 %%EOF

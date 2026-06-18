@@ -1,6 +1,6 @@
 # WebGPU Hardware Validation
 
-Generated: 2026-06-18T12:28:36.119Z
+Generated: 2026-06-18T16:45:41.770Z
 
 Status: **pass**
 
@@ -13,6 +13,8 @@ Full-spectrum backend: `webgpu`
 CLV backend: `webgpu`
 
 Variational-FTLE backend: `webgpu`
+
+N-chain variational backend: `webgpu`
 
 ## Ensemble Reduction
 
@@ -52,4 +54,14 @@ Variational-FTLE backend: `webgpu`
 | field max abs diff | 2.429e-5 |
 | field mean abs diff | 5.859e-6 |
 
-The on-device WebGPU ensemble reduction, full-spectrum Lyapunov, CLV, and variational-FTLE candidates matched the CPU f64 oracle within the declared f32 tolerances.
+## N-chain Tiled STM/QR Promotion
+
+| Metric | Value |
+|---|---:|
+| passed | true |
+| links / dimension | 3 / 6 |
+| CLV exponent max abs diff | 2.576e-6 |
+| FTLE abs diff | 6.481e-7 |
+| method | piecewise-jacobian-rk2-stm-qr |
+
+The on-device WebGPU ensemble reduction, 4D chaos diagnostics, and N-chain tiled STM/QR candidate matched their CPU f64 oracles within the declared f32 tolerances.

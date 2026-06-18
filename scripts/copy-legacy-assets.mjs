@@ -6,6 +6,35 @@ import { cp, mkdir, copyFile, access } from 'node:fs/promises';
 await mkdir('dist/css', { recursive: true });
 await cp('css', 'dist/css', { recursive: true });
 
+const reviewerReports = [
+  'worldclass-scorecard.json',
+  'flagship-certification.json',
+  'flagship-external-check.json',
+  'webgpu-hardware-validation.json',
+  'gpu-benchmark-ladder.json',
+  'gpu-adapter-matrix.json',
+  'release-readiness.json',
+  'publication-status.json',
+  'npm-pack-dry-run.json',
+  'reviewer-kit-manifest.json',
+  'flagship-figure1.svg'
+];
+await mkdir('dist/reports', { recursive: true });
+for (const report of reviewerReports) {
+  try {
+    await copyFile(`reports/${report}`, `dist/reports/${report}`);
+  } catch {
+    // Generation commands may not have run in a minimal source build.
+  }
+}
+try {
+  await mkdir('dist/paper', { recursive: true });
+  await copyFile('paper/index.html', 'dist/paper/index.html');
+  await copyFile('paper/paper.pdf', 'dist/paper/paper.pdf');
+} catch {
+  // Paper artifacts are optional in a minimal source build.
+}
+
 // The dev/build source shell is `app.html`; deployments (and Vite preview)
 // expect the page at `index.html`. Mirror the built shell to that canonical
 // name so a static host serves it at the web root.

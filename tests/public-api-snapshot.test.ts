@@ -414,21 +414,25 @@ describe('public grouped API surface', () => {
 
   it('keeps the experimental namespace explicit', () => {
     expect(namespaceKeys(experimental)).toEqual([
+      'buildNChainJacobianTape',
       'compareEnsembleStatistics',
       'ensembleGrid',
       'ensembleStatistics',
       'flipBasinField',
       'ftleFieldFiniteDifference',
+      'nChainVariationalCpuOracle',
       'promotedDoublePendulumClv',
       'promotedDoublePendulumLyapunovSpectrum',
       'promotedDoublePendulumVariationalFtleField',
+      'promotedNChainVariational',
       'runComputeKernel',
       'runDoublePendulumEnsemble',
       'sweepLambdaField',
       'webgpuDoublePendulumClvCandidate',
       'webgpuDoublePendulumLyapunovSpectrumCandidate',
       'webgpuDoublePendulumVariationalFtleFieldCandidate',
-      'webgpuEnsembleStatistics'
+      'webgpuEnsembleStatistics',
+      'webgpuNChainVariationalCandidate'
     ]);
   });
 });

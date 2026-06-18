@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-06-18T12:25:51.836Z",
+  "generatedAt": "2026-06-18T17:07:33.990Z",
   "totals": {
-    "done": 11,
-    "partial": 0,
+    "done": 10,
+    "partial": 2,
     "gap": 0
   },
   "legacyRisk": {
@@ -2391,10 +2391,14 @@
     "webgpuHardwareJson": true,
     "gpuBenchmarkLadderReport": true,
     "gpuBenchmarkLadderJson": true,
+    "gpuAdapterMatrixReport": true,
+    "gpuAdapterMatrixJson": true,
+    "gpuAdapterMatrixPass": false,
     "webgpuHardwarePass": true,
     "webgpuFullSpectrumPass": true,
     "webgpuClvPass": true,
     "webgpuVariationalFtlePass": true,
+    "webgpuNChainPass": true,
     "gpuBenchmarkLadderPass": true,
     "mojibakeAudit": true,
     "validation": true,
@@ -2407,6 +2411,8 @@
     "nightlyWorkflow": true,
     "releaseWorkflow": true,
     "pagesWorkflow": true,
+    "reviewerDashboard": true,
+    "reviewerDashboardE2e": true,
     "webgpuHardwareWorkflow": true,
     "webgpuHardwareE2e": true,
     "distIndex": true,
@@ -2436,6 +2442,7 @@
     "webgpuHardwareCommand": true,
     "webgpuHardwareValidateCommand": true,
     "gpuBenchmarkLadderCommand": true,
+    "gpuAdapterMatrixCommand": true,
     "reviewerKitCommand": true,
     "gpuScaleCommand": true,
     "benchmarkMemoryScript": true,
@@ -2443,6 +2450,7 @@
     "ciRunsGpuScale": true,
     "webgpuWorkflowRunsValidation": true,
     "webgpuWorkflowRunsBenchmarkLadder": true,
+    "webgpuWorkflowRunsAdapterMatrix": true,
     "ciRunsReviewerKit": true,
     "ciRunsVerify": true,
     "mainRunsSlowTier": true,
@@ -2454,6 +2462,14 @@
     "chaosAccelerationContracts": true,
     "fullSpectrumGpuPromotion": true,
     "clvFtleGpuPromotion": true,
+    "nChainGpuPromotion": true,
+    "npmOidcPublishing": true,
+    "slsaAttestation": true,
+    "publicationStatusReport": true,
+    "npmPublished": false,
+    "zenodoPublished": false,
+    "githubReleasePublished": true,
+    "pagesPublished": false,
     "arnoldiSchurFloquet": true
   },
   "items": [
@@ -2527,13 +2543,14 @@
         "CLV, full-spectrum, and FTLE acceleration promotion contracts are executable comparison functions",
         "4D double-pendulum full-spectrum WebGPU candidate passed the hardware CPU-oracle promotion gate",
         "4D double-pendulum CLV WebGPU candidate passed the hardware CPU-oracle promotion gate",
-        "4D double-pendulum variational-FTLE WebGPU candidate passed the hardware CPU-oracle promotion gate"
+        "4D double-pendulum variational-FTLE WebGPU candidate passed the hardware CPU-oracle promotion gate",
+        "6D planar N-chain tiled STM/QR/CLV/FTLE candidate passed the hardware CPU-f64 oracle gate"
       ],
       "remaining": []
     },
     {
       "area": "GPU and scale validation",
-      "status": "done",
+      "status": "partial",
       "evidence": [
         "npm run validate:gpu-scale exists",
         "reports/gpu-scale-validation.md exists",
@@ -2541,7 +2558,7 @@
         "ensemble f32-candidate reduction passes the CPU f64 oracle comparison",
         "CI runs validate:gpu-scale",
         "self-hosted WebGPU hardware workflow exists and fails when a real adapter is absent",
-        "hardware e2e compares GPU-side ensemble reduction, full-spectrum, CLV, and variational-FTLE promotion with the CPU oracle",
+        "hardware e2e compares GPU-side ensemble reduction, full-spectrum, CLV, variational-FTLE, and N-chain STM/QR promotion with CPU f64",
         "npm run validate:webgpu-hardware exists",
         "npm run benchmark:gpu-ladder exists",
         "self-hosted WebGPU workflow writes the hardware validation report",
@@ -2550,17 +2567,21 @@
         "hardware WebGPU validation report records full-spectrum backend=webgpu and comparison pass",
         "hardware WebGPU validation report records CLV backend=webgpu and comparison pass",
         "hardware WebGPU validation report records variational-FTLE backend=webgpu and comparison pass",
+        "hardware WebGPU validation report records N-chain STM/QR backend=webgpu and comparison pass",
         "reports/gpu-benchmark-ladder.md records adapter metadata, horizon drift, and promotion metrics",
-        "reports/gpu-benchmark-ladder.json records status=pass across reductions, full-spectrum, CLV, and variational-FTLE gates",
+        "reports/gpu-benchmark-ladder.json records status=pass across reductions, 4D diagnostics, and N-chain STM/QR gates",
+        "multi-adapter matrix records 1/3 Intel/NVIDIA/AMD vendor classes",
         "current contract treats CPU f64 as the scientific oracle; WebGPU may accelerate only after agreement or fallback"
       ],
-      "remaining": []
+      "remaining": [
+        "Register physical NVIDIA and AMD self-hosted WebGPU runners and collect passing vendor ladder artifacts"
+      ]
     },
     {
       "area": "Testing and browser coverage",
       "status": "done",
       "evidence": [
-        "944/944 unit tests across 142 files",
+        "949/949 unit tests across 143 files",
         "unit tests cover integrators, energy drift, determinism, JSON import validation, edge cases, chaos, visualization, repro packages",
         "quick, slow, and full test tiers are wired into PR/mainline workflows",
         "coverage scope guard catches new source files missing from the v8 coverage map",
@@ -2600,6 +2621,23 @@
       "remaining": []
     },
     {
+      "area": "Supply chain and external publication",
+      "status": "partial",
+      "evidence": [
+        "npm workflow uses tokenless OIDC trusted publishing with an exact-version guard",
+        "release workflow emits SLSA/in-toto build provenance and CycloneDX SBOM attestations with actions/attest@v4",
+        "GitHub release resolves publicly",
+        "Pages reviewer dashboard not yet deployed",
+        "npm package version is not published",
+        "public Zenodo DOI is not minted"
+      ],
+      "remaining": [
+        "Configure npm trusted publisher for publish-npm.yml/environment npm or supply an owner token for the first publish",
+        "Authenticate Zenodo, publish the deposition, then run npm run doi:sync",
+        "Deploy the current reviewer.html build through Pages"
+      ]
+    },
+    {
       "area": "Documentation and portfolio readiness",
       "status": "done",
       "evidence": [
@@ -2611,6 +2649,8 @@
         "one-page release PDF exists",
         "30-second walkthrough GIF exists",
         "GitHub Pages workflow exists",
+        "Pages build includes the JSON-backed reviewer dashboard",
+        "reviewer dashboard evidence dialog, tabs, and ledger have browser coverage",
         "mainline full-validation workflow exists",
         "nightly mutation workflow exists",
         "release artifact workflow exists",
@@ -2620,7 +2660,7 @@
         "TypeDoc API docs exist at docs/api/index.html"
       ],
       "remaining": [
-        "External DOI minting and npm publish remain owner-authenticated release actions, not local CI actions"
+        "External npm publication and Zenodo DOI are tracked separately in reports/publication-status.json"
       ]
     }
   ]

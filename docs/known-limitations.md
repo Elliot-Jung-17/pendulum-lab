@@ -2,7 +2,8 @@
 
 ## Current Limitations
 
-- **WebGPU hardware lane requires a WebGPU-capable Chrome/runner**: the CPU f64 reduction oracle, f32-candidate comparison gate, GPU-side reduction function, hardware Playwright spec, and report writer are implemented (`compareEnsembleStatistics`, `webgpuEnsembleStatistics`, `e2e/webgpu-hardware-reductions.spec.ts`, `scripts/webgpu-hardware-validation.ts`, `reports/gpu-scale-validation.md`, `reports/webgpu-hardware-validation.md`). CI execution still requires an owner-provisioned runner labelled `webgpu`.
+- **WebGPU evidence is adapter-specific**: Intel hardware currently passes reductions, 4D full-spectrum/CLV/FTLE, and the 6D N-chain STM/QR gate. The vendor matrix remains partial until physical NVIDIA and AMD runners upload passing ladder artifacts; software adapters are not accepted.
+- **N-chain GPU is a hybrid variational path**: for planar chains up to N=8, CPU f64 integrates the nonlinear reference trajectory and constructs the central-difference Jacobian tape. WebGPU f32 performs tiled STM propagation, QR tape, Ginelli backward solves, and the singular-value FTLE estimate. A same-tape CPU f64 oracle controls promotion. Full nonlinear N-chain trajectory/Jacobian generation on GPU is not claimed.
 - **Visual regression golden baselines**: Chromium/Windows `toHaveScreenshot` baselines are version-controlled for `npm run test:visual`. The Ubuntu mainline CI keeps visual snapshots out of its default browser gate until Linux baselines are generated on a Linux runner and committed.
 - **MATLAB / Julia cross-checks optional and unpinned**: the Python/SciPy/SymPy stack is pinned via `requirements.txt` and `Dockerfile`; MATLAB and Julia comparisons remain manual and unpinned.
 - **Browser memory metrics Chromium-only**: `performance.memory` is a Chromium extension; Firefox/WebKit report `undefined`.

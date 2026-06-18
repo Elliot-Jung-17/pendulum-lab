@@ -1,12 +1,12 @@
 {
   "schemaVersion": "pendulum-release-readiness/v1",
-  "generatedAt": "2026-06-18T12:28:52.631Z",
+  "generatedAt": "2026-06-18T17:08:15.236Z",
   "status": "ready-for-owner-publish",
   "externalPublishSteps": [
-    "Enable GitHub Pages for the repository if it is not already enabled.",
-    "Create a GitHub release tag; Zenodo mints the DOI after the repo is enabled in Zenodo.",
-    "Run the manual npm workflow with dry-run=false after adding the NPM_TOKEN repository secret.",
-    "Attach reports/release-one-page.pdf and reports/walkthrough-30s.gif to the release notes."
+    "Deploy reviewer.html through GitHub Pages and verify reports/publication-status.json.",
+    "Configure the npm trusted publisher for publish-npm.yml and environment npm, then dispatch dry-run=false.",
+    "Run npm run zenodo:publish with ZENODO_TOKEN, then npm run doi:sync.",
+    "Verify the GitHub SLSA/SBOM attestations with gh attestation verify."
   ],
   "artifacts": [
     {
@@ -15,7 +15,7 @@
       "required": true,
       "available": true,
       "hash": "119b13b40087a7",
-      "note": "Zenodo DOI metadata is present; actual DOI minting requires a GitHub release and Zenodo account link."
+      "note": "Zenodo metadata and authenticated deposition command are present."
     },
     {
       "id": "pages-workflow",
@@ -26,12 +26,27 @@
       "note": "GitHub Pages deploy workflow is present."
     },
     {
+      "id": "reviewer-dashboard",
+      "path": "reviewer.html",
+      "required": true,
+      "available": true,
+      "note": "Pages reviewer console reads report JSON directly."
+    },
+    {
       "id": "npm-workflow",
       "path": ".github/workflows/publish-npm.yml",
       "required": true,
       "available": true,
-      "hash": "0f4aeccb4bc5ac",
-      "note": "Manual npm publish workflow is present; live publish requires an NPM_TOKEN repository secret."
+      "hash": "1e71d58db24850",
+      "note": "Manual npm workflow uses OIDC trusted publishing and automatic provenance."
+    },
+    {
+      "id": "attestation-workflow",
+      "path": ".github/workflows/release.yml",
+      "required": true,
+      "available": true,
+      "hash": "1f608d0b394714",
+      "note": "Release workflow emits SLSA/in-toto provenance plus a CycloneDX SBOM attestation."
     },
     {
       "id": "paper-pdf",
@@ -45,7 +60,7 @@
       "path": "reports/reviewer-kit-manifest.json",
       "required": true,
       "available": true,
-      "hash": "126afcaaef6f32",
+      "hash": "0f727f3f087da8",
       "note": "Reviewer kit manifest exists."
     },
     {
@@ -53,7 +68,7 @@
       "path": "reports/webgpu-hardware-validation.md",
       "required": false,
       "available": true,
-      "hash": "1198fdeaebb1c4",
+      "hash": "06df9b5b93825f",
       "note": "Real WebGPU adapter validation report exists when run on a hardware target."
     },
     {
@@ -61,7 +76,7 @@
       "path": "reports/gpu-benchmark-ladder.md",
       "required": true,
       "available": true,
-      "hash": "03222353ffdfa8",
+      "hash": "008886fa948d93",
       "note": "Hardware GPU benchmark ladder records adapter metadata, f32/f64 drift, and CPU-oracle promotion metrics."
     },
     {
@@ -69,8 +84,32 @@
       "path": "reports/gpu-benchmark-ladder.json",
       "required": true,
       "available": true,
-      "hash": "1d216177465ecd",
+      "hash": "1df632f7f683b7",
       "note": "Machine-readable GPU benchmark ladder for release artifacts."
+    },
+    {
+      "id": "gpu-adapter-matrix",
+      "path": "reports/gpu-adapter-matrix.json",
+      "required": true,
+      "available": true,
+      "hash": "0156e97f3461c7",
+      "note": "Physical Intel/NVIDIA/AMD evidence matrix; missing hardware remains explicit."
+    },
+    {
+      "id": "publication-status",
+      "path": "reports/publication-status.json",
+      "required": true,
+      "available": true,
+      "hash": "03c891a6746610",
+      "note": "Public registry, DOI, release, and Pages resolution audit."
+    },
+    {
+      "id": "npm-pack-dry-run",
+      "path": "reports/npm-pack-dry-run.json",
+      "required": true,
+      "available": true,
+      "hash": "17034960483fba",
+      "note": "Exact npm tarball integrity, size, and included-file inventory from a successful dry run."
     },
     {
       "id": "one-page-pdf",

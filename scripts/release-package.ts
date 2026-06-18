@@ -31,14 +31,38 @@ function pdfEscape(text: string): string {
   return text.replaceAll('\\', '\\\\').replaceAll('(', '\\(').replaceAll(')', '\\)');
 }
 
+function wrapPdfLines(lines: readonly string[], maxCharacters = 88): string[] {
+  const wrapped: string[] = [];
+  for (const sourceLine of lines) {
+    if (!sourceLine.trim()) {
+      wrapped.push('');
+      continue;
+    }
+    const words = sourceLine.split(/\s+/);
+    let line = '';
+    for (const word of words) {
+      const candidate = line ? `${line} ${word}` : word;
+      if (candidate.length <= maxCharacters) {
+        line = candidate;
+      } else {
+        if (line) wrapped.push(line);
+        line = word;
+      }
+    }
+    if (line) wrapped.push(line);
+  }
+  return wrapped;
+}
+
 function buildOnePagePdf(lines: readonly string[]): Buffer {
+  const bodyLines = wrapPdfLines(lines.slice(1), 88).slice(0, 40);
   const content = [
     'BT',
     '/F1 18 Tf',
     '72 748 Td',
     `(${pdfEscape(lines[0] ?? 'Pendulum Lab Reviewer Kit')}) Tj`,
-    '/F1 10 Tf',
-    ...lines.slice(1, 34).map((line) => `0 -18 Td (${pdfEscape(line)}) Tj`),
+    '/F1 9.5 Tf',
+    ...bodyLines.map((line) => `0 -16 Td (${pdfEscape(line)}) Tj`),
     'ET'
   ].join('\n');
   const objects = [
@@ -216,8 +240,8 @@ const summaryLines = [
   'Flagship: Melnikov threshold vs period-doubling onset gap map.',
   'Reviewer path: npm run validate:gpu-scale; npm run validate:webgpu-hardware; npm run flagship:certify; npm run flagship:external; npm run reviewer:kit.',
   'Trust model: every headline number carries source, params, uncertainty, reproduce command, artifact hash, and caveat.',
-  'GPU rule: accelerated results must match CPU f64 or fail closed to CPU; benchmark ladder records adapter metadata and horizon drift.',
-  'Release surfaces: GitHub Pages workflow, manual npm publish workflow, Zenodo metadata, paper PDF, reviewer manifest.',
+  'GPU rule: 4D and N-chain accelerated results must match CPU f64 or fail closed; the vendor matrix never simulates missing hardware.',
+  'Release surfaces: Pages reviewer console, npm OIDC provenance, Zenodo deposition API, SLSA/SBOM attestations, and paper PDF.',
   '',
   `Reviewer manifest hash: ${reviewerManifestText ? hashText(reviewerManifestText).slice(0, 16) : 'missing'}`,
   `Scorecard hash: ${scorecardText ? hashText(scorecardText).slice(0, 16) : 'missing'}`,
@@ -230,14 +254,19 @@ await writeFile('reports/walkthrough-30s.gif', buildWalkthroughGif());
 await writeFile('reports/walkthrough-storyboard.svg', storyboardSvg(), 'utf8');
 
 const artifactSpecs = [
-  ['zenodo-metadata', '.zenodo.json', true, 'Zenodo DOI metadata is present; actual DOI minting requires a GitHub release and Zenodo account link.'],
+  ['zenodo-metadata', '.zenodo.json', true, 'Zenodo metadata and authenticated deposition command are present.'],
   ['pages-workflow', '.github/workflows/pages.yml', true, 'GitHub Pages deploy workflow is present.'],
-  ['npm-workflow', '.github/workflows/publish-npm.yml', true, 'Manual npm publish workflow is present; live publish requires an NPM_TOKEN repository secret.'],
+  ['reviewer-dashboard', 'reviewer.html', true, 'Pages reviewer console reads report JSON directly.'],
+  ['npm-workflow', '.github/workflows/publish-npm.yml', true, 'Manual npm workflow uses OIDC trusted publishing and automatic provenance.'],
+  ['attestation-workflow', '.github/workflows/release.yml', true, 'Release workflow emits SLSA/in-toto provenance plus a CycloneDX SBOM attestation.'],
   ['paper-pdf', 'paper/paper.pdf', true, 'Flagship paper PDF exists.'],
   ['reviewer-manifest', 'reports/reviewer-kit-manifest.json', true, 'Reviewer kit manifest exists.'],
   ['webgpu-hardware-validation', 'reports/webgpu-hardware-validation.md', false, 'Real WebGPU adapter validation report exists when run on a hardware target.'],
   ['gpu-benchmark-ladder', 'reports/gpu-benchmark-ladder.md', true, 'Hardware GPU benchmark ladder records adapter metadata, f32/f64 drift, and CPU-oracle promotion metrics.'],
   ['gpu-benchmark-ladder-json', 'reports/gpu-benchmark-ladder.json', true, 'Machine-readable GPU benchmark ladder for release artifacts.'],
+  ['gpu-adapter-matrix', 'reports/gpu-adapter-matrix.json', true, 'Physical Intel/NVIDIA/AMD evidence matrix; missing hardware remains explicit.'],
+  ['publication-status', 'reports/publication-status.json', true, 'Public registry, DOI, release, and Pages resolution audit.'],
+  ['npm-pack-dry-run', 'reports/npm-pack-dry-run.json', true, 'Exact npm tarball integrity, size, and included-file inventory from a successful dry run.'],
   ['one-page-pdf', 'reports/release-one-page.pdf', true, 'One-page reviewer PDF generated locally.'],
   ['walkthrough-gif', 'reports/walkthrough-30s.gif', true, 'Thirty-second GIF walkthrough generated locally.'],
   ['walkthrough-storyboard', 'reports/walkthrough-storyboard.svg', false, 'Editable storyboard companion for the GIF.']
@@ -255,10 +284,10 @@ const manifest = {
   generatedAt: new Date().toISOString(),
   status: missingRequired.length ? 'missing-required' : 'ready-for-owner-publish',
   externalPublishSteps: [
-    'Enable GitHub Pages for the repository if it is not already enabled.',
-    'Create a GitHub release tag; Zenodo mints the DOI after the repo is enabled in Zenodo.',
-    'Run the manual npm workflow with dry-run=false after adding the NPM_TOKEN repository secret.',
-    'Attach reports/release-one-page.pdf and reports/walkthrough-30s.gif to the release notes.'
+    'Deploy reviewer.html through GitHub Pages and verify reports/publication-status.json.',
+    'Configure the npm trusted publisher for publish-npm.yml and environment npm, then dispatch dry-run=false.',
+    'Run npm run zenodo:publish with ZENODO_TOKEN, then npm run doi:sync.',
+    'Verify the GitHub SLSA/SBOM attestations with gh attestation verify.'
   ],
   artifacts
 };

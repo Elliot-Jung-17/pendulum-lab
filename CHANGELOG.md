@@ -2,7 +2,9 @@
 
 ## Unreleased
 
-### WebGPU CLV/FTLE promotion and GPU benchmark ladder (additive; suite 940 -> 944)
+## 10.35.0 - 2026-06-19
+
+### Certified WebGPU chaos pipeline and reviewer release (additive; suite 940 -> 949)
 
 The GPU acceleration claim now covers the missing chaos diagnostics without
 pretending beyond the verified scope.
@@ -25,6 +27,26 @@ pretending beyond the verified scope.
   correctness, full-spectrum horizon sensitivity, and CLV/FTLE promotion
   metrics. It is wired into the WebGPU hardware workflow and release readiness
   package.
+- **N-chain tiled STM/QR pipeline** (`src/runtime/gpuNChainVariational.ts`):
+  planar chains up to eight links use CPU-f64 trajectory/Jacobian tapes and
+  WebGPU f32 tangent propagation, QR tape, Ginelli backward solve, and FTLE
+  reduction. A 3-link/6D hardware run passes the same-run CPU oracle gate.
+- **Physical vendor evidence matrix** (`scripts/gpu-adapter-matrix.ts`): Intel,
+  NVIDIA, and AMD evidence is collected only from labelled hardware runners.
+  The release records Intel as passing and keeps unavailable vendors explicitly
+  missing rather than substituting a software adapter.
+- **Reviewer Console** (`reviewer.html`, `src/reviewer/`): a GitHub Pages entry
+  point reads the machine-readable flagship, GPU, release, and publication
+  reports and exposes their source, parameters, error, reproduce command, and
+  caveat in an evidence dialog.
+- **Publication and supply-chain closure**: npm trusted-publisher OIDC, exact
+  version guards, SLSA/in-toto provenance, CycloneDX SBOM attestation, an
+  authenticated Zenodo deposition client, DOI synchronization, and public
+  registry/DOI/Pages status auditing are now release-gated workflows.
+- **Paper appendix and reviewer artifacts**: the flagship PDF includes the
+  certified onset table, independent Python A_PD integration/Floquet checks,
+  caveat ledger, and Figure 1 hash cross-reference. The one-page reviewer PDF
+  and 30-second walkthrough are regenerated with the release manifest.
 
 Inverse-problem and uncertainty-quantification library extensions, a symmetry-breaking branch-following step, multiplicative-noise SDEs, reproducibility packaging, and build/line-ending hygiene — followed by **Neimark–Sacker torus continuation**, a **singularity-free embedded spherical-pendulum chart**, and **ensemble statistics**, then a **forward-list pass** that turns the library-only solvers into a full research toolchain: the **embedded spherical *chain*** (pole-clamp-free), the **NS-torus research instruments** (Arnold tongues, torus Lyapunov spectrum, spectral-convergence gate, SciPy cross-validation, Bifurcation-tab UI), **matrix-noise + adaptive SDE schemes**, a **structure-preservation drift profiler**, **transcritical** branch-switching surfacing, a **one-command reproduce pipeline**, expanded **mutation coverage**, and a **Research+ Lab tab** surfacing the inverse problem / PCE surrogate / SDE ensemble. All additive — the 595-test suite grows to 674 with no behavioural change to existing APIs.
 

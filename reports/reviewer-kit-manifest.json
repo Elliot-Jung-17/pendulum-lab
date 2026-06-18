@@ -1,6 +1,6 @@
 {
   "schemaVersion": "pendulum-reviewer-kit/v1",
-  "generatedAt": "2026-06-18T12:26:00.408Z",
+  "generatedAt": "2026-06-18T17:07:32.574Z",
   "flagship": {
     "id": "melnikov-gap-map",
     "shortName": "Melnikov gap map",
@@ -132,7 +132,39 @@
       "path": "reports/gpu-benchmark-ladder.md",
       "command": "npm run benchmark:gpu-ladder",
       "priority": "recommended",
-      "description": "Real-adapter GPU ladder with adapter metadata, f32/f64 horizon drift, and CLV/FTLE promotion metrics.",
+      "description": "Real-adapter GPU ladder with f32/f64 drift, 4D diagnostics, and N-chain STM/QR promotion metrics.",
+      "available": true
+    },
+    {
+      "id": "gpu-adapter-matrix",
+      "path": "reports/gpu-adapter-matrix.json",
+      "command": "npm run benchmark:gpu-matrix",
+      "priority": "recommended",
+      "description": "Intel/NVIDIA/AMD physical-adapter evidence matrix with explicit missing rows.",
+      "available": true
+    },
+    {
+      "id": "reviewer-dashboard",
+      "path": "reviewer.html",
+      "command": "npm run build",
+      "priority": "required",
+      "description": "GitHub Pages reviewer console that reads the machine-readable report artifacts.",
+      "available": true
+    },
+    {
+      "id": "publication-status",
+      "path": "reports/publication-status.json",
+      "command": "npm run release:status",
+      "priority": "recommended",
+      "description": "Public npm, Zenodo DOI, GitHub release, and Pages resolution audit.",
+      "available": true
+    },
+    {
+      "id": "npm-pack-dry-run",
+      "path": "reports/npm-pack-dry-run.json",
+      "command": "npm pack --dry-run --json",
+      "priority": "recommended",
+      "description": "Exact npm tarball coordinate, integrity digest, size, and included-file inventory.",
       "available": true
     },
     {

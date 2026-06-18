@@ -1,11 +1,11 @@
 {
-  "schemaVersion": "pendulum-gpu-scale-validation/v2",
-  "generatedAt": "2026-06-18T12:28:39.339Z",
+  "schemaVersion": "pendulum-gpu-scale-validation/v3",
+  "generatedAt": "2026-06-18T16:45:57.650Z",
   "hardwareWebGpuAvailable": false,
   "verdict": "hardware-webgpu-oracle-gates-passed",
   "hardwareEvidence": {
-    "schemaVersion": "pendulum-webgpu-hardware-validation/v1",
-    "generatedAt": "2026-06-18T12:22:04.275Z",
+    "schemaVersion": "pendulum-webgpu-hardware-validation/v2",
+    "generatedAt": "2026-06-18T16:45:41.770Z",
     "channel": "chrome",
     "url": "http://127.0.0.1:5173/",
     "status": "pass",
@@ -145,11 +145,42 @@
       "min": 2.6052379608154297,
       "max": 9.638538360595703,
       "caveat": "WebGPU f32 variational-STM FTLE field promoted after same-run CPU f64 oracle comparison."
+    },
+    "nChainVariational": {
+      "backend": "webgpu",
+      "comparison": {
+        "passed": true,
+        "clv": {
+          "target": "clv",
+          "passed": true,
+          "tolerances": {
+            "spectrum": 0.005,
+            "exponents": 0.2,
+            "angle": 0.4,
+            "field": 0.05,
+            "aggregate": 0.02
+          },
+          "metrics": {
+            "exponentMaxAbsDiff": 0.000002575877267929627,
+            "meanAngleAbsDiff": 0.00004180401381836951,
+            "minAngleAbsDiff": 0.00004218023114077596
+          },
+          "caveat": "Compares sign-invariant CLV summary quantities; individual vector signs and ordering must be handled by the caller."
+        },
+        "ftleAbsDiff": 6.480840992750814e-7,
+        "ftleTolerance": 0.16
+      },
+      "links": 3,
+      "dimension": 6,
+      "ftle": 7.877861499786377,
+      "cpuFtle": 7.877862147870476,
+      "method": "piecewise-jacobian-rk2-stm-qr",
+      "caveat": "N-chain WebGPU STM/QR/CLV/FTLE result promoted only after same-run CPU f64 Jacobian-tape comparison. Nonlinear trajectory integration and Jacobian construction remain CPU f64."
     }
   },
   "gpuBenchmarkLadder": {
-    "schemaVersion": "pendulum-gpu-benchmark-ladder/v1",
-    "generatedAt": "2026-06-18T12:28:02.860Z",
+    "schemaVersion": "pendulum-gpu-benchmark-ladder/v2",
+    "generatedAt": "2026-06-18T16:45:48.879Z",
     "channel": "chrome",
     "url": "http://127.0.0.1:5173/",
     "status": "pass",
@@ -189,8 +220,8 @@
           "steps": 40,
           "backend": "webgpu",
           "n": 25,
-          "gpuElapsedMs": 267.69999998807907,
-          "cpuElapsedMs": 3.099999964237213,
+          "gpuElapsedMs": 154.69999998807907,
+          "cpuElapsedMs": 5,
           "reductionComparison": {
             "passed": true,
             "nMatches": true,
@@ -230,8 +261,8 @@
           "steps": 80,
           "backend": "webgpu",
           "n": 25,
-          "gpuElapsedMs": 149.30000001192093,
-          "cpuElapsedMs": 3.599999964237213,
+          "gpuElapsedMs": 79.89999997615814,
+          "cpuElapsedMs": 2.600000023841858,
           "reductionComparison": {
             "passed": true,
             "nMatches": true,
@@ -271,8 +302,8 @@
           "steps": 160,
           "backend": "webgpu",
           "n": 25,
-          "gpuElapsedMs": 122.69999998807907,
-          "cpuElapsedMs": 8.399999976158142,
+          "gpuElapsedMs": 50.10000002384186,
+          "cpuElapsedMs": 3.899999976158142,
           "reductionComparison": {
             "passed": true,
             "nMatches": true,
@@ -319,7 +350,7 @@
         {
           "steps": 160,
           "backend": "webgpu",
-          "elapsedMs": 521.9000000357628,
+          "elapsedMs": 274.4000000357628,
           "comparison": {
             "target": "lyapunov-spectrum",
             "passed": true,
@@ -353,7 +384,7 @@
         {
           "steps": 320,
           "backend": "webgpu",
-          "elapsedMs": 86.89999997615814,
+          "elapsedMs": 64.19999998807907,
           "comparison": {
             "target": "lyapunov-spectrum",
             "passed": true,
@@ -448,7 +479,139 @@
       "min": 2.6052379608154297,
       "max": 9.638538360595703,
       "caveat": "WebGPU f32 variational-STM FTLE field promoted after same-run CPU f64 oracle comparison."
+    },
+    "nChainVariational": {
+      "backend": "webgpu",
+      "comparison": {
+        "passed": true,
+        "clv": {
+          "target": "clv",
+          "passed": true,
+          "tolerances": {
+            "spectrum": 0.005,
+            "exponents": 0.2,
+            "angle": 0.4,
+            "field": 0.05,
+            "aggregate": 0.02
+          },
+          "metrics": {
+            "exponentMaxAbsDiff": 0.000002575877267929627,
+            "meanAngleAbsDiff": 0.00004180401381836951,
+            "minAngleAbsDiff": 0.00004218023114077596
+          },
+          "caveat": "Compares sign-invariant CLV summary quantities; individual vector signs and ordering must be handled by the caller."
+        },
+        "ftleAbsDiff": 6.480840992750814e-7,
+        "ftleTolerance": 0.16
+      },
+      "links": 3,
+      "dimension": 6,
+      "ftle": 7.877861499786377,
+      "cpuFtle": 7.877862147870476,
+      "elapsedMs": 349.89999997615814,
+      "method": "piecewise-jacobian-rk2-stm-qr",
+      "caveat": "N-chain WebGPU STM/QR/CLV/FTLE result promoted only after same-run CPU f64 Jacobian-tape comparison. Nonlinear trajectory integration and Jacobian construction remain CPU f64."
     }
+  },
+  "gpuAdapterMatrix": {
+    "schemaVersion": "pendulum-gpu-adapter-matrix/v1",
+    "generatedAt": "2026-06-18T16:45:55.263Z",
+    "status": "partial",
+    "requiredVendors": [
+      "intel",
+      "nvidia",
+      "amd"
+    ],
+    "coverage": {
+      "passed": 1,
+      "required": 3,
+      "missing": 2,
+      "failed": 0
+    },
+    "rows": [
+      {
+        "vendor": "intel",
+        "status": "pass",
+        "source": "C:/Users/junge/Desktop/pendulum_lab_modular/reports/gpu-benchmark-ladder.json",
+        "generatedAt": "2026-06-18T16:45:48.879Z",
+        "adapter": {
+          "vendor": "intel",
+          "architecture": "xe-2lpg",
+          "device": "",
+          "description": "",
+          "features": [
+            "bgra8unorm-storage",
+            "chromium-experimental-multi-draw-indirect",
+            "chromium-experimental-timestamp-query-inside-passes",
+            "clip-distances",
+            "core-features-and-limits",
+            "depth-clip-control",
+            "depth32float-stencil8",
+            "dual-source-blending",
+            "float32-blendable",
+            "float32-filterable",
+            "indirect-first-instance",
+            "primitive-index",
+            "rg11b10ufloat-renderable",
+            "shader-f16",
+            "subgroups",
+            "texture-component-swizzle",
+            "texture-compression-bc",
+            "texture-compression-bc-sliced-3d",
+            "texture-formats-tier1",
+            "texture-formats-tier2",
+            "timestamp-query"
+          ],
+          "limits": {}
+        },
+        "nChainPassed": true,
+        "nChainDimension": 6,
+        "caveat": "Real-adapter ladder passed reductions, 4D diagnostics, and the N-chain STM/QR oracle gate."
+      },
+      {
+        "vendor": "nvidia",
+        "status": "missing",
+        "source": null,
+        "generatedAt": null,
+        "adapter": null,
+        "nChainPassed": false,
+        "nChainDimension": null,
+        "caveat": "No nvidia hardware ladder artifact was supplied. This row is not simulated or inferred."
+      },
+      {
+        "vendor": "amd",
+        "status": "missing",
+        "source": null,
+        "generatedAt": null,
+        "adapter": null,
+        "nChainPassed": false,
+        "nChainDimension": null,
+        "caveat": "No amd hardware ladder artifact was supplied. This row is not simulated or inferred."
+      }
+    ],
+    "reproduce": "npm run benchmark:gpu-matrix",
+    "collectionContract": {
+      "runnerLabels": [
+        [
+          "self-hosted",
+          "webgpu",
+          "intel"
+        ],
+        [
+          "self-hosted",
+          "webgpu",
+          "nvidia"
+        ],
+        [
+          "self-hosted",
+          "webgpu",
+          "amd"
+        ]
+      ],
+      "artifactName": "gpu-ladder-<vendor>",
+      "rule": "Only reports produced on a real adapter and passing same-run CPU f64 oracle gates count as vendor evidence."
+    },
+    "caveat": "The matrix is intentionally incomplete until missing physical vendor runners upload evidence. Software adapters do not satisfy this contract."
   },
   "contracts": [
     {
@@ -487,7 +650,7 @@
     {
       "id": "chaos-acceleration-contract",
       "cpuReference": "existing CPU CLV/full-spectrum/variational FTLE implementations",
-      "acceleratedPath": "src/runtime/gpuLyapunov.ts full-spectrum candidate plus src/runtime/gpuChaosPromotion.ts CLV and variational-FTLE candidates",
+      "acceleratedPath": "4D kernels plus src/runtime/gpuNChainVariational.ts tiled STM/QR/CLV/FTLE pipeline",
       "acceptanceRule": "GPU candidates must pass compareClvAcceleration / compareFtleFieldAcceleration / compareLyapunovSpectrumAcceleration against the CPU oracle before promotion.",
       "ciEvidence": [
         "tests/clv.test.ts",
@@ -496,7 +659,7 @@
         "tests/acceleration-contract.test.ts",
         "e2e/webgpu-hardware-reductions.spec.ts"
       ],
-      "caveat": "The 4D double-pendulum full-spectrum, CLV, and variational-FTLE WebGPU candidates are hardware-gated against CPU f64 oracles; broader N-chain GPU promotion remains a separate scope."
+      "caveat": "The 4D kernels and planar N-chain N<=8 hybrid pipeline are hardware-gated against CPU f64 oracles. N-chain nonlinear trajectory and Jacobian-tape construction remain CPU f64."
     }
   ],
   "cpuReference": {

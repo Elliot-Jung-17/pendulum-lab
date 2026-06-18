@@ -1,6 +1,6 @@
 # Memory Regression Report
 
-Generated: 2026-06-18T12:23:02.949Z
+Generated: 2026-06-18T16:54:19.887Z
 
 Status: PASS
 
@@ -9,7 +9,7 @@ Status: PASS
 | benchmark report | `reports/benchmark-report.json` |
 | baseline file | `reports/memory-baseline.json` |
 | current label | candidate |
-| current memory bytes | 12700000 |
+| current memory bytes | 13400000 |
 | baseline memory bytes | 11200000 |
 | allowed growth bytes | 50000000 |
-| delta bytes | 1500000 |
+| delta bytes | 2200000 |

@@ -62,6 +62,12 @@ interface WebGpuHardwareEvidence {
     backend?: string;
     comparison?: { passed?: boolean; metrics?: Record<string, number | boolean> } | null;
   };
+  nChainVariational?: {
+    backend?: string;
+    links?: number;
+    dimension?: number;
+    comparison?: { passed?: boolean; ftleAbsDiff?: number; clv?: { passed?: boolean } } | null;
+  };
 }
 
 interface GpuBenchmarkLadderEvidence {
@@ -79,13 +85,27 @@ interface GpuBenchmarkLadderEvidence {
   };
   clv?: { backend?: string; comparison?: { passed?: boolean; metrics?: Record<string, number | boolean> } | null } | null;
   variationalFtleField?: { backend?: string; comparison?: { passed?: boolean; metrics?: Record<string, number | boolean> } | null } | null;
+  nChainVariational?: {
+    backend?: string;
+    links?: number;
+    dimension?: number;
+    comparison?: { passed?: boolean; ftleAbsDiff?: number; clv?: { passed?: boolean } } | null;
+  } | null;
+}
+
+interface GpuAdapterMatrixEvidence {
+  status?: string;
+  coverage?: { passed?: number; required?: number; missing?: number; failed?: number };
+  rows?: Array<{ vendor?: string; status?: string; nChainPassed?: boolean; nChainDimension?: number | null }>;
+  caveat?: string;
 }
 
 const hardwareEvidence = await readJson<WebGpuHardwareEvidence>('reports/webgpu-hardware-validation.json');
 const gpuBenchmarkLadder = await readJson<GpuBenchmarkLadderEvidence>('reports/gpu-benchmark-ladder.json');
+const gpuAdapterMatrix = await readJson<GpuAdapterMatrixEvidence>('reports/gpu-adapter-matrix.json');
 const hasNavigatorGpu = typeof navigator !== 'undefined' && Boolean((navigator as unknown as { gpu?: unknown }).gpu);
 const summary = {
-  schemaVersion: 'pendulum-gpu-scale-validation/v2',
+  schemaVersion: 'pendulum-gpu-scale-validation/v3',
   generatedAt: new Date().toISOString(),
   hardwareWebGpuAvailable: hasNavigatorGpu,
   verdict: hardwareEvidence?.status === 'pass'
@@ -93,6 +113,7 @@ const summary = {
     : hasNavigatorGpu ? 'hardware-webgpu-path-available' : 'cpu-reference-mock-and-contract-gates-ready',
   hardwareEvidence,
   gpuBenchmarkLadder,
+  gpuAdapterMatrix,
   contracts: GPU_SCALE_VALIDATION_CONTRACTS,
   cpuReference: {
     ensemble: {
@@ -158,9 +179,12 @@ lines.push(
   `| hardware report full-spectrum oracle | ${hardwareEvidence?.lyapunovSpectrum?.backend ?? 'no report'} | 4 exponents | pass=${String(hardwareEvidence?.lyapunovSpectrum?.comparison?.passed ?? false)}, spectrumDiff=${typeof hardwareEvidence?.lyapunovSpectrum?.comparison?.metrics?.spectrumMaxAbsDiff === 'number' ? hardwareEvidence.lyapunovSpectrum.comparison.metrics.spectrumMaxAbsDiff.toExponential(3) : 'n/a'} |`,
   `| hardware report CLV oracle | ${hardwareEvidence?.clv?.backend ?? 'no report'} | 4 exponents | pass=${String(hardwareEvidence?.clv?.comparison?.passed ?? false)}, exponentDiff=${typeof hardwareEvidence?.clv?.comparison?.metrics?.exponentMaxAbsDiff === 'number' ? hardwareEvidence.clv.comparison.metrics.exponentMaxAbsDiff.toExponential(3) : 'n/a'} |`,
   `| hardware report variational-FTLE oracle | ${hardwareEvidence?.variationalFtleField?.backend ?? 'no report'} | 4x4 | pass=${String(hardwareEvidence?.variationalFtleField?.comparison?.passed ?? false)}, maxDiff=${typeof hardwareEvidence?.variationalFtleField?.comparison?.metrics?.fieldMaxAbsDiff === 'number' ? hardwareEvidence.variationalFtleField.comparison.metrics.fieldMaxAbsDiff.toExponential(3) : 'n/a'} |`,
+  `| hardware report N-chain STM/QR oracle | ${hardwareEvidence?.nChainVariational?.backend ?? 'no report'} | ${hardwareEvidence?.nChainVariational?.dimension ?? 'n/a'}D | pass=${String(hardwareEvidence?.nChainVariational?.comparison?.passed ?? false)}, CLV=${String(hardwareEvidence?.nChainVariational?.comparison?.clv?.passed ?? false)}, FTLE diff=${typeof hardwareEvidence?.nChainVariational?.comparison?.ftleAbsDiff === 'number' ? hardwareEvidence.nChainVariational.comparison.ftleAbsDiff.toExponential(3) : 'n/a'} |`,
   `| GPU benchmark ladder | ${gpuBenchmarkLadder?.status ?? 'no report'} | adapter | vendor=${gpuBenchmarkLadder?.adapter?.vendor ?? 'n/a'}, arch=${gpuBenchmarkLadder?.adapter?.architecture ?? 'n/a'} |`,
   `| GPU ladder ensemble reductions | ${gpuBenchmarkLadder?.ensemble?.allReductionComparisonsPassed ? 'pass' : 'missing/fail'} | horizons | maxMeanDrift=${typeof gpuBenchmarkLadder?.ensemble?.maxIntegrationMeanDrift === 'number' ? gpuBenchmarkLadder.ensemble.maxIntegrationMeanDrift.toExponential(3) : 'n/a'}, maxCovDrift=${typeof gpuBenchmarkLadder?.ensemble?.maxIntegrationCovarianceDrift === 'number' ? gpuBenchmarkLadder.ensemble.maxIntegrationCovarianceDrift.toExponential(3) : 'n/a'} |`,
   `| GPU ladder full-spectrum sensitivity | ${gpuBenchmarkLadder?.lyapunovSpectrum?.allPromotionComparisonsPassed ? 'pass' : 'missing/fail'} | horizons | adjacentShift=${typeof gpuBenchmarkLadder?.lyapunovSpectrum?.maxAdjacentSpectrumShift === 'number' ? gpuBenchmarkLadder.lyapunovSpectrum.maxAdjacentSpectrumShift.toExponential(3) : 'n/a'} |`,
+  `| GPU ladder N-chain STM/QR | ${gpuBenchmarkLadder?.nChainVariational?.backend ?? 'no report'} | ${gpuBenchmarkLadder?.nChainVariational?.dimension ?? 'n/a'}D | pass=${String(gpuBenchmarkLadder?.nChainVariational?.comparison?.passed ?? false)}, FTLE diff=${typeof gpuBenchmarkLadder?.nChainVariational?.comparison?.ftleAbsDiff === 'number' ? gpuBenchmarkLadder.nChainVariational.comparison.ftleAbsDiff.toExponential(3) : 'n/a'} |`,
+  `| physical adapter matrix | ${gpuAdapterMatrix?.status ?? 'no report'} | ${gpuAdapterMatrix?.coverage?.passed ?? 0}/${gpuAdapterMatrix?.coverage?.required ?? 3} vendors | missing=${gpuAdapterMatrix?.coverage?.missing ?? 3}, failed=${gpuAdapterMatrix?.coverage?.failed ?? 0} |`,
   `| flip basin | ${basin.backend} | ${basin.width}x${basin.height} | labelHash=${summary.cpuReference.basin.labelHash} |`,
   `| sweep lambda | ${sweep.backend} | ${sweep.width}x${sweep.height} | lambdaHash=${summary.cpuReference.sweep.lambdaHash} |`,
   `| CLV promotion gate | contract probe | 2 exponents | pass=${clvAccelerationProbe.passed}, exponentDiff=${Number(clvAccelerationProbe.metrics.exponentMaxAbsDiff).toExponential(3)} |`,
@@ -172,12 +196,13 @@ lines.push(
   '- `tests/gpu-ensemble.test.ts` verifies CPU fallback and forceCpu A/B control.',
   '- `tests/gpu-fields-validation.test.ts` installs a mock WebGPU device and proves accept/fallback behavior.',
   '- `tests/ensemble-statistics.test.ts` pins the f64 reduction oracle and the f32-candidate comparison gate.',
-  '- `e2e/webgpu-hardware-reductions.spec.ts` is the hardware-only gate: it fails unless a real adapter returns `backend=webgpu`, the GPU-side reduction matches the CPU oracle, and the WebGPU full-spectrum, CLV, and variational-FTLE candidates pass their CPU f64 promotion gates.',
-  '- `npm run benchmark:gpu-ladder` records adapter metadata, f32/f64 horizon drift, full-spectrum horizon sensitivity, and CLV/FTLE promotion metrics for release artifacts.',
+  '- `e2e/webgpu-hardware-reductions.spec.ts` is the hardware-only gate: it fails unless a real adapter returns `backend=webgpu`, the GPU-side reduction matches the CPU oracle, and the WebGPU full-spectrum, CLV, variational-FTLE, and N-chain STM/QR candidates pass their CPU f64 promotion gates.',
+  '- `npm run benchmark:gpu-ladder` records adapter metadata, f32/f64 horizon drift, full-spectrum horizon sensitivity, 4D CLV/FTLE metrics, and the 6D N-chain STM/QR promotion result.',
+  '- `npm run benchmark:gpu-matrix` accepts only physical Intel, NVIDIA, and AMD ladder artifacts; absent vendors remain explicit `missing` rows.',
   '',
   '## CLV / FTLE Promotion Gate',
   '',
-  'CLV, full-spectrum, and variational FTLE acceleration now has executable comparison contracts and 4D double-pendulum WebGPU candidates. A GPU path must emit the same public result schema, pass CPU oracle comparisons on representative regular/chaotic cases, attach Trust Inspector caveats, and fail closed to the CPU path when validation is unavailable.',
+  'CLV, full-spectrum, and variational FTLE acceleration now has executable comparison contracts, 4D double-pendulum WebGPU candidates, and a tiled N-chain STM/QR path validated at 6D. N-chain nonlinear trajectory integration and Jacobian construction remain CPU f64 by design; only the tangent propagation, QR tape, Ginelli backward solve, and FTLE reduction are GPU accelerated. Every GPU path must pass a same-run CPU oracle, attach Trust Inspector caveats, and fail closed when validation is unavailable.',
   ''
 );
 

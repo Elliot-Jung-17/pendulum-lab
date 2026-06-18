@@ -12,14 +12,17 @@ phonon analysis, correlation/multifractal dimensions, UPO/OGY control, the
 Newton-instrumented implicit midpoint) is documented in the CHANGELOG and is
 fully covered by the headless test suite.
 
-## Needs production GPU kernels
+## GPU scope that remains intentionally bounded
 
-- **Production GPU CLV/full-spectrum/FTLE kernels.** The CPU f64 oracle,
-  GPU-side ensemble reduction gate, and executable CLV/full-spectrum/FTLE
-  acceleration contracts are implemented and reported by
-  `npm run validate:gpu-scale`. What remains is a hardware candidate kernel for
-  each high-dimensional diagnostic that passes those contracts before it can
-  become a publication path.
+- **Beyond the validated planar N<=8 hybrid path.** Production WebGPU kernels
+  now cover the 4D full-spectrum/CLV/variational-FTLE diagnostics and a planar
+  N-chain tiled STM/QR/CLV/FTLE path. The N-chain path intentionally leaves the
+  nonlinear reference trajectory and Jacobian tape in CPU f64. Moving those
+  two stages to GPU, extending beyond 16 state dimensions, or adding spherical
+  chains requires a new CPU-oracle promotion campaign rather than a silent
+  widening of the current claim.
+- **Vendor breadth.** Intel evidence is recorded. Physical NVIDIA and AMD
+  runners are still required for a complete three-vendor matrix.
 
 ## Needs an external toolchain or license
 
@@ -52,13 +55,17 @@ fully covered by the headless test suite.
     machinery exists) but its *surfacing* is UI-bound; the headless spectrum can be
     added independently when prioritised.
 
-## Needs an external account or a release decision
+## Needs an external account
 
-- **npm publish**, **GitHub Pages activation**, **Binder/Colab launch configs**, and
-  **Zenodo DOI minting**. These require credentials and a "cut a release"
-  decision that is the maintainer's to make. The publish workflow, Pages deploy,
-  one-page PDF, walkthrough GIF/storyboard, and release-readiness manifest are
-  generated or wired; what remains is pulling the external release trigger.
+- **npm registry publication.** The OIDC workflow, exact-version guard, package
+  build, dry-run, and provenance contract are complete. npm still requires the
+  owner to configure `publish-npm.yml` as the trusted publisher (or authenticate
+  the first publish with an owner credential).
+- **Zenodo DOI minting.** The authenticated deposition/upload/publish command and
+  DOI synchronization guard are complete. A production `ZENODO_TOKEN` with
+  `deposit:write` and `deposit:actions` is still required.
+- **NVIDIA/AMD hardware evidence.** CI wiring exists, but physical runners cannot
+  be created from source code. Missing vendor rows remain explicit in the report.
 
 ## Deferred on correctness-risk grounds
 

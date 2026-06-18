@@ -50,7 +50,7 @@ let status: 'pass' | 'fail' = 'fail';
 let payload: Record<string, unknown> = {};
 
 interface WebGpuHardwareReport {
-  schemaVersion: 'pendulum-webgpu-hardware-validation/v1';
+  schemaVersion: 'pendulum-webgpu-hardware-validation/v2';
   generatedAt: string;
   channel: string;
   url: string;
@@ -99,6 +99,21 @@ interface WebGpuHardwareReport {
     max?: number;
     caveat?: string;
   };
+  nChainVariational?: {
+    backend?: string;
+    comparison?: {
+      passed?: boolean;
+      clv?: { passed?: boolean; metrics?: Record<string, number | boolean> };
+      ftleAbsDiff?: number;
+      ftleTolerance?: number;
+    } | null;
+    links?: number;
+    dimension?: number;
+    ftle?: number;
+    cpuFtle?: number;
+    method?: string;
+    caveat?: string;
+  };
   error?: string;
   /** Backwards-compatible top-level fields consumed by older scorecards. */
   backend?: string;
@@ -133,9 +148,11 @@ try {
     const ensembleModulePath = '/src/runtime/gpuEnsemble.ts';
     const spectrumModulePath = '/src/runtime/gpuLyapunov.ts';
     const promotionModulePath = '/src/runtime/gpuChaosPromotion.ts';
+    const nChainModulePath = '/src/runtime/gpuNChainVariational.ts';
     const mod = await import(/* @vite-ignore */ ensembleModulePath) as typeof import('../src/runtime/gpuEnsemble');
     const spectrumMod = await import(/* @vite-ignore */ spectrumModulePath) as typeof import('../src/runtime/gpuLyapunov');
     const promotionMod = await import(/* @vite-ignore */ promotionModulePath) as typeof import('../src/runtime/gpuChaosPromotion');
+    const nChainMod = await import(/* @vite-ignore */ nChainModulePath) as typeof import('../src/runtime/gpuNChainVariational');
     const params = { m1: 1, m2: 1, l1: 1, l2: 1, g: 9.81 };
     const initial = mod.ensembleGrid(5, [-1.1, 1.1]);
     const gpuRun = await mod.runDoublePendulumEnsemble(params, initial, { steps: 80, dt: 0.01 });
@@ -185,6 +202,20 @@ try {
         tolerances: { field: 0.12, aggregate: 0.08 }
       }
     );
+    const nChainPromotion = await nChainMod.promotedNChainVariational(
+      { masses: [1, 0.9, 0.8], lengths: [1, 0.85, 0.7], g: 9.81 },
+      [1.2, 0.7, -0.45, 0.12, -0.08, 0.05],
+      {
+        dt: 0.006,
+        renormEvery: 3,
+        forwardTransient: 3,
+        window: 8,
+        backwardTransient: 2,
+        clvTolerances: { exponents: 0.2, angle: 0.4 },
+        ftleTolerance: 0.16
+      },
+      0.01
+    );
     return {
       backend: gpuRun.backend,
       comparison,
@@ -220,6 +251,16 @@ try {
         min: ftlePromotion.field.min,
         max: ftlePromotion.field.max,
         caveat: ftlePromotion.caveat
+      },
+      nChainVariational: {
+        backend: nChainPromotion.backend,
+        comparison: nChainPromotion.comparison,
+        links: nChainPromotion.result.links,
+        dimension: nChainPromotion.result.dimension,
+        ftle: nChainPromotion.result.variationalFtle,
+        cpuFtle: nChainPromotion.cpuOracle.variationalFtle,
+        method: nChainPromotion.result.method,
+        caveat: nChainPromotion.caveat
       }
     };
   });
@@ -227,11 +268,13 @@ try {
   const lyapunovSpectrum = payload.lyapunovSpectrum as WebGpuHardwareReport['lyapunovSpectrum'] | undefined;
   const clv = payload.clv as WebGpuHardwareReport['clv'] | undefined;
   const variationalFtleField = payload.variationalFtleField as WebGpuHardwareReport['variationalFtleField'] | undefined;
+  const nChainVariational = payload.nChainVariational as WebGpuHardwareReport['nChainVariational'] | undefined;
   const ensemblePassed = ensemble?.backend === 'webgpu' && ensemble.comparison?.passed;
   const spectrumPassed = lyapunovSpectrum?.backend === 'webgpu' && lyapunovSpectrum.comparison?.passed;
   const clvPassed = clv?.backend === 'webgpu' && clv.comparison?.passed;
   const ftlePassed = variationalFtleField?.backend === 'webgpu' && variationalFtleField.comparison?.passed;
-  status = ensemblePassed && spectrumPassed && clvPassed && ftlePassed ? 'pass' : 'fail';
+  const nChainPassed = nChainVariational?.backend === 'webgpu' && nChainVariational.comparison?.passed;
+  status = ensemblePassed && spectrumPassed && clvPassed && ftlePassed && nChainPassed ? 'pass' : 'fail';
 } catch (error) {
   payload = { error: error instanceof Error ? error.message : String(error) };
 } finally {
@@ -241,7 +284,7 @@ try {
 
 await mkdir('reports', { recursive: true });
 const report: WebGpuHardwareReport = {
-  schemaVersion: 'pendulum-webgpu-hardware-validation/v1',
+  schemaVersion: 'pendulum-webgpu-hardware-validation/v2',
   generatedAt,
   channel,
   url,
@@ -263,6 +306,8 @@ const clvComparison = report.clv?.comparison;
 const clvMetrics = clvComparison?.metrics ?? {};
 const ftleComparison = report.variationalFtleField?.comparison;
 const ftleMetrics = ftleComparison?.metrics ?? {};
+const nChainComparison = report.nChainVariational?.comparison;
+const nChainClvMetrics = nChainComparison?.clv?.metrics ?? {};
 const lines = [
   '# WebGPU Hardware Validation',
   '',
@@ -279,6 +324,8 @@ const lines = [
   `CLV backend: \`${String(report.clv?.backend ?? 'n/a')}\``,
   '',
   `Variational-FTLE backend: \`${String(report.variationalFtleField?.backend ?? 'n/a')}\``,
+  '',
+  `N-chain variational backend: \`${String(report.nChainVariational?.backend ?? 'n/a')}\``,
   '',
   '## Ensemble Reduction',
   '',
@@ -318,8 +365,18 @@ const lines = [
   `| field max abs diff | ${typeof ftleMetrics.fieldMaxAbsDiff === 'number' ? ftleMetrics.fieldMaxAbsDiff.toExponential(3) : 'n/a'} |`,
   `| field mean abs diff | ${typeof ftleMetrics.fieldMeanAbsDiff === 'number' ? ftleMetrics.fieldMeanAbsDiff.toExponential(3) : 'n/a'} |`,
   '',
+  '## N-chain Tiled STM/QR Promotion',
+  '',
+  '| Metric | Value |',
+  '|---|---:|',
+  `| passed | ${String(nChainComparison?.passed ?? false)} |`,
+  `| links / dimension | ${String(report.nChainVariational?.links ?? 'n/a')} / ${String(report.nChainVariational?.dimension ?? 'n/a')} |`,
+  `| CLV exponent max abs diff | ${typeof nChainClvMetrics.exponentMaxAbsDiff === 'number' ? nChainClvMetrics.exponentMaxAbsDiff.toExponential(3) : 'n/a'} |`,
+  `| FTLE abs diff | ${nChainComparison?.ftleAbsDiff?.toExponential(3) ?? 'n/a'} |`,
+  `| method | ${String(report.nChainVariational?.method ?? 'n/a')} |`,
+  '',
   status === 'pass'
-    ? 'The on-device WebGPU ensemble reduction, full-spectrum Lyapunov, CLV, and variational-FTLE candidates matched the CPU f64 oracle within the declared f32 tolerances.'
+    ? 'The on-device WebGPU ensemble reduction, 4D chaos diagnostics, and N-chain tiled STM/QR candidate matched their CPU f64 oracles within the declared f32 tolerances.'
     : `Failure: ${String(report.error ?? 'comparison failed')}`,
   ''
 ];

@@ -37,6 +37,45 @@ interface Study {
   runtimeSeconds: number;
 }
 
+interface Certification {
+  generatedAt: string;
+  figureHash: string;
+  figureCaption: string;
+  reviewerAppendixNote: string;
+  crossing: { gamma: number; lower: number; upper: number };
+  rows: Array<{
+    gamma: number;
+    Ac: number;
+    Apd: number;
+    ratio: number;
+    onsetUncertainty: number;
+    ratioUncertainty: number;
+    rhoBelow: number;
+    rhoAbove: number;
+    caveat: string;
+  }>;
+  caveats: string[];
+}
+
+interface ExternalCheck {
+  generatedAt: string;
+  method: string;
+  maxAcAbsError: number;
+  apdChecksPassed: boolean;
+  apdChecks: Array<{
+    gamma: number;
+    reportedApd: number;
+    remeasuredApd: number;
+    absError: number;
+    rhoLow: number;
+    rhoHigh: number;
+    residualLow: number;
+    residualHigh: number;
+    passed: boolean;
+  }>;
+  caveat: string;
+}
+
 const W = 640;
 const H = 400;
 const MARGIN = { left: 64, right: 20, top: 18, bottom: 46 };
@@ -176,6 +215,8 @@ function esc(text: string): string {
 
 async function main(): Promise<void> {
   const study = JSON.parse(await readFile('reports/paper-study.json', 'utf8')) as Study;
+  const certification = JSON.parse(await readFile('reports/flagship-certification.json', 'utf8')) as Certification;
+  const external = JSON.parse(await readFile('reports/flagship-external-check.json', 'utf8')) as ExternalCheck;
   const ms = study.measurements;
   const pd = ms.filter((m) => m.lossType === 'period-doubling' && m.Apd !== null);
 
@@ -235,6 +276,9 @@ async function main(): Promise<void> {
     })
     .join('\n');
 
+  const certificationRows = certification.rows.map((row) => `<tr><td>${row.gamma.toFixed(2)}</td><td>${row.Ac.toFixed(6)}</td><td>${row.Apd.toFixed(6)}</td><td>${row.onsetUncertainty.toExponential(2)}</td><td>${row.ratio.toFixed(6)}</td><td>${row.rhoBelow.toFixed(5)}</td><td>${row.rhoAbove.toFixed(5)}</td><td>${esc(row.caveat)}</td></tr>`).join('\n');
+  const externalRows = external.apdChecks.map((row) => `<tr><td>${row.gamma.toFixed(2)}</td><td>${row.reportedApd.toFixed(8)}</td><td>${row.remeasuredApd.toFixed(8)}</td><td>${row.absError.toExponential(2)}</td><td>${row.rhoLow.toFixed(7)}</td><td>${row.rhoHigh.toFixed(7)}</td><td>${row.passed ? 'pass' : 'fail'}</td></tr>`).join('\n');
+
   const dtNote = study.dtSensitivity.absDelta !== null ? study.dtSensitivity.absDelta.toExponential(1) : 'n/a';
 
   const html = `<!DOCTYPE html>
@@ -258,7 +302,10 @@ async function main(): Promise<void> {
   th { background: #f0f0f0; }
   code { font-family: Consolas, monospace; font-size: 0.9em; background: #f4f4f4; padding: 1px 4px; }
   .refs p { font-size: 0.92rem; margin: 6px 0; text-align: left; }
-  @media print { main { padding-top: 12px; } h2 { page-break-after: avoid; } figure { page-break-inside: avoid; } }
+  .appendix { page-break-before: always; }
+  .appendix + .appendix { page-break-before: auto; margin-top: 30px; }
+  .artifact-ledger { font-family: Consolas, monospace; font-size: 0.82rem; }
+  @media print { main { padding-top: 12px; } h2 { page-break-after: avoid; } figure { page-break-inside: avoid; } thead { display: table-header-group; } tr { break-inside: avoid; } }
 </style>
 </head>
 <body>
@@ -282,7 +329,7 @@ async function main(): Promise<void> {
 <h2>3. Results</h2>
 <figure>
 ${fig1}
-<figcaption><strong>Figure 1.</strong> The analytic Melnikov threshold A<sub>c</sub>(γ) (red line) and the measured period-doubling onset A<sub>PD</sub>(γ) (green circles, Floquet-refined). The star is the published γ = 0.5 value 1.0663 (Baker &amp; Gollub); our measurement at that point is ${anchor.Apd?.toFixed(5) ?? '—'}. A<sub>c</sub> is exactly linear in γ; the measured cascade onset is not.</figcaption>
+<figcaption><strong>Figure 1.</strong> The analytic Melnikov threshold A<sub>c</sub>(γ) (red line) and the measured period-doubling onset A<sub>PD</sub>(γ) (green circles, Floquet-refined). The star is the published γ = 0.5 value 1.0663 (Baker &amp; Gollub); our measurement at that point is ${anchor.Apd?.toFixed(5) ?? '—'}. A<sub>c</sub> is exactly linear in γ; the measured cascade onset is not. Certification artifact: <code>reports/flagship-figure1.svg</code>, SHA-256 prefix <code>${certification.figureHash}</code>; numerical rows and uncertainty brackets are cross-referenced in Appendix A.</figcaption>
 </figure>
 <figure>
 ${fig2}
@@ -305,7 +352,40 @@ ${tableRows}
 <p>The 0–1 test values corroborate the structural picture: K ≈ 0 on the period-1 side everywhere, while above onset K depends on where 1.08·A<sub>PD</sub> falls relative to the cascade accumulation point and the periodic windows visible in Figure 3 — both outcomes occur in the table, as expected for a Feigenbaum scenario with embedded windows.</p>
 
 <h2>5. Limitations and reproducibility</h2>
-<p>The study fixes ω = 2/3 and follows a single attractor branch per γ (warm-started in A); coexisting attractors reached from other initial conditions may double elsewhere. At the lowest dampings the phase space is multistable enough that a finer warm-started march can hop basins before the doubling — at γ = 0.15 a basin-capture transition of the followed state was observed near A ≈ 0.49 (the orbit itself remains strongly stable there, ρ ≈ +0.29), below the verified doubling at ${(ms.find((m) => m.gamma === 0.15)?.Apd ?? 0.531).toFixed(3)}. The quoted A<sub>PD</sub> values are therefore specifically the ρ = −1 doublings of the primary oscillating branch, not necessarily the first event of any kind along a slow amplitude sweep. The Melnikov comparison concerns the first-order formula specifically — higher-order or numerical manifold computations would move A<sub>c</sub>. The full study regenerates with <code>npm run paper:study</code> (~${Math.round(study.runtimeSeconds / 60)} min) followed by <code>npm run paper:build</code>; the underlying engine, its 435+ unit tests, and the SymPy/SciPy cross-validations are in the same repository.</p>
+<p>The study fixes ω = 2/3 and follows a single attractor branch per γ (warm-started in A); coexisting attractors reached from other initial conditions may double elsewhere. At the lowest dampings the phase space is multistable enough that a finer warm-started march can hop basins before the doubling — at γ = 0.15 a basin-capture transition of the followed state was observed near A ≈ 0.49 (the orbit itself remains strongly stable there, ρ ≈ +0.29), below the verified doubling at ${(ms.find((m) => m.gamma === 0.15)?.Apd ?? 0.531).toFixed(3)}. The quoted A<sub>PD</sub> values are therefore specifically the ρ = −1 doublings of the primary oscillating branch, not necessarily the first event of any kind along a slow amplitude sweep. The Melnikov comparison concerns the first-order formula specifically — higher-order or numerical manifold computations would move A<sub>c</sub>. The full study regenerates with <code>npm run paper:study</code> (~${Math.round(study.runtimeSeconds / 60)} min) followed by <code>npm run flagship:certify</code>, <code>npm run flagship:external</code>, and <code>npm run paper:build</code>; the engine tests and independent symbolic/trajectory validations are in the same repository.</p>
+
+<section class="appendix">
+<h2>Appendix A. Certified onset localization</h2>
+<p>${esc(certification.reviewerAppendixNote)} The ratio crossing is localized to γ ∈ [${certification.crossing.lower.toFixed(8)}, ${certification.crossing.upper.toFixed(8)}], with point estimate ${certification.crossing.gamma.toFixed(8)}. The Figure 1 hash is <code>${certification.figureHash}</code>.</p>
+<table>
+<thead><tr><th>γ</th><th>A_c</th><th>A_PD</th><th>δA_PD</th><th>A_PD/A_c</th><th>ρ below</th><th>ρ above</th><th>caveat</th></tr></thead>
+<tbody>${certificationRows}</tbody>
+</table>
+</section>
+
+<section class="appendix">
+<h2>Appendix B. Independent Python A<sub>PD</sub> reproduction</h2>
+<p>${esc(external.method)} The analytic threshold agrees with maximum absolute error ${external.maxAcAbsError.toExponential(2)}. All selected period-doubling checks passed: <strong>${external.apdChecksPassed ? 'yes' : 'no'}</strong>.</p>
+<table>
+<thead><tr><th>γ</th><th>reported A_PD</th><th>Python A_PD</th><th>|Δ|</th><th>ρ low</th><th>ρ high</th><th>status</th></tr></thead>
+<tbody>${externalRows}</tbody>
+</table>
+<p><strong>Independent-check caveat.</strong> ${esc(external.caveat)}</p>
+</section>
+
+<section class="appendix">
+<h2>Appendix C. Artifact integrity and caveat ledger</h2>
+<table class="artifact-ledger">
+<thead><tr><th>Artifact</th><th>Reproduce</th><th>Cross-reference</th></tr></thead>
+<tbody>
+<tr><td>reports/paper-study.json</td><td>npm run paper:study</td><td>Figures 1-3, main table</td></tr>
+<tr><td>reports/flagship-certification.json</td><td>npm run flagship:certify</td><td>Figure 1 hash ${certification.figureHash}; Appendix A</td></tr>
+<tr><td>reports/flagship-external-check.json</td><td>npm run flagship:external</td><td>Appendix B</td></tr>
+<tr><td>paper/paper.pdf</td><td>npm run paper:build</td><td>This manuscript</td></tr>
+</tbody>
+</table>
+<p><strong>Caveat map.</strong> ${certification.caveats.map(esc).join(' ')}</p>
+</section>
 
 <h2 class="refs">References</h2>
 <div class="refs">

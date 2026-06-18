@@ -1,6 +1,6 @@
 # Flagship Certification
 
-Generated: 2026-06-18T12:22:29.586Z
+Generated: 2026-06-18T16:46:14.019Z
 
 Status: **CERTIFIED-WITH-CAVEATS**
 

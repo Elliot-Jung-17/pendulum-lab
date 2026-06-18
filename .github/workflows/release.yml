@@ -8,6 +8,12 @@ on:
     types: [published]
   workflow_dispatch:
 
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+  artifact-metadata: write
+
 jobs:
   release-artifacts:
     runs-on: ubuntu-latest
@@ -26,6 +32,29 @@ jobs:
       - run: npm run docs:api
       - run: npm run release:package
       - run: npm run audit:worldclass
+      - name: Pack public library
+        shell: bash
+        run: |
+          npm pack --json > reports/npm-pack.json
+          package_file="$(node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('reports/npm-pack.json')); process.stdout.write(p[0].filename)")"
+          echo "PACKAGE_FILE=$package_file" >> "$GITHUB_ENV"
+          sha256sum "$package_file" > reports/release-checksums.txt
+      - name: Generate CycloneDX SBOM
+        run: npm sbom --package-lock-only --sbom-format cyclonedx > reports/sbom.cdx.json
+      - name: Attest package build provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: ${{ env.PACKAGE_FILE }}
+      - name: Attest package SBOM
+        uses: actions/attest@v4
+        with:
+          subject-path: ${{ env.PACKAGE_FILE }}
+          sbom-path: reports/sbom.cdx.json
+      - name: Attach supply-chain artifacts to release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${GITHUB_REF_NAME}" "${PACKAGE_FILE}" reports/release-checksums.txt reports/sbom.cdx.json --clobber
       - uses: actions/upload-artifact@v4
         with:
           name: pendulum-lab-release
@@ -39,3 +68,7 @@ jobs:
             reports/release-one-page.pdf
             reports/walkthrough-30s.gif
             reports/walkthrough-storyboard.svg
+            reports/npm-pack.json
+            reports/release-checksums.txt
+            reports/sbom.cdx.json
+            *.tgz

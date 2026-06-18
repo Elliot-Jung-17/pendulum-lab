@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "pendulum-webgpu-hardware-validation/v1",
-  "generatedAt": "2026-06-18T12:28:36.119Z",
+  "schemaVersion": "pendulum-webgpu-hardware-validation/v2",
+  "generatedAt": "2026-06-18T16:45:41.770Z",
   "channel": "chrome",
   "url": "http://127.0.0.1:5173/",
   "status": "pass",
@@ -140,5 +140,36 @@
     "min": 2.6052379608154297,
     "max": 9.638538360595703,
     "caveat": "WebGPU f32 variational-STM FTLE field promoted after same-run CPU f64 oracle comparison."
+  },
+  "nChainVariational": {
+    "backend": "webgpu",
+    "comparison": {
+      "passed": true,
+      "clv": {
+        "target": "clv",
+        "passed": true,
+        "tolerances": {
+          "spectrum": 0.005,
+          "exponents": 0.2,
+          "angle": 0.4,
+          "field": 0.05,
+          "aggregate": 0.02
+        },
+        "metrics": {
+          "exponentMaxAbsDiff": 0.000002575877267929627,
+          "meanAngleAbsDiff": 0.00004180401381836951,
+          "minAngleAbsDiff": 0.00004218023114077596
+        },
+        "caveat": "Compares sign-invariant CLV summary quantities; individual vector signs and ordering must be handled by the caller."
+      },
+      "ftleAbsDiff": 6.480840992750814e-7,
+      "ftleTolerance": 0.16
+    },
+    "links": 3,
+    "dimension": 6,
+    "ftle": 7.877861499786377,
+    "cpuFtle": 7.877862147870476,
+    "method": "piecewise-jacobian-rk2-stm-qr",
+    "caveat": "N-chain WebGPU STM/QR/CLV/FTLE result promoted only after same-run CPU f64 Jacobian-tape comparison. Nonlinear trajectory integration and Jacobian construction remain CPU f64."
   }
 }

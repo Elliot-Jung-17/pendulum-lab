@@ -167,7 +167,35 @@ export const REVIEWER_KIT_ARTIFACTS: readonly ReviewerKitArtifact[] = [
     path: 'reports/gpu-benchmark-ladder.md',
     command: 'npm run benchmark:gpu-ladder',
     priority: 'recommended',
-    description: 'Real-adapter GPU ladder with adapter metadata, f32/f64 horizon drift, and CLV/FTLE promotion metrics.'
+    description: 'Real-adapter GPU ladder with f32/f64 drift, 4D diagnostics, and N-chain STM/QR promotion metrics.'
+  },
+  {
+    id: 'gpu-adapter-matrix',
+    path: 'reports/gpu-adapter-matrix.json',
+    command: 'npm run benchmark:gpu-matrix',
+    priority: 'recommended',
+    description: 'Intel/NVIDIA/AMD physical-adapter evidence matrix with explicit missing rows.'
+  },
+  {
+    id: 'reviewer-dashboard',
+    path: 'reviewer.html',
+    command: 'npm run build',
+    priority: 'required',
+    description: 'GitHub Pages reviewer console that reads the machine-readable report artifacts.'
+  },
+  {
+    id: 'publication-status',
+    path: 'reports/publication-status.json',
+    command: 'npm run release:status',
+    priority: 'recommended',
+    description: 'Public npm, Zenodo DOI, GitHub release, and Pages resolution audit.'
+  },
+  {
+    id: 'npm-pack-dry-run',
+    path: 'reports/npm-pack-dry-run.json',
+    command: 'npm pack --dry-run --json',
+    priority: 'recommended',
+    description: 'Exact npm tarball coordinate, integrity digest, size, and included-file inventory.'
   },
   {
     id: 'release-readiness',
@@ -241,10 +269,10 @@ export const GPU_SCALE_VALIDATION_CONTRACTS: readonly GpuScaleValidationContract
   {
     id: 'chaos-acceleration-contract',
     cpuReference: 'existing CPU CLV/full-spectrum/variational FTLE implementations',
-    acceleratedPath: 'src/runtime/gpuLyapunov.ts full-spectrum candidate plus src/runtime/gpuChaosPromotion.ts CLV and variational-FTLE candidates',
+    acceleratedPath: '4D kernels plus src/runtime/gpuNChainVariational.ts tiled STM/QR/CLV/FTLE pipeline',
     acceptanceRule: 'GPU candidates must pass compareClvAcceleration / compareFtleFieldAcceleration / compareLyapunovSpectrumAcceleration against the CPU oracle before promotion.',
     ciEvidence: ['tests/clv.test.ts', 'tests/ftle.test.ts', 'tests/lyapunov-spectrum-job.test.ts', 'tests/acceleration-contract.test.ts', 'e2e/webgpu-hardware-reductions.spec.ts'],
-    caveat: 'The 4D double-pendulum full-spectrum, CLV, and variational-FTLE WebGPU candidates are hardware-gated against CPU f64 oracles; broader N-chain GPU promotion remains a separate scope.'
+    caveat: 'The 4D kernels and planar N-chain N<=8 hybrid pipeline are hardware-gated against CPU f64 oracles. N-chain nonlinear trajectory and Jacobian-tape construction remain CPU f64.'
   }
 ] as const;
 

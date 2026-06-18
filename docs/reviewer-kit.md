@@ -26,6 +26,7 @@ npm run flagship:external
 npm run validate:gpu-scale
 npm run validate:webgpu-hardware
 npm run benchmark:gpu-ladder
+npm run benchmark:gpu-matrix
 npm run release:package
 npm run reviewer:kit
 ```
@@ -82,7 +83,9 @@ checks. `npm run validate:webgpu-hardware` writes
 available, using the same CPU reference rules as the self-hosted CI workflow.
 `npm run benchmark:gpu-ladder` writes `reports/gpu-benchmark-ladder.md` with
 adapter metadata, f32/f64 horizon drift, full-spectrum horizon sensitivity, and
-CLV/variational-FTLE promotion metrics.
+CLV/variational-FTLE promotion metrics, including the planar N-chain tiled
+STM/QR gate. `reports/gpu-adapter-matrix.md` keeps Intel/NVIDIA/AMD hardware
+coverage explicit.
 
 ## Release Packaging
 
@@ -93,5 +96,7 @@ npm run release:package
 ```
 
 It regenerates the one-page PDF, 30-second walkthrough GIF/storyboard, and
-release-readiness report. Zenodo DOI minting, GitHub Pages activation, and npm
-publication still need maintainer credentials and a release decision.
+release-readiness report. `reviewer.html` is the Pages evidence console;
+`reports/publication-status.json` records which public identifiers actually
+resolve. npm OIDC and Zenodo commands are implemented, but they cannot pass
+without the owner-side trusted-publisher configuration or Zenodo token.

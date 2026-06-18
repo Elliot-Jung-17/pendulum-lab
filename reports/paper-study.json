@@ -1,6 +1,6 @@
 {
  "schemaVersion": "paper-study/v1",
- "generatedAt": "2026-06-11T09:36:20.744Z",
+ "generatedAt": "2026-06-18T16:54:05.478Z",
  "driveFrequency": 0.6666666666666666,
  "dt": 0.005,
  "method": {
@@ -16838,5 +16838,5 @@
    }
   ]
  },
- "runtimeSeconds": 265.397
+ "runtimeSeconds": 470.712
 }

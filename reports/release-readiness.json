@@ -1,6 +1,6 @@
 {
   "schemaVersion": "pendulum-release-readiness/v1",
-  "generatedAt": "2026-06-18T10:26:59.930Z",
+  "generatedAt": "2026-06-18T11:43:10.643Z",
   "status": "ready-for-owner-publish",
   "externalPublishSteps": [
     "Enable GitHub Pages for the repository if it is not already enabled.",
@@ -45,7 +45,7 @@
       "path": "reports/reviewer-kit-manifest.json",
       "required": true,
       "available": true,
-      "hash": "05194bda465343",
+      "hash": "1a3068a00b1089",
       "note": "Reviewer kit manifest exists."
     },
     {
@@ -53,7 +53,7 @@
       "path": "reports/webgpu-hardware-validation.md",
       "required": false,
       "available": true,
-      "hash": "0ef63c37d40100",
+      "hash": "16b7765fa9d23a",
       "note": "Real WebGPU adapter validation report exists when run on a hardware target."
     },
     {

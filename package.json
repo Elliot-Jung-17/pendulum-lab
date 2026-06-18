@@ -1,6 +1,6 @@
 {
   "name": "pendulum-lab-v10",
-  "version": "10.34.0",
+  "version": "10.34.1",
   "private": false,
   "type": "module",
   "description": "Typed, modular Pendulum Lab V10 research platform for nonlinear pendulum dynamics.",

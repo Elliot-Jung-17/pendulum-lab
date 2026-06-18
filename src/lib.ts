@@ -274,3 +274,5 @@ export { hashText, csvCell, dataUrlByteEstimate } from './research/researchExpor
 // Ensembles
 export { runDoublePendulumEnsemble, ensembleGrid, ensembleStatistics, webgpuEnsembleStatistics, compareEnsembleStatistics } from './runtime/gpuEnsemble';
 export type { EnsembleOptions, EnsembleResult, EnsembleStatistics, EnsembleStatisticsComparison, EnsembleStatisticsTolerances } from './runtime/gpuEnsemble';
+export { promotedDoublePendulumLyapunovSpectrum, webgpuDoublePendulumLyapunovSpectrumCandidate } from './runtime/gpuLyapunov';
+export type { WebgpuLyapunovSpectrumCandidate, WebgpuLyapunovSpectrumOptions, WebgpuLyapunovSpectrumPromotion } from './runtime/gpuLyapunov';

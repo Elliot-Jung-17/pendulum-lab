@@ -1,6 +1,6 @@
 {
   "schemaVersion": "pendulum-webgpu-hardware-validation/v1",
-  "generatedAt": "2026-06-18T10:25:02.441Z",
+  "generatedAt": "2026-06-18T11:41:38.569Z",
   "channel": "chrome",
   "url": "http://127.0.0.1:5173/",
   "status": "pass",
@@ -24,5 +24,61 @@
   },
   "rmsSpreadGpu": 2.7608410199357043,
   "rmsSpreadCpu": 2.760840777970486,
-  "n": 25
+  "n": 25,
+  "ensemble": {
+    "backend": "webgpu",
+    "comparison": {
+      "passed": true,
+      "nMatches": true,
+      "tolerances": {
+        "mean": 0.0004,
+        "variance": 0.003,
+        "covariance": 0.003,
+        "rmsSpread": 0.003,
+        "flipFraction": 0
+      },
+      "maxMeanAbsDiff": 1.6653345369377348e-16,
+      "maxVarianceAbsDiff": 0.0000010824517786556243,
+      "maxCovarianceAbsDiff": 0.0000010824517786556243,
+      "rmsSpreadAbsDiff": 2.4196521808406146e-7,
+      "flipFractionAbsDiff": 0,
+      "caveat": "This validates ensemble reduction statistics only; trajectory integration and chaotic divergence still require their own CPU probe gates."
+    },
+    "rmsSpreadGpu": 2.7608410199357043,
+    "rmsSpreadCpu": 2.760840777970486,
+    "n": 25
+  },
+  "lyapunovSpectrum": {
+    "backend": "webgpu",
+    "comparison": {
+      "target": "lyapunov-spectrum",
+      "passed": true,
+      "tolerances": {
+        "spectrum": 0.1,
+        "exponents": 0.005,
+        "angle": 0.05,
+        "field": 0.05,
+        "aggregate": 0.12
+      },
+      "metrics": {
+        "spectrumMaxAbsDiff": 0.000004524102837577537,
+        "sumAbsDiff": 4.0721561900269876e-7,
+        "kaplanYorkeAbsDiff": 5.10891931870816e-7
+      },
+      "caveat": "Compares finite-time spectrum outputs for identical settings; does not certify a different integration horizon or seed."
+    },
+    "spectrum": [
+      0.4622645080089569,
+      -0.04176795855164528,
+      -0.07208041846752167,
+      -0.4007229208946228
+    ],
+    "cpuSpectrum": [
+      0.4622683084615795,
+      -0.041767963959451516,
+      -0.07208007799866793,
+      -0.4007274449974604
+    ],
+    "caveat": "WebGPU f32 full-spectrum result promoted after same-run CPU f64 oracle comparison; CPU-derived uncertainty estimates are retained."
+  }
 }

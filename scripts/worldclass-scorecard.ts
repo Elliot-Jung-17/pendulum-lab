@@ -53,7 +53,12 @@ const scripts = packageJson.scripts ?? {};
 const vitest = await readJson<{ numTotalTests?: number; numPassedTests?: number; testResults?: unknown[] }>('reports/vitest-results.json', {});
 const benchmark = await readJson<{ comparison?: { deltas?: unknown[] } }>('reports/benchmark-report.json', {});
 const gpuScaleValidation = await readJson<{ cpuReference?: { ensemble?: { f32ReductionOracle?: { passed?: boolean } } } }>('reports/gpu-scale-validation.json', {});
-const webgpuHardwareValidation = await readJson<{ status?: string; backend?: string }>('reports/webgpu-hardware-validation.json', {});
+const webgpuHardwareValidation = await readJson<{
+  status?: string;
+  backend?: string;
+  ensemble?: { backend?: string; comparison?: { passed?: boolean } };
+  lyapunovSpectrum?: { backend?: string; comparison?: { passed?: boolean } | null };
+}>('reports/webgpu-hardware-validation.json', {});
 const releaseReadiness = await readJson<{ status?: string }>('reports/release-readiness.json', {});
 const unitTestSummary = Number.isInteger(vitest.numTotalTests) && Array.isArray(vitest.testResults)
   ? `${vitest.numPassedTests ?? 0}/${vitest.numTotalTests} unit tests across ${vitest.testResults.length} files`
@@ -67,6 +72,7 @@ const storageSyncSource = await readText('src/app/parity/storage-sync.ts');
 const researchSessionStorageSource = await readText('src/app/parity/research-session-storage.ts');
 const certifiedWorkbenchSource = await readText('src/research/certifiedWorkbench.ts');
 const accelerationContractSource = await readText('src/chaos/accelerationContract.ts');
+const gpuLyapunovSource = await readText('src/runtime/gpuLyapunov.ts');
 const unitaryFloquetSource = await readText('src/research/unitaryFloquet.ts');
 const weightedLegacyCounts = Object.entries(legacy.counts)
   .filter(([key]) => (legacy.weights?.[key] ?? 1) > 0)
@@ -98,6 +104,9 @@ const has = {
   webgpuHardwareReport: await exists('reports/webgpu-hardware-validation.md'),
   webgpuHardwareJson: await exists('reports/webgpu-hardware-validation.json'),
   webgpuHardwarePass: webgpuHardwareValidation.status === 'pass' && webgpuHardwareValidation.backend === 'webgpu',
+  webgpuFullSpectrumPass: webgpuHardwareValidation.status === 'pass'
+    && webgpuHardwareValidation.lyapunovSpectrum?.backend === 'webgpu'
+    && webgpuHardwareValidation.lyapunovSpectrum?.comparison?.passed === true,
   mojibakeAudit: await exists('reports/mojibake-audit.md'),
   validation: await exists('reports/validation-report.md'),
   reference: await exists('reports/validation-reference.md'),
@@ -152,6 +161,7 @@ const has = {
   mainRunsReleasePackage: mainWorkflow.includes('npm run release:package'),
   releaseReadyStatus: releaseReadiness.status === 'ready-for-owner-publish',
   chaosAccelerationContracts: accelerationContractSource.includes('compareClvAcceleration') && accelerationContractSource.includes('compareFtleFieldAcceleration') && accelerationContractSource.includes('compareLyapunovSpectrumAcceleration'),
+  fullSpectrumGpuPromotion: gpuLyapunovSource.includes('promotedDoublePendulumLyapunovSpectrum') && gpuLyapunovSource.includes('webgpuDoublePendulumLyapunovSpectrumCandidate'),
   arnoldiSchurFloquet: unitaryFloquetSource.includes('complexUnitaryFloquetArnoldiSchurSpectrum')
 };
 
@@ -165,8 +175,8 @@ const benchmarkReady = has.benchmark && has.energy && benchmarkHasComparison;
 const flagshipReady = has.certifiedWorkbenchModule && has.flagshipDoc && certifiedWorkbenchSource.includes('melnikov-gap-map');
 const flagshipCertified = flagshipReady && has.flagshipCertifyCommand && has.flagshipCertification && has.flagshipFigure && has.flagshipExternalCommand && has.flagshipExternalCheck;
 const reviewerKitReady = flagshipCertified && has.reviewerKitDoc && has.reviewerKitScript && has.reviewerKitCommand && has.reviewerKitManifest && has.reviewerKitManifestMd;
-const gpuScaleReady = has.gpuScaleCommand && has.gpuScaleScript && has.gpuScaleReport && has.gpuScaleJson && has.gpuReductionOracle && has.ciRunsGpuScale && has.webgpuHardwareWorkflow && has.webgpuHardwareE2e && has.webgpuHardwareCommand && has.webgpuHardwareValidateCommand && has.webgpuWorkflowRunsValidation && has.webgpuHardwareReport && has.webgpuHardwareJson && has.webgpuHardwarePass;
-const chaosAccelerationReady = has.chaosAccelerationContracts;
+const gpuScaleReady = has.gpuScaleCommand && has.gpuScaleScript && has.gpuScaleReport && has.gpuScaleJson && has.gpuReductionOracle && has.ciRunsGpuScale && has.webgpuHardwareWorkflow && has.webgpuHardwareE2e && has.webgpuHardwareCommand && has.webgpuHardwareValidateCommand && has.webgpuWorkflowRunsValidation && has.webgpuHardwareReport && has.webgpuHardwareJson && has.webgpuHardwarePass && has.webgpuFullSpectrumPass;
+const chaosAccelerationReady = has.chaosAccelerationContracts && has.fullSpectrumGpuPromotion;
 const sparseFloquetReady = has.arnoldiSchurFloquet;
 const trustWorkspaceReady = has.trustInspectorUi && has.trustInspectorE2e && has.researchWorkspaceCard && has.researchWorkspaceList && has.researchProjectSessions;
 
@@ -240,9 +250,10 @@ const items: ScorecardItem[] = [
       'covariant Lyapunov vectors (Ginelli), 0-1 test, RQA, FTLE fields, basin entropy and the Wada grid test are implemented as tabs + library APIs',
       'every non-variational diagnostic reports an uncertainty estimate (bootstrap / block-resampled / regression CI)',
       has.gpuScaleReport ? 'gpu-scale validation report separates acceleration caveats from scientific claims' : 'gpu-scale validation report missing',
-      chaosAccelerationReady ? 'CLV, full-spectrum, and FTLE acceleration promotion contracts are executable comparison functions' : 'CLV/FTLE/full-spectrum acceleration contracts missing'
+      chaosAccelerationReady ? 'CLV, full-spectrum, and FTLE acceleration promotion contracts are executable comparison functions' : 'CLV/FTLE/full-spectrum acceleration contracts missing',
+      has.webgpuFullSpectrumPass ? '4D double-pendulum full-spectrum WebGPU candidate passed the hardware CPU-oracle promotion gate' : 'full-spectrum WebGPU hardware promotion evidence missing'
     ],
-    remaining: chaosAccelerationReady ? ['Production CLV/full-spectrum GPU kernels remain CPU-fallback until a hardware candidate passes the contract'] : ['Add executable CLV/FTLE/full-spectrum acceleration comparison contracts']
+    remaining: chaosAccelerationReady ? ['Production CLV and variational-FTLE GPU kernels remain CPU-fallback until hardware candidates pass the same contract'] : ['Add executable CLV/FTLE/full-spectrum acceleration comparison contracts']
   },
   {
     area: 'GPU and scale validation',
@@ -254,10 +265,11 @@ const items: ScorecardItem[] = [
       has.gpuReductionOracle ? 'ensemble f32-candidate reduction passes the CPU f64 oracle comparison' : 'ensemble reduction oracle result missing from gpu-scale validation JSON',
       has.ciRunsGpuScale ? 'CI runs validate:gpu-scale' : 'CI does not run validate:gpu-scale',
       has.webgpuHardwareWorkflow ? 'self-hosted WebGPU hardware workflow exists and fails when a real adapter is absent' : 'WebGPU hardware workflow missing',
-      has.webgpuHardwareE2e ? 'hardware e2e compares GPU-side ensemble reduction with the CPU oracle' : 'hardware GPU reduction e2e missing',
+      has.webgpuHardwareE2e ? 'hardware e2e compares GPU-side ensemble reduction and full-spectrum promotion with the CPU oracle' : 'hardware GPU reduction e2e missing',
       has.webgpuHardwareValidateCommand ? 'npm run validate:webgpu-hardware exists' : 'validate:webgpu-hardware command missing',
       has.webgpuWorkflowRunsValidation ? 'self-hosted WebGPU workflow writes the hardware validation report' : 'WebGPU workflow does not run validate:webgpu-hardware',
       has.webgpuHardwarePass ? 'reports/webgpu-hardware-validation.json records backend=webgpu and status=pass' : 'hardware WebGPU validation report is missing or not passing',
+      has.webgpuFullSpectrumPass ? 'hardware WebGPU validation report records full-spectrum backend=webgpu and comparison pass' : 'hardware full-spectrum promotion evidence missing',
       'current contract treats CPU f64 as the scientific oracle; WebGPU may accelerate only after agreement or fallback'
     ],
     remaining: gpuScaleReady ? [] : ['Run npm run validate:gpu-scale and npm run validate:webgpu-hardware, then wire both into CI/hardware WebGPU workflow']

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-18T10:27:08.671Z",
+  "generatedAt": "2026-06-18T11:43:17.170Z",
   "totals": {
     "done": 11,
     "partial": 0,
@@ -2390,6 +2390,7 @@
     "webgpuHardwareReport": true,
     "webgpuHardwareJson": true,
     "webgpuHardwarePass": true,
+    "webgpuFullSpectrumPass": true,
     "mojibakeAudit": true,
     "validation": true,
     "reference": true,
@@ -2444,6 +2445,7 @@
     "mainRunsReleasePackage": true,
     "releaseReadyStatus": true,
     "chaosAccelerationContracts": true,
+    "fullSpectrumGpuPromotion": true,
     "arnoldiSchurFloquet": true
   },
   "items": [
@@ -2514,10 +2516,11 @@
         "covariant Lyapunov vectors (Ginelli), 0-1 test, RQA, FTLE fields, basin entropy and the Wada grid test are implemented as tabs + library APIs",
         "every non-variational diagnostic reports an uncertainty estimate (bootstrap / block-resampled / regression CI)",
         "gpu-scale validation report separates acceleration caveats from scientific claims",
-        "CLV, full-spectrum, and FTLE acceleration promotion contracts are executable comparison functions"
+        "CLV, full-spectrum, and FTLE acceleration promotion contracts are executable comparison functions",
+        "4D double-pendulum full-spectrum WebGPU candidate passed the hardware CPU-oracle promotion gate"
       ],
       "remaining": [
-        "Production CLV/full-spectrum GPU kernels remain CPU-fallback until a hardware candidate passes the contract"
+        "Production CLV and variational-FTLE GPU kernels remain CPU-fallback until hardware candidates pass the same contract"
       ]
     },
     {
@@ -2530,10 +2533,11 @@
         "ensemble f32-candidate reduction passes the CPU f64 oracle comparison",
         "CI runs validate:gpu-scale",
         "self-hosted WebGPU hardware workflow exists and fails when a real adapter is absent",
-        "hardware e2e compares GPU-side ensemble reduction with the CPU oracle",
+        "hardware e2e compares GPU-side ensemble reduction and full-spectrum promotion with the CPU oracle",
         "npm run validate:webgpu-hardware exists",
         "self-hosted WebGPU workflow writes the hardware validation report",
         "reports/webgpu-hardware-validation.json records backend=webgpu and status=pass",
+        "hardware WebGPU validation report records full-spectrum backend=webgpu and comparison pass",
         "current contract treats CPU f64 as the scientific oracle; WebGPU may accelerate only after agreement or fallback"
       ],
       "remaining": []
@@ -2542,7 +2546,7 @@
       "area": "Testing and browser coverage",
       "status": "done",
       "evidence": [
-        "938/938 unit tests across 140 files",
+        "940/940 unit tests across 141 files",
         "unit tests cover integrators, energy drift, determinism, JSON import validation, edge cases, chaos, visualization, repro packages",
         "quick, slow, and full test tiers are wired into PR/mainline workflows",
         "coverage scope guard catches new source files missing from the v8 coverage map",

@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { compareClvAcceleration, compareFtleFieldAcceleration, compareLyapunovSpectrumAcceleration } from '../src/chaos/accelerationContract';
 import { compareEnsembleStatistics, ensembleGrid, ensembleStatistics, runDoublePendulumEnsemble, webgpuEnsembleStatistics } from '../src/runtime/gpuEnsemble';
 import { flipBasinField, sweepLambdaField } from '../src/runtime/gpuFields';
@@ -38,12 +38,34 @@ const ftleAccelerationProbe = compareFtleFieldAcceleration(
   { field: 0.01, aggregate: 0.01 }
 );
 
+async function readJson<T>(path: string): Promise<T | null> {
+  try {
+    return JSON.parse(await readFile(path, 'utf8')) as T;
+  } catch {
+    return null;
+  }
+}
+
+interface WebGpuHardwareEvidence {
+  status?: string;
+  generatedAt?: string;
+  ensemble?: { backend?: string; comparison?: { passed?: boolean; maxMeanAbsDiff?: number; maxCovarianceAbsDiff?: number } };
+  lyapunovSpectrum?: {
+    backend?: string;
+    comparison?: { passed?: boolean; metrics?: Record<string, number | boolean> } | null;
+  };
+}
+
+const hardwareEvidence = await readJson<WebGpuHardwareEvidence>('reports/webgpu-hardware-validation.json');
 const hasNavigatorGpu = typeof navigator !== 'undefined' && Boolean((navigator as unknown as { gpu?: unknown }).gpu);
 const summary = {
   schemaVersion: 'pendulum-gpu-scale-validation/v2',
   generatedAt: new Date().toISOString(),
   hardwareWebGpuAvailable: hasNavigatorGpu,
-  verdict: hasNavigatorGpu ? 'hardware-webgpu-path-available' : 'cpu-reference-mock-and-contract-gates-ready',
+  verdict: hardwareEvidence?.status === 'pass'
+    ? 'hardware-webgpu-oracle-gates-passed'
+    : hasNavigatorGpu ? 'hardware-webgpu-path-available' : 'cpu-reference-mock-and-contract-gates-ready',
+  hardwareEvidence,
   contracts: GPU_SCALE_VALIDATION_CONTRACTS,
   cpuReference: {
     ensemble: {
@@ -105,6 +127,8 @@ lines.push(
   `| ensemble | ${ensemble.backend} | ${ensemble.n} | rmsSpread=${stats.rmsSpread.toPrecision(5)}, flipFraction=${stats.flipFraction.toPrecision(4)} |`,
   `| ensemble reduction oracle | f32 candidate vs CPU f64 | ${ensemble.n} | pass=${reductionOracle.passed}, maxMeanDiff=${reductionOracle.maxMeanAbsDiff.toExponential(3)}, maxCovDiff=${reductionOracle.maxCovarianceAbsDiff.toExponential(3)} |`,
   `| GPU-side reduction oracle | ${hardwareReduction ? 'webgpu' : 'unavailable in this runtime'} | ${ensemble.n} | ${hardwareReductionOracle ? `pass=${hardwareReductionOracle.passed}, maxMeanDiff=${hardwareReductionOracle.maxMeanAbsDiff.toExponential(3)}` : 'requires real WebGPU adapter'} |`,
+  `| hardware report reduction oracle | ${hardwareEvidence?.ensemble?.backend ?? 'no report'} | 25 | pass=${String(hardwareEvidence?.ensemble?.comparison?.passed ?? false)}, maxMeanDiff=${typeof hardwareEvidence?.ensemble?.comparison?.maxMeanAbsDiff === 'number' ? hardwareEvidence.ensemble.comparison.maxMeanAbsDiff.toExponential(3) : 'n/a'} |`,
+  `| hardware report full-spectrum oracle | ${hardwareEvidence?.lyapunovSpectrum?.backend ?? 'no report'} | 4 exponents | pass=${String(hardwareEvidence?.lyapunovSpectrum?.comparison?.passed ?? false)}, spectrumDiff=${typeof hardwareEvidence?.lyapunovSpectrum?.comparison?.metrics?.spectrumMaxAbsDiff === 'number' ? hardwareEvidence.lyapunovSpectrum.comparison.metrics.spectrumMaxAbsDiff.toExponential(3) : 'n/a'} |`,
   `| flip basin | ${basin.backend} | ${basin.width}x${basin.height} | labelHash=${summary.cpuReference.basin.labelHash} |`,
   `| sweep lambda | ${sweep.backend} | ${sweep.width}x${sweep.height} | lambdaHash=${summary.cpuReference.sweep.lambdaHash} |`,
   `| CLV promotion gate | contract probe | 2 exponents | pass=${clvAccelerationProbe.passed}, exponentDiff=${Number(clvAccelerationProbe.metrics.exponentMaxAbsDiff).toExponential(3)} |`,
@@ -116,7 +140,7 @@ lines.push(
   '- `tests/gpu-ensemble.test.ts` verifies CPU fallback and forceCpu A/B control.',
   '- `tests/gpu-fields-validation.test.ts` installs a mock WebGPU device and proves accept/fallback behavior.',
   '- `tests/ensemble-statistics.test.ts` pins the f64 reduction oracle and the f32-candidate comparison gate.',
-  '- `e2e/webgpu-hardware-reductions.spec.ts` is the hardware-only gate: it fails unless a real adapter returns `backend=webgpu` and the GPU-side reduction matches the CPU oracle.',
+  '- `e2e/webgpu-hardware-reductions.spec.ts` is the hardware-only gate: it fails unless a real adapter returns `backend=webgpu`, the GPU-side reduction matches the CPU oracle, and the WebGPU full-spectrum candidate passes its CPU f64 promotion gate.',
   '',
   '## CLV / FTLE Promotion Gate',
   '',

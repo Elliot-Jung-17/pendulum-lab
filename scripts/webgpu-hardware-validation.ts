@@ -55,6 +55,30 @@ interface WebGpuHardwareReport {
   channel: string;
   url: string;
   status: 'pass' | 'fail';
+  ensemble?: {
+    backend?: string;
+    comparison?: {
+      passed?: boolean;
+      maxMeanAbsDiff?: number;
+      maxCovarianceAbsDiff?: number;
+      rmsSpreadAbsDiff?: number;
+    };
+    rmsSpreadGpu?: number;
+    rmsSpreadCpu?: number;
+    n?: number;
+  };
+  lyapunovSpectrum?: {
+    backend?: string;
+    comparison?: {
+      passed?: boolean;
+      metrics?: Record<string, number | boolean>;
+    } | null;
+    spectrum?: number[];
+    cpuSpectrum?: number[];
+    caveat?: string;
+  };
+  error?: string;
+  /** Backwards-compatible top-level fields consumed by older scorecards. */
   backend?: string;
   comparison?: {
     passed?: boolean;
@@ -65,7 +89,6 @@ interface WebGpuHardwareReport {
   rmsSpreadGpu?: number;
   rmsSpreadCpu?: number;
   n?: number;
-  error?: string;
 }
 
 try {
@@ -85,8 +108,10 @@ try {
     if (!adapter) {
       throw new Error('navigator.gpu.requestAdapter() returned null.');
     }
-    const modulePath = '/src/runtime/gpuEnsemble.ts';
-    const mod = await import(/* @vite-ignore */ modulePath) as typeof import('../src/runtime/gpuEnsemble');
+    const ensembleModulePath = '/src/runtime/gpuEnsemble.ts';
+    const spectrumModulePath = '/src/runtime/gpuLyapunov.ts';
+    const mod = await import(/* @vite-ignore */ ensembleModulePath) as typeof import('../src/runtime/gpuEnsemble');
+    const spectrumMod = await import(/* @vite-ignore */ spectrumModulePath) as typeof import('../src/runtime/gpuLyapunov');
     const params = { m1: 1, m2: 1, l1: 1, l2: 1, g: 9.81 };
     const initial = mod.ensembleGrid(5, [-1.1, 1.1]);
     const gpuRun = await mod.runDoublePendulumEnsemble(params, initial, { steps: 80, dt: 0.01 });
@@ -101,15 +126,45 @@ try {
       rmsSpread: 3e-3,
       flipFraction: 0
       });
+    const lyapunovPromotion = await spectrumMod.promotedDoublePendulumLyapunovSpectrum(
+      params,
+      [1.2, 0.7, 0.12, -0.04],
+      {
+        dt: 0.01,
+        steps: 320,
+        renormEvery: 8,
+        transientSteps: 40,
+        seed: 0x1234,
+        tolerances: { spectrum: 0.1, aggregate: 0.12 }
+      }
+    );
     return {
       backend: gpuRun.backend,
       comparison,
       rmsSpreadGpu: gpuStats.rmsSpread,
       rmsSpreadCpu: cpuStats.rmsSpread,
-      n: gpuStats.n
+      n: gpuStats.n,
+      ensemble: {
+        backend: gpuRun.backend,
+        comparison,
+        rmsSpreadGpu: gpuStats.rmsSpread,
+        rmsSpreadCpu: cpuStats.rmsSpread,
+        n: gpuStats.n
+      },
+      lyapunovSpectrum: {
+        backend: lyapunovPromotion.backend,
+        comparison: lyapunovPromotion.comparison,
+        spectrum: lyapunovPromotion.result.spectrum,
+        cpuSpectrum: lyapunovPromotion.cpuOracle.spectrum,
+        caveat: lyapunovPromotion.caveat
+      }
     };
   });
-  status = (payload.backend === 'webgpu' && (payload.comparison as { passed?: boolean } | undefined)?.passed) ? 'pass' : 'fail';
+  const ensemble = payload.ensemble as WebGpuHardwareReport['ensemble'] | undefined;
+  const lyapunovSpectrum = payload.lyapunovSpectrum as WebGpuHardwareReport['lyapunovSpectrum'] | undefined;
+  const ensemblePassed = ensemble?.backend === 'webgpu' && ensemble.comparison?.passed;
+  const spectrumPassed = lyapunovSpectrum?.backend === 'webgpu' && lyapunovSpectrum.comparison?.passed;
+  status = ensemblePassed && spectrumPassed ? 'pass' : 'fail';
 } catch (error) {
   payload = { error: error instanceof Error ? error.message : String(error) };
 } finally {
@@ -127,7 +182,16 @@ const report: WebGpuHardwareReport = {
   ...(payload as Partial<WebGpuHardwareReport>)
 };
 await writeFile('reports/webgpu-hardware-validation.json', `${JSON.stringify(report, null, 2)}\n`, 'utf8');
-const comparison = report.comparison;
+const ensemble = report.ensemble ?? {
+  backend: report.backend,
+  comparison: report.comparison,
+  rmsSpreadGpu: report.rmsSpreadGpu,
+  rmsSpreadCpu: report.rmsSpreadCpu,
+  n: report.n
+};
+const ensembleComparison = ensemble.comparison;
+const spectrumComparison = report.lyapunovSpectrum?.comparison;
+const spectrumMetrics = spectrumComparison?.metrics ?? {};
 const lines = [
   '# WebGPU Hardware Validation',
   '',
@@ -137,19 +201,32 @@ const lines = [
   '',
   `Browser channel: \`${channel}\``,
   '',
-  `Backend: \`${String(report.backend ?? 'n/a')}\``,
+  `Ensemble backend: \`${String(ensemble.backend ?? 'n/a')}\``,
+  '',
+  `Full-spectrum backend: \`${String(report.lyapunovSpectrum?.backend ?? 'n/a')}\``,
+  '',
+  '## Ensemble Reduction',
   '',
   '| Metric | Value |',
   '|---|---:|',
-  `| n | ${String(report.n ?? 'n/a')} |`,
-  `| rmsSpread GPU | ${typeof report.rmsSpreadGpu === 'number' ? report.rmsSpreadGpu.toPrecision(8) : 'n/a'} |`,
-  `| rmsSpread CPU | ${typeof report.rmsSpreadCpu === 'number' ? report.rmsSpreadCpu.toPrecision(8) : 'n/a'} |`,
-  `| max mean diff | ${comparison?.maxMeanAbsDiff?.toExponential(3) ?? 'n/a'} |`,
-  `| max covariance diff | ${comparison?.maxCovarianceAbsDiff?.toExponential(3) ?? 'n/a'} |`,
-  `| rms spread diff | ${comparison?.rmsSpreadAbsDiff?.toExponential(3) ?? 'n/a'} |`,
+  `| n | ${String(ensemble.n ?? 'n/a')} |`,
+  `| rmsSpread GPU | ${typeof ensemble.rmsSpreadGpu === 'number' ? ensemble.rmsSpreadGpu.toPrecision(8) : 'n/a'} |`,
+  `| rmsSpread CPU | ${typeof ensemble.rmsSpreadCpu === 'number' ? ensemble.rmsSpreadCpu.toPrecision(8) : 'n/a'} |`,
+  `| max mean diff | ${ensembleComparison?.maxMeanAbsDiff?.toExponential(3) ?? 'n/a'} |`,
+  `| max covariance diff | ${ensembleComparison?.maxCovarianceAbsDiff?.toExponential(3) ?? 'n/a'} |`,
+  `| rms spread diff | ${ensembleComparison?.rmsSpreadAbsDiff?.toExponential(3) ?? 'n/a'} |`,
+  '',
+  '## Full-Spectrum Promotion',
+  '',
+  '| Metric | Value |',
+  '|---|---:|',
+  `| passed | ${String(spectrumComparison?.passed ?? false)} |`,
+  `| spectrum max abs diff | ${typeof spectrumMetrics.spectrumMaxAbsDiff === 'number' ? spectrumMetrics.spectrumMaxAbsDiff.toExponential(3) : 'n/a'} |`,
+  `| sum abs diff | ${typeof spectrumMetrics.sumAbsDiff === 'number' ? spectrumMetrics.sumAbsDiff.toExponential(3) : 'n/a'} |`,
+  `| Kaplan-Yorke abs diff | ${typeof spectrumMetrics.kaplanYorkeAbsDiff === 'number' ? spectrumMetrics.kaplanYorkeAbsDiff.toExponential(3) : 'n/a'} |`,
   '',
   status === 'pass'
-    ? 'The on-device WebGPU ensemble reduction matched the CPU f64 oracle within the declared f32 tolerances.'
+    ? 'The on-device WebGPU ensemble reduction and full-spectrum Lyapunov candidate matched the CPU f64 oracle within the declared f32 tolerances.'
     : `Failure: ${String(report.error ?? 'comparison failed')}`,
   ''
 ];

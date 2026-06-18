@@ -4,9 +4,9 @@
 
 Inverse-problem and uncertainty-quantification library extensions, a symmetry-breaking branch-following step, multiplicative-noise SDEs, reproducibility packaging, and build/line-ending hygiene — followed by **Neimark–Sacker torus continuation**, a **singularity-free embedded spherical-pendulum chart**, and **ensemble statistics**, then a **forward-list pass** that turns the library-only solvers into a full research toolchain: the **embedded spherical *chain*** (pole-clamp-free), the **NS-torus research instruments** (Arnold tongues, torus Lyapunov spectrum, spectral-convergence gate, SciPy cross-validation, Bifurcation-tab UI), **matrix-noise + adaptive SDE schemes**, a **structure-preservation drift profiler**, **transcritical** branch-switching surfacing, a **one-command reproduce pipeline**, expanded **mutation coverage**, and a **Research+ Lab tab** surfacing the inverse problem / PCE surrogate / SDE ensemble. All additive — the 595-test suite grows to 674 with no behavioural change to existing APIs.
 
-### FPUT recurrence, kink collisions, trajectory derivatives & restarted Arnoldi (additive; suite 907 -> 938)
+### FPUT recurrence, kink collisions, trajectory derivatives, restarted Arnoldi & WebGPU spectrum gate (additive; suite 907 -> 940)
 
-Four additive research-frontier extensions close the next verified gaps while keeping
+Five additive research-frontier extensions close the next verified gaps while keeping
 the existing public API stable and explicit.
 
 - **Fermi-Pasta-Ulam-Tsingou lattice** (`src/physics/fput.ts`, `core`): alpha/beta
@@ -25,6 +25,13 @@ the existing public API stable and explicit.
   `research`): a matrix-free Krylov eigensolver companion to restarted Lanczos, tested
   against `eigenvaluesGeneral` for real spectra and dominant complex-conjugate pairs
   with direct residual checks.
+- **WebGPU full-spectrum Lyapunov promotion gate** (`src/runtime/gpuLyapunov.ts`,
+  `experimental`): a scoped 4D double-pendulum WGSL variational-flow kernel computes
+  the full Lyapunov spectrum in f32, then promotes only after same-run comparison
+  against the CPU f64 oracle. The hardware e2e now validates both GPU-side ensemble
+  reductions and the full-spectrum promotion gate, while CLV and variational-FTLE
+  GPU kernels remain CPU-fallback until their own hardware candidates pass the same
+  contract.
 
 ### Physics & chaos expansion (additive; suite 707 → 771)
 

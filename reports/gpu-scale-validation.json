@@ -1,8 +1,92 @@
 {
   "schemaVersion": "pendulum-gpu-scale-validation/v2",
-  "generatedAt": "2026-06-18T10:26:43.248Z",
+  "generatedAt": "2026-06-18T11:41:52.674Z",
   "hardwareWebGpuAvailable": false,
-  "verdict": "cpu-reference-mock-and-contract-gates-ready",
+  "verdict": "hardware-webgpu-oracle-gates-passed",
+  "hardwareEvidence": {
+    "schemaVersion": "pendulum-webgpu-hardware-validation/v1",
+    "generatedAt": "2026-06-18T11:41:38.569Z",
+    "channel": "chrome",
+    "url": "http://127.0.0.1:5173/",
+    "status": "pass",
+    "backend": "webgpu",
+    "comparison": {
+      "passed": true,
+      "nMatches": true,
+      "tolerances": {
+        "mean": 0.0004,
+        "variance": 0.003,
+        "covariance": 0.003,
+        "rmsSpread": 0.003,
+        "flipFraction": 0
+      },
+      "maxMeanAbsDiff": 1.6653345369377348e-16,
+      "maxVarianceAbsDiff": 0.0000010824517786556243,
+      "maxCovarianceAbsDiff": 0.0000010824517786556243,
+      "rmsSpreadAbsDiff": 2.4196521808406146e-7,
+      "flipFractionAbsDiff": 0,
+      "caveat": "This validates ensemble reduction statistics only; trajectory integration and chaotic divergence still require their own CPU probe gates."
+    },
+    "rmsSpreadGpu": 2.7608410199357043,
+    "rmsSpreadCpu": 2.760840777970486,
+    "n": 25,
+    "ensemble": {
+      "backend": "webgpu",
+      "comparison": {
+        "passed": true,
+        "nMatches": true,
+        "tolerances": {
+          "mean": 0.0004,
+          "variance": 0.003,
+          "covariance": 0.003,
+          "rmsSpread": 0.003,
+          "flipFraction": 0
+        },
+        "maxMeanAbsDiff": 1.6653345369377348e-16,
+        "maxVarianceAbsDiff": 0.0000010824517786556243,
+        "maxCovarianceAbsDiff": 0.0000010824517786556243,
+        "rmsSpreadAbsDiff": 2.4196521808406146e-7,
+        "flipFractionAbsDiff": 0,
+        "caveat": "This validates ensemble reduction statistics only; trajectory integration and chaotic divergence still require their own CPU probe gates."
+      },
+      "rmsSpreadGpu": 2.7608410199357043,
+      "rmsSpreadCpu": 2.760840777970486,
+      "n": 25
+    },
+    "lyapunovSpectrum": {
+      "backend": "webgpu",
+      "comparison": {
+        "target": "lyapunov-spectrum",
+        "passed": true,
+        "tolerances": {
+          "spectrum": 0.1,
+          "exponents": 0.005,
+          "angle": 0.05,
+          "field": 0.05,
+          "aggregate": 0.12
+        },
+        "metrics": {
+          "spectrumMaxAbsDiff": 0.000004524102837577537,
+          "sumAbsDiff": 4.0721561900269876e-7,
+          "kaplanYorkeAbsDiff": 5.10891931870816e-7
+        },
+        "caveat": "Compares finite-time spectrum outputs for identical settings; does not certify a different integration horizon or seed."
+      },
+      "spectrum": [
+        0.4622645080089569,
+        -0.04176795855164528,
+        -0.07208041846752167,
+        -0.4007229208946228
+      ],
+      "cpuSpectrum": [
+        0.4622683084615795,
+        -0.041767963959451516,
+        -0.07208007799866793,
+        -0.4007274449974604
+      ],
+      "caveat": "WebGPU f32 full-spectrum result promoted after same-run CPU f64 oracle comparison; CPU-derived uncertainty estimates are retained."
+    }
+  },
   "contracts": [
     {
       "id": "ensemble-rk4",
@@ -40,15 +124,16 @@
     {
       "id": "chaos-acceleration-contract",
       "cpuReference": "existing CPU CLV/full-spectrum/variational FTLE implementations",
-      "acceleratedPath": "GPU or parallel candidate that emits the same public result schema",
+      "acceleratedPath": "src/runtime/gpuLyapunov.ts WebGPU full-spectrum candidate plus future CLV/FTLE candidates that emit the same public result schema",
       "acceptanceRule": "GPU candidates must pass compareClvAcceleration / compareFtleFieldAcceleration / compareLyapunovSpectrumAcceleration against the CPU oracle before promotion.",
       "ciEvidence": [
         "tests/clv.test.ts",
         "tests/ftle.test.ts",
         "tests/lyapunov-spectrum-job.test.ts",
-        "tests/acceleration-contract.test.ts"
+        "tests/acceleration-contract.test.ts",
+        "e2e/webgpu-hardware-reductions.spec.ts"
       ],
-      "caveat": "The acceleration contract is implemented; the default production CLV/full-spectrum kernels remain CPU until a hardware candidate passes it."
+      "caveat": "The 4D double-pendulum full-spectrum WebGPU candidate is hardware-gated against the CPU oracle; production CLV and variational-FTLE kernels remain CPU until their GPU candidates pass the same promotion rule."
     }
   ],
   "cpuReference": {

@@ -234,10 +234,10 @@ export const GPU_SCALE_VALIDATION_CONTRACTS: readonly GpuScaleValidationContract
   {
     id: 'chaos-acceleration-contract',
     cpuReference: 'existing CPU CLV/full-spectrum/variational FTLE implementations',
-    acceleratedPath: 'GPU or parallel candidate that emits the same public result schema',
+    acceleratedPath: 'src/runtime/gpuLyapunov.ts WebGPU full-spectrum candidate plus future CLV/FTLE candidates that emit the same public result schema',
     acceptanceRule: 'GPU candidates must pass compareClvAcceleration / compareFtleFieldAcceleration / compareLyapunovSpectrumAcceleration against the CPU oracle before promotion.',
-    ciEvidence: ['tests/clv.test.ts', 'tests/ftle.test.ts', 'tests/lyapunov-spectrum-job.test.ts', 'tests/acceleration-contract.test.ts'],
-    caveat: 'The acceleration contract is implemented; the default production CLV/full-spectrum kernels remain CPU until a hardware candidate passes it.'
+    ciEvidence: ['tests/clv.test.ts', 'tests/ftle.test.ts', 'tests/lyapunov-spectrum-job.test.ts', 'tests/acceleration-contract.test.ts', 'e2e/webgpu-hardware-reductions.spec.ts'],
+    caveat: 'The 4D double-pendulum full-spectrum WebGPU candidate is hardware-gated against the CPU oracle; production CLV and variational-FTLE kernels remain CPU until their GPU candidates pass the same promotion rule.'
   }
 ] as const;
 

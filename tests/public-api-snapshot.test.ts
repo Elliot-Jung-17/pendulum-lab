@@ -417,9 +417,11 @@ describe('public grouped API surface', () => {
       'ensembleStatistics',
       'flipBasinField',
       'ftleFieldFiniteDifference',
+      'promotedDoublePendulumLyapunovSpectrum',
       'runComputeKernel',
       'runDoublePendulumEnsemble',
       'sweepLambdaField',
+      'webgpuDoublePendulumLyapunovSpectrumCandidate',
       'webgpuEnsembleStatistics'
     ]);
   });

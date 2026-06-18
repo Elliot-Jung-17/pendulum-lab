@@ -41,3 +41,41 @@ test('real WebGPU ensemble reduction matches the CPU oracle', async ({ page, bro
   expect(result.comparison.passed).toBe(true);
   expect(Math.abs(result.rmsSpreadGpu - result.rmsSpreadCpu)).toBeLessThanOrEqual(result.comparison.tolerances.rmsSpread);
 });
+
+test('real WebGPU full-spectrum Lyapunov candidate passes CPU oracle promotion gate', async ({ page, browserName }) => {
+  test.skip(browserName !== 'chromium', 'WebGPU hardware validation is Chromium-only.');
+  await page.goto('/');
+  const result = await page.evaluate(async () => {
+    if (!(navigator as unknown as { gpu?: unknown }).gpu) {
+      throw new Error('navigator.gpu unavailable; this runner is not a WebGPU hardware CI target.');
+    }
+    const modulePath = '/src/runtime/gpuLyapunov.ts';
+    const mod = await import(/* @vite-ignore */ modulePath) as typeof import('../src/runtime/gpuLyapunov');
+    const params = { m1: 1, m2: 1, l1: 1, l2: 1, g: 9.81 };
+    const promotion = await mod.promotedDoublePendulumLyapunovSpectrum(
+      params,
+      [1.2, 0.7, 0.12, -0.04],
+      {
+        dt: 0.01,
+        steps: 320,
+        renormEvery: 8,
+        transientSteps: 40,
+        seed: 0x1234,
+        tolerances: { spectrum: 0.1, aggregate: 0.12 }
+      }
+    );
+    return {
+      backend: promotion.backend,
+      passed: promotion.comparison?.passed ?? false,
+      metrics: promotion.comparison?.metrics ?? null,
+      spectrum: promotion.result.spectrum,
+      cpuSpectrum: promotion.cpuOracle.spectrum,
+      caveat: promotion.caveat
+    };
+  });
+  expect(result.backend).toBe('webgpu');
+  expect(result.passed).toBe(true);
+  expect(result.metrics).not.toBeNull();
+  expect(result.spectrum.length).toBe(4);
+  expect(result.cpuSpectrum.length).toBe(4);
+});

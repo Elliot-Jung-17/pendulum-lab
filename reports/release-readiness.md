@@ -1,6 +1,6 @@
 # Release Readiness Manifest
 
-Generated: 2026-06-18T11:43:10.643Z
+Generated: 2026-06-18T12:28:52.631Z
 
 Status: **ready-for-owner-publish**
 
@@ -12,6 +12,8 @@ Status: **ready-for-owner-publish**
 | yes | yes | `paper/paper.pdf` | Flagship paper PDF exists. |
 | yes | yes | `reports/reviewer-kit-manifest.json` | Reviewer kit manifest exists. |
 | no | yes | `reports/webgpu-hardware-validation.md` | Real WebGPU adapter validation report exists when run on a hardware target. |
+| yes | yes | `reports/gpu-benchmark-ladder.md` | Hardware GPU benchmark ladder records adapter metadata, f32/f64 drift, and CPU-oracle promotion metrics. |
+| yes | yes | `reports/gpu-benchmark-ladder.json` | Machine-readable GPU benchmark ladder for release artifacts. |
 | yes | yes | `reports/release-one-page.pdf` | One-page reviewer PDF generated locally. |
 | yes | yes | `reports/walkthrough-30s.gif` | Thirty-second GIF walkthrough generated locally. |
 | no | yes | `reports/walkthrough-storyboard.svg` | Editable storyboard companion for the GIF. |

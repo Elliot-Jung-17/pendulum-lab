@@ -1,6 +1,6 @@
 {
   "schemaVersion": "pendulum-reviewer-kit/v1",
-  "generatedAt": "2026-06-18T10:26:59.958Z",
+  "generatedAt": "2026-06-18T12:26:00.408Z",
   "flagship": {
     "id": "melnikov-gap-map",
     "shortName": "Melnikov gap map",
@@ -125,6 +125,14 @@
       "command": "npm run validate:webgpu-hardware",
       "priority": "recommended",
       "description": "Real-adapter WebGPU reduction comparison against the CPU f64 oracle.",
+      "available": true
+    },
+    {
+      "id": "gpu-benchmark-ladder",
+      "path": "reports/gpu-benchmark-ladder.md",
+      "command": "npm run benchmark:gpu-ladder",
+      "priority": "recommended",
+      "description": "Real-adapter GPU ladder with adapter metadata, f32/f64 horizon drift, and CLV/FTLE promotion metrics.",
       "available": true
     },
     {

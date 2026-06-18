@@ -12,24 +12,24 @@ endobj
 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
 endobj
 5 0 obj
-<< /Length 918 >>
+<< /Length 979 >>
 stream
 BT
 /F1 18 Tf
 72 748 Td
 (Pendulum Lab Certified Chaotic Dynamics Workbench) Tj
 /F1 10 Tf
-0 -18 Td (Generated: 2026-06-18T11:43:10.549Z) Tj
+0 -18 Td (Generated: 2026-06-18T12:28:52.529Z) Tj
 0 -18 Td () Tj
 0 -18 Td (Flagship: Melnikov threshold vs period-doubling onset gap map.) Tj
 0 -18 Td (Reviewer path: npm run validate:gpu-scale; npm run validate:webgpu-hardware; npm run flagship:certify; npm run flagship:external; npm run reviewer:kit.) Tj
 0 -18 Td (Trust model: every headline number carries source, params, uncertainty, reproduce command, artifact hash, and caveat.) Tj
-0 -18 Td (GPU rule: accelerated results must match CPU f64 or fail closed to CPU.) Tj
+0 -18 Td (GPU rule: accelerated results must match CPU f64 or fail closed to CPU; benchmark ladder records adapter metadata and horizon drift.) Tj
 0 -18 Td (Release surfaces: GitHub Pages workflow, manual npm publish workflow, Zenodo metadata, paper PDF, reviewer manifest.) Tj
 0 -18 Td () Tj
-0 -18 Td (Reviewer manifest hash: 1a3068a00b1089) Tj
-0 -18 Td (Scorecard hash: 17c423a8bcffca) Tj
-0 -18 Td (Flagship certification hash: 0f01d11fc927ce) Tj
+0 -18 Td (Reviewer manifest hash: 126afcaaef6f32) Tj
+0 -18 Td (Scorecard hash: 0ef1d25aac4c31) Tj
+0 -18 Td (Flagship certification hash: 0c77b3bd030dad) Tj
 ET
 endstream
 endobj
@@ -44,5 +44,5 @@ xref
 trailer
 << /Size 6 /Root 1 0 R >>
 startxref
-1280
+1341
 %%EOF

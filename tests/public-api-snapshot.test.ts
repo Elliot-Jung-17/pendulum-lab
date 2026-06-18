@@ -302,6 +302,8 @@ describe('public grouped API surface', () => {
       'CLI_BATCH_SCHEMA',
       'DEFAULT_DESIGN_BUDGET',
       'FIGURE_THEMES',
+      'FLAGSHIP_FIGURE_1_CAPTION',
+      'FLAGSHIP_REVIEWER_APPENDIX_NOTE',
       'GPU_SCALE_VALIDATION_CONTRACTS',
       'JOB_PROTOCOL_V2',
       'JobEngine',
@@ -417,11 +419,15 @@ describe('public grouped API surface', () => {
       'ensembleStatistics',
       'flipBasinField',
       'ftleFieldFiniteDifference',
+      'promotedDoublePendulumClv',
       'promotedDoublePendulumLyapunovSpectrum',
+      'promotedDoublePendulumVariationalFtleField',
       'runComputeKernel',
       'runDoublePendulumEnsemble',
       'sweepLambdaField',
+      'webgpuDoublePendulumClvCandidate',
       'webgpuDoublePendulumLyapunovSpectrumCandidate',
+      'webgpuDoublePendulumVariationalFtleFieldCandidate',
       'webgpuEnsembleStatistics'
     ]);
   });

@@ -163,6 +163,13 @@ export const REVIEWER_KIT_ARTIFACTS: readonly ReviewerKitArtifact[] = [
     description: 'Real-adapter WebGPU reduction comparison against the CPU f64 oracle.'
   },
   {
+    id: 'gpu-benchmark-ladder',
+    path: 'reports/gpu-benchmark-ladder.md',
+    command: 'npm run benchmark:gpu-ladder',
+    priority: 'recommended',
+    description: 'Real-adapter GPU ladder with adapter metadata, f32/f64 horizon drift, and CLV/FTLE promotion metrics.'
+  },
+  {
     id: 'release-readiness',
     path: 'reports/release-readiness.json',
     command: 'npm run release:package',
@@ -234,10 +241,10 @@ export const GPU_SCALE_VALIDATION_CONTRACTS: readonly GpuScaleValidationContract
   {
     id: 'chaos-acceleration-contract',
     cpuReference: 'existing CPU CLV/full-spectrum/variational FTLE implementations',
-    acceleratedPath: 'src/runtime/gpuLyapunov.ts WebGPU full-spectrum candidate plus future CLV/FTLE candidates that emit the same public result schema',
+    acceleratedPath: 'src/runtime/gpuLyapunov.ts full-spectrum candidate plus src/runtime/gpuChaosPromotion.ts CLV and variational-FTLE candidates',
     acceptanceRule: 'GPU candidates must pass compareClvAcceleration / compareFtleFieldAcceleration / compareLyapunovSpectrumAcceleration against the CPU oracle before promotion.',
     ciEvidence: ['tests/clv.test.ts', 'tests/ftle.test.ts', 'tests/lyapunov-spectrum-job.test.ts', 'tests/acceleration-contract.test.ts', 'e2e/webgpu-hardware-reductions.spec.ts'],
-    caveat: 'The 4D double-pendulum full-spectrum WebGPU candidate is hardware-gated against the CPU oracle; production CLV and variational-FTLE kernels remain CPU until their GPU candidates pass the same promotion rule.'
+    caveat: 'The 4D double-pendulum full-spectrum, CLV, and variational-FTLE WebGPU candidates are hardware-gated against CPU f64 oracles; broader N-chain GPU promotion remains a separate scope.'
   }
 ] as const;
 

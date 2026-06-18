@@ -24,6 +24,8 @@ npm run reproduce
 npm run flagship:certify
 npm run flagship:external
 npm run validate:gpu-scale
+npm run validate:webgpu-hardware
+npm run benchmark:gpu-ladder
 npm run release:package
 npm run reviewer:kit
 ```
@@ -42,6 +44,8 @@ npm run validate:cross
 npm run validate:sympy
 npm run validate:literature
 npm run validate:gpu-scale
+npm run validate:webgpu-hardware
+npm run benchmark:gpu-ladder
 npm run notebook
 npm run release:package
 npm run reviewer:kit
@@ -53,6 +57,7 @@ The full path is intentionally heavier. It separates:
 - browser-rendered figures and PDF,
 - external SciPy/SymPy validation,
 - GPU/scale acceptance contract,
+- real-adapter GPU benchmark ladder,
 - notebook artifact generation.
 
 ## GPU/Scale Rule
@@ -66,6 +71,7 @@ The current validation command is:
 ```bash
 npm run validate:gpu-scale
 npm run validate:webgpu-hardware
+npm run benchmark:gpu-ladder
 ```
 
 It writes `reports/gpu-scale-validation.md`. The report includes an f32-candidate
@@ -74,6 +80,9 @@ reduction gate, and executable CLV/full-spectrum/FTLE acceleration promotion
 checks. `npm run validate:webgpu-hardware` writes
 `reports/webgpu-hardware-validation.md` when a Chrome/WebGPU-capable runner is
 available, using the same CPU reference rules as the self-hosted CI workflow.
+`npm run benchmark:gpu-ladder` writes `reports/gpu-benchmark-ladder.md` with
+adapter metadata, f32/f64 horizon drift, full-spectrum horizon sensitivity, and
+CLV/variational-FTLE promotion metrics.
 
 ## Release Packaging
 

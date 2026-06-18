@@ -58,7 +58,17 @@ const webgpuHardwareValidation = await readJson<{
   backend?: string;
   ensemble?: { backend?: string; comparison?: { passed?: boolean } };
   lyapunovSpectrum?: { backend?: string; comparison?: { passed?: boolean } | null };
+  clv?: { backend?: string; comparison?: { passed?: boolean } | null };
+  variationalFtleField?: { backend?: string; comparison?: { passed?: boolean } | null };
 }>('reports/webgpu-hardware-validation.json', {});
+const gpuBenchmarkLadder = await readJson<{
+  status?: string;
+  adapter?: unknown;
+  ensemble?: { allReductionComparisonsPassed?: boolean };
+  lyapunovSpectrum?: { allPromotionComparisonsPassed?: boolean };
+  clv?: { backend?: string; comparison?: { passed?: boolean } | null } | null;
+  variationalFtleField?: { backend?: string; comparison?: { passed?: boolean } | null } | null;
+}>('reports/gpu-benchmark-ladder.json', {});
 const releaseReadiness = await readJson<{ status?: string }>('reports/release-readiness.json', {});
 const unitTestSummary = Number.isInteger(vitest.numTotalTests) && Array.isArray(vitest.testResults)
   ? `${vitest.numPassedTests ?? 0}/${vitest.numTotalTests} unit tests across ${vitest.testResults.length} files`
@@ -73,6 +83,7 @@ const researchSessionStorageSource = await readText('src/app/parity/research-ses
 const certifiedWorkbenchSource = await readText('src/research/certifiedWorkbench.ts');
 const accelerationContractSource = await readText('src/chaos/accelerationContract.ts');
 const gpuLyapunovSource = await readText('src/runtime/gpuLyapunov.ts');
+const gpuChaosPromotionSource = await readText('src/runtime/gpuChaosPromotion.ts');
 const unitaryFloquetSource = await readText('src/research/unitaryFloquet.ts');
 const weightedLegacyCounts = Object.entries(legacy.counts)
   .filter(([key]) => (legacy.weights?.[key] ?? 1) > 0)
@@ -103,10 +114,26 @@ const has = {
   gpuReductionOracle: gpuScaleValidation.cpuReference?.ensemble?.f32ReductionOracle?.passed === true,
   webgpuHardwareReport: await exists('reports/webgpu-hardware-validation.md'),
   webgpuHardwareJson: await exists('reports/webgpu-hardware-validation.json'),
+  gpuBenchmarkLadderReport: await exists('reports/gpu-benchmark-ladder.md'),
+  gpuBenchmarkLadderJson: await exists('reports/gpu-benchmark-ladder.json'),
   webgpuHardwarePass: webgpuHardwareValidation.status === 'pass' && webgpuHardwareValidation.backend === 'webgpu',
   webgpuFullSpectrumPass: webgpuHardwareValidation.status === 'pass'
     && webgpuHardwareValidation.lyapunovSpectrum?.backend === 'webgpu'
     && webgpuHardwareValidation.lyapunovSpectrum?.comparison?.passed === true,
+  webgpuClvPass: webgpuHardwareValidation.status === 'pass'
+    && webgpuHardwareValidation.clv?.backend === 'webgpu'
+    && webgpuHardwareValidation.clv?.comparison?.passed === true,
+  webgpuVariationalFtlePass: webgpuHardwareValidation.status === 'pass'
+    && webgpuHardwareValidation.variationalFtleField?.backend === 'webgpu'
+    && webgpuHardwareValidation.variationalFtleField?.comparison?.passed === true,
+  gpuBenchmarkLadderPass: gpuBenchmarkLadder.status === 'pass'
+    && gpuBenchmarkLadder.adapter !== null
+    && gpuBenchmarkLadder.ensemble?.allReductionComparisonsPassed === true
+    && gpuBenchmarkLadder.lyapunovSpectrum?.allPromotionComparisonsPassed === true
+    && gpuBenchmarkLadder.clv?.backend === 'webgpu'
+    && gpuBenchmarkLadder.clv?.comparison?.passed === true
+    && gpuBenchmarkLadder.variationalFtleField?.backend === 'webgpu'
+    && gpuBenchmarkLadder.variationalFtleField?.comparison?.passed === true,
   mojibakeAudit: await exists('reports/mojibake-audit.md'),
   validation: await exists('reports/validation-report.md'),
   reference: await exists('reports/validation-reference.md'),
@@ -146,12 +173,14 @@ const has = {
   releasePackageCommand: Boolean(scripts['release:package']),
   webgpuHardwareCommand: Boolean(scripts['test:webgpu-hardware']),
   webgpuHardwareValidateCommand: Boolean(scripts['validate:webgpu-hardware']),
+  gpuBenchmarkLadderCommand: Boolean(scripts['benchmark:gpu-ladder']),
   reviewerKitCommand: Boolean(scripts['reviewer:kit']),
   gpuScaleCommand: Boolean(scripts['validate:gpu-scale']),
   benchmarkMemoryScript: Boolean(scripts['benchmark:memory']),
   ciRunsQuickTier: ciWorkflow.includes('npm run test:quick'),
   ciRunsGpuScale: ciWorkflow.includes('npm run validate:gpu-scale') || mainWorkflow.includes('npm run validate:gpu-scale'),
   webgpuWorkflowRunsValidation: webgpuHardwareWorkflow.includes('npm run validate:webgpu-hardware'),
+  webgpuWorkflowRunsBenchmarkLadder: webgpuHardwareWorkflow.includes('npm run benchmark:gpu-ladder'),
   ciRunsReviewerKit: ciWorkflow.includes('npm run reviewer:kit') || mainWorkflow.includes('npm run reviewer:kit'),
   ciRunsVerify: ciWorkflow.includes('npm run verify'),
   mainRunsSlowTier: mainWorkflow.includes('npm run test:slow'),
@@ -162,6 +191,7 @@ const has = {
   releaseReadyStatus: releaseReadiness.status === 'ready-for-owner-publish',
   chaosAccelerationContracts: accelerationContractSource.includes('compareClvAcceleration') && accelerationContractSource.includes('compareFtleFieldAcceleration') && accelerationContractSource.includes('compareLyapunovSpectrumAcceleration'),
   fullSpectrumGpuPromotion: gpuLyapunovSource.includes('promotedDoublePendulumLyapunovSpectrum') && gpuLyapunovSource.includes('webgpuDoublePendulumLyapunovSpectrumCandidate'),
+  clvFtleGpuPromotion: gpuChaosPromotionSource.includes('promotedDoublePendulumClv') && gpuChaosPromotionSource.includes('promotedDoublePendulumVariationalFtleField'),
   arnoldiSchurFloquet: unitaryFloquetSource.includes('complexUnitaryFloquetArnoldiSchurSpectrum')
 };
 
@@ -171,12 +201,12 @@ const packagingReady = pagesReady && has.license && has.citation && has.typedocI
 const testTierReady = has.quickTier && has.slowTier && has.ciRunsQuickTier && has.ciRunsVerify && has.mainRunsSlowTier;
 const visualReady = has.visualRegressionE2e && has.visualSnapshots && has.visualTier;
 const memoryReady = has.benchmarkMemoryScript && has.memoryRegression && has.memoryBaseline;
-const benchmarkReady = has.benchmark && has.energy && benchmarkHasComparison;
+const benchmarkReady = has.benchmark && has.energy && benchmarkHasComparison && has.gpuBenchmarkLadderPass;
 const flagshipReady = has.certifiedWorkbenchModule && has.flagshipDoc && certifiedWorkbenchSource.includes('melnikov-gap-map');
 const flagshipCertified = flagshipReady && has.flagshipCertifyCommand && has.flagshipCertification && has.flagshipFigure && has.flagshipExternalCommand && has.flagshipExternalCheck;
 const reviewerKitReady = flagshipCertified && has.reviewerKitDoc && has.reviewerKitScript && has.reviewerKitCommand && has.reviewerKitManifest && has.reviewerKitManifestMd;
-const gpuScaleReady = has.gpuScaleCommand && has.gpuScaleScript && has.gpuScaleReport && has.gpuScaleJson && has.gpuReductionOracle && has.ciRunsGpuScale && has.webgpuHardwareWorkflow && has.webgpuHardwareE2e && has.webgpuHardwareCommand && has.webgpuHardwareValidateCommand && has.webgpuWorkflowRunsValidation && has.webgpuHardwareReport && has.webgpuHardwareJson && has.webgpuHardwarePass && has.webgpuFullSpectrumPass;
-const chaosAccelerationReady = has.chaosAccelerationContracts && has.fullSpectrumGpuPromotion;
+const gpuScaleReady = has.gpuScaleCommand && has.gpuScaleScript && has.gpuScaleReport && has.gpuScaleJson && has.gpuReductionOracle && has.ciRunsGpuScale && has.webgpuHardwareWorkflow && has.webgpuHardwareE2e && has.webgpuHardwareCommand && has.webgpuHardwareValidateCommand && has.gpuBenchmarkLadderCommand && has.webgpuWorkflowRunsValidation && has.webgpuWorkflowRunsBenchmarkLadder && has.webgpuHardwareReport && has.webgpuHardwareJson && has.gpuBenchmarkLadderReport && has.gpuBenchmarkLadderJson && has.webgpuHardwarePass && has.webgpuFullSpectrumPass && has.webgpuClvPass && has.webgpuVariationalFtlePass && has.gpuBenchmarkLadderPass;
+const chaosAccelerationReady = has.chaosAccelerationContracts && has.fullSpectrumGpuPromotion && has.clvFtleGpuPromotion;
 const sparseFloquetReady = has.arnoldiSchurFloquet;
 const trustWorkspaceReady = has.trustInspectorUi && has.trustInspectorE2e && has.researchWorkspaceCard && has.researchWorkspaceList && has.researchProjectSessions;
 
@@ -251,9 +281,11 @@ const items: ScorecardItem[] = [
       'every non-variational diagnostic reports an uncertainty estimate (bootstrap / block-resampled / regression CI)',
       has.gpuScaleReport ? 'gpu-scale validation report separates acceleration caveats from scientific claims' : 'gpu-scale validation report missing',
       chaosAccelerationReady ? 'CLV, full-spectrum, and FTLE acceleration promotion contracts are executable comparison functions' : 'CLV/FTLE/full-spectrum acceleration contracts missing',
-      has.webgpuFullSpectrumPass ? '4D double-pendulum full-spectrum WebGPU candidate passed the hardware CPU-oracle promotion gate' : 'full-spectrum WebGPU hardware promotion evidence missing'
+      has.webgpuFullSpectrumPass ? '4D double-pendulum full-spectrum WebGPU candidate passed the hardware CPU-oracle promotion gate' : 'full-spectrum WebGPU hardware promotion evidence missing',
+      has.webgpuClvPass ? '4D double-pendulum CLV WebGPU candidate passed the hardware CPU-oracle promotion gate' : 'CLV WebGPU hardware promotion evidence missing',
+      has.webgpuVariationalFtlePass ? '4D double-pendulum variational-FTLE WebGPU candidate passed the hardware CPU-oracle promotion gate' : 'variational-FTLE WebGPU hardware promotion evidence missing'
     ],
-    remaining: chaosAccelerationReady ? ['Production CLV and variational-FTLE GPU kernels remain CPU-fallback until hardware candidates pass the same contract'] : ['Add executable CLV/FTLE/full-spectrum acceleration comparison contracts']
+    remaining: chaosAccelerationReady && has.webgpuFullSpectrumPass && has.webgpuClvPass && has.webgpuVariationalFtlePass ? [] : ['Add or run hardware-gated CLV/FTLE/full-spectrum acceleration comparison contracts']
   },
   {
     area: 'GPU and scale validation',
@@ -265,14 +297,20 @@ const items: ScorecardItem[] = [
       has.gpuReductionOracle ? 'ensemble f32-candidate reduction passes the CPU f64 oracle comparison' : 'ensemble reduction oracle result missing from gpu-scale validation JSON',
       has.ciRunsGpuScale ? 'CI runs validate:gpu-scale' : 'CI does not run validate:gpu-scale',
       has.webgpuHardwareWorkflow ? 'self-hosted WebGPU hardware workflow exists and fails when a real adapter is absent' : 'WebGPU hardware workflow missing',
-      has.webgpuHardwareE2e ? 'hardware e2e compares GPU-side ensemble reduction and full-spectrum promotion with the CPU oracle' : 'hardware GPU reduction e2e missing',
+      has.webgpuHardwareE2e ? 'hardware e2e compares GPU-side ensemble reduction, full-spectrum, CLV, and variational-FTLE promotion with the CPU oracle' : 'hardware GPU reduction e2e missing',
       has.webgpuHardwareValidateCommand ? 'npm run validate:webgpu-hardware exists' : 'validate:webgpu-hardware command missing',
+      has.gpuBenchmarkLadderCommand ? 'npm run benchmark:gpu-ladder exists' : 'GPU benchmark ladder command missing',
       has.webgpuWorkflowRunsValidation ? 'self-hosted WebGPU workflow writes the hardware validation report' : 'WebGPU workflow does not run validate:webgpu-hardware',
+      has.webgpuWorkflowRunsBenchmarkLadder ? 'self-hosted WebGPU workflow writes the GPU benchmark ladder report' : 'WebGPU workflow does not run benchmark:gpu-ladder',
       has.webgpuHardwarePass ? 'reports/webgpu-hardware-validation.json records backend=webgpu and status=pass' : 'hardware WebGPU validation report is missing or not passing',
       has.webgpuFullSpectrumPass ? 'hardware WebGPU validation report records full-spectrum backend=webgpu and comparison pass' : 'hardware full-spectrum promotion evidence missing',
+      has.webgpuClvPass ? 'hardware WebGPU validation report records CLV backend=webgpu and comparison pass' : 'hardware CLV promotion evidence missing',
+      has.webgpuVariationalFtlePass ? 'hardware WebGPU validation report records variational-FTLE backend=webgpu and comparison pass' : 'hardware variational-FTLE promotion evidence missing',
+      has.gpuBenchmarkLadderReport ? 'reports/gpu-benchmark-ladder.md records adapter metadata, horizon drift, and promotion metrics' : 'GPU benchmark ladder report missing',
+      has.gpuBenchmarkLadderPass ? 'reports/gpu-benchmark-ladder.json records status=pass across reductions, full-spectrum, CLV, and variational-FTLE gates' : 'GPU benchmark ladder pass evidence missing',
       'current contract treats CPU f64 as the scientific oracle; WebGPU may accelerate only after agreement or fallback'
     ],
-    remaining: gpuScaleReady ? [] : ['Run npm run validate:gpu-scale and npm run validate:webgpu-hardware, then wire both into CI/hardware WebGPU workflow']
+    remaining: gpuScaleReady ? [] : ['Run npm run validate:gpu-scale, npm run validate:webgpu-hardware, and npm run benchmark:gpu-ladder, then wire hardware outputs into the WebGPU workflow']
   },
   {
     area: 'Testing and browser coverage',
@@ -299,6 +337,7 @@ const items: ScorecardItem[] = [
     evidence: [
       benchmarkHasComparison ? 'benchmark-report.md captures FPS, physics ms/frame, memory, worker latency, and original-vs-candidate deltas' : 'benchmark-report.md missing original-vs-candidate deltas',
       'energy-benchmark.md compares long-run drift by integrator',
+      has.gpuBenchmarkLadderPass ? 'gpu-benchmark-ladder records WebGPU adapter metadata, f32/f64 horizon drift, and CPU-oracle promotion metrics' : 'GPU benchmark ladder missing or not passing',
       has.bundleBudget ? 'bundle budget gate splits initial/chunk/standalone assets across raw/gzip/brotli sizes' : 'bundle budget gate missing',
       has.mainRunsBenchmark ? 'mainline workflow runs the browser benchmark' : 'mainline workflow does not run the browser benchmark',
       has.mainRunsMemoryRegression ? 'mainline workflow emits memory-regression artifacts' : 'mainline workflow does not emit memory-regression artifacts'

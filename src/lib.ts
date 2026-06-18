@@ -276,3 +276,17 @@ export { runDoublePendulumEnsemble, ensembleGrid, ensembleStatistics, webgpuEnse
 export type { EnsembleOptions, EnsembleResult, EnsembleStatistics, EnsembleStatisticsComparison, EnsembleStatisticsTolerances } from './runtime/gpuEnsemble';
 export { promotedDoublePendulumLyapunovSpectrum, webgpuDoublePendulumLyapunovSpectrumCandidate } from './runtime/gpuLyapunov';
 export type { WebgpuLyapunovSpectrumCandidate, WebgpuLyapunovSpectrumOptions, WebgpuLyapunovSpectrumPromotion } from './runtime/gpuLyapunov';
+export {
+  promotedDoublePendulumClv,
+  promotedDoublePendulumVariationalFtleField,
+  webgpuDoublePendulumClvCandidate,
+  webgpuDoublePendulumVariationalFtleFieldCandidate
+} from './runtime/gpuChaosPromotion';
+export type {
+  WebgpuClvCandidate,
+  WebgpuClvOptions,
+  WebgpuClvPromotion,
+  WebgpuFtleFieldCandidate,
+  WebgpuFtleFieldOptions,
+  WebgpuFtleFieldPromotion
+} from './runtime/gpuChaosPromotion';

@@ -1,6 +1,6 @@
 # Certified Chaotic Dynamics Workbench - Reviewer Kit
 
-Generated: 2026-06-18T10:26:59.958Z
+Generated: 2026-06-18T12:26:00.408Z
 
 Status: **READY**
 
@@ -47,6 +47,7 @@ Reproduce the study with `npm run paper:study`, then render the paper with `npm 
 | optional | yes | `reports/research-notebook.html` | `npm run notebook` | Figure-rich notebook driven through the same analysis handlers. |
 | recommended | yes | `reports/gpu-scale-validation.md` | `npm run validate:gpu-scale` | CPU reference plus mocked-WebGPU contract for accelerated field/ensemble paths. |
 | recommended | yes | `reports/webgpu-hardware-validation.md` | `npm run validate:webgpu-hardware` | Real-adapter WebGPU reduction comparison against the CPU f64 oracle. |
+| recommended | yes | `reports/gpu-benchmark-ladder.md` | `npm run benchmark:gpu-ladder` | Real-adapter GPU ladder with adapter metadata, f32/f64 horizon drift, and CLV/FTLE promotion metrics. |
 | required | yes | `reports/release-readiness.json` | `npm run release:package` | Machine-readable DOI/Pages/npm/PDF/GIF release readiness manifest. |
 | recommended | yes | `reports/release-one-page.pdf` | `npm run release:package` | One-page reviewer handout for release notes and external review. |
 | recommended | yes | `reports/walkthrough-30s.gif` | `npm run release:package` | Thirty-second walkthrough artifact for the GitHub release and project page. |

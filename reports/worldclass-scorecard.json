@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-18T11:43:17.170Z",
+  "generatedAt": "2026-06-18T12:25:51.836Z",
   "totals": {
     "done": 11,
     "partial": 0,
@@ -2389,8 +2389,13 @@
     "gpuReductionOracle": true,
     "webgpuHardwareReport": true,
     "webgpuHardwareJson": true,
+    "gpuBenchmarkLadderReport": true,
+    "gpuBenchmarkLadderJson": true,
     "webgpuHardwarePass": true,
     "webgpuFullSpectrumPass": true,
+    "webgpuClvPass": true,
+    "webgpuVariationalFtlePass": true,
+    "gpuBenchmarkLadderPass": true,
     "mojibakeAudit": true,
     "validation": true,
     "reference": true,
@@ -2430,12 +2435,14 @@
     "releasePackageCommand": true,
     "webgpuHardwareCommand": true,
     "webgpuHardwareValidateCommand": true,
+    "gpuBenchmarkLadderCommand": true,
     "reviewerKitCommand": true,
     "gpuScaleCommand": true,
     "benchmarkMemoryScript": true,
     "ciRunsQuickTier": true,
     "ciRunsGpuScale": true,
     "webgpuWorkflowRunsValidation": true,
+    "webgpuWorkflowRunsBenchmarkLadder": true,
     "ciRunsReviewerKit": true,
     "ciRunsVerify": true,
     "mainRunsSlowTier": true,
@@ -2446,6 +2453,7 @@
     "releaseReadyStatus": true,
     "chaosAccelerationContracts": true,
     "fullSpectrumGpuPromotion": true,
+    "clvFtleGpuPromotion": true,
     "arnoldiSchurFloquet": true
   },
   "items": [
@@ -2517,11 +2525,11 @@
         "every non-variational diagnostic reports an uncertainty estimate (bootstrap / block-resampled / regression CI)",
         "gpu-scale validation report separates acceleration caveats from scientific claims",
         "CLV, full-spectrum, and FTLE acceleration promotion contracts are executable comparison functions",
-        "4D double-pendulum full-spectrum WebGPU candidate passed the hardware CPU-oracle promotion gate"
+        "4D double-pendulum full-spectrum WebGPU candidate passed the hardware CPU-oracle promotion gate",
+        "4D double-pendulum CLV WebGPU candidate passed the hardware CPU-oracle promotion gate",
+        "4D double-pendulum variational-FTLE WebGPU candidate passed the hardware CPU-oracle promotion gate"
       ],
-      "remaining": [
-        "Production CLV and variational-FTLE GPU kernels remain CPU-fallback until hardware candidates pass the same contract"
-      ]
+      "remaining": []
     },
     {
       "area": "GPU and scale validation",
@@ -2533,11 +2541,17 @@
         "ensemble f32-candidate reduction passes the CPU f64 oracle comparison",
         "CI runs validate:gpu-scale",
         "self-hosted WebGPU hardware workflow exists and fails when a real adapter is absent",
-        "hardware e2e compares GPU-side ensemble reduction and full-spectrum promotion with the CPU oracle",
+        "hardware e2e compares GPU-side ensemble reduction, full-spectrum, CLV, and variational-FTLE promotion with the CPU oracle",
         "npm run validate:webgpu-hardware exists",
+        "npm run benchmark:gpu-ladder exists",
         "self-hosted WebGPU workflow writes the hardware validation report",
+        "self-hosted WebGPU workflow writes the GPU benchmark ladder report",
         "reports/webgpu-hardware-validation.json records backend=webgpu and status=pass",
         "hardware WebGPU validation report records full-spectrum backend=webgpu and comparison pass",
+        "hardware WebGPU validation report records CLV backend=webgpu and comparison pass",
+        "hardware WebGPU validation report records variational-FTLE backend=webgpu and comparison pass",
+        "reports/gpu-benchmark-ladder.md records adapter metadata, horizon drift, and promotion metrics",
+        "reports/gpu-benchmark-ladder.json records status=pass across reductions, full-spectrum, CLV, and variational-FTLE gates",
         "current contract treats CPU f64 as the scientific oracle; WebGPU may accelerate only after agreement or fallback"
       ],
       "remaining": []
@@ -2546,7 +2560,7 @@
       "area": "Testing and browser coverage",
       "status": "done",
       "evidence": [
-        "940/940 unit tests across 141 files",
+        "944/944 unit tests across 142 files",
         "unit tests cover integrators, energy drift, determinism, JSON import validation, edge cases, chaos, visualization, repro packages",
         "quick, slow, and full test tiers are wired into PR/mainline workflows",
         "coverage scope guard catches new source files missing from the v8 coverage map",
@@ -2563,6 +2577,7 @@
       "evidence": [
         "benchmark-report.md captures FPS, physics ms/frame, memory, worker latency, and original-vs-candidate deltas",
         "energy-benchmark.md compares long-run drift by integrator",
+        "gpu-benchmark-ladder records WebGPU adapter metadata, f32/f64 horizon drift, and CPU-oracle promotion metrics",
         "bundle budget gate splits initial/chunk/standalone assets across raw/gzip/brotli sizes",
         "mainline workflow runs the browser benchmark",
         "mainline workflow emits memory-regression artifacts"

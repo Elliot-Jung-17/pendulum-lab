@@ -79,3 +79,60 @@ test('real WebGPU full-spectrum Lyapunov candidate passes CPU oracle promotion g
   expect(result.spectrum.length).toBe(4);
   expect(result.cpuSpectrum.length).toBe(4);
 });
+
+test('real WebGPU CLV and variational-FTLE candidates pass CPU oracle promotion gates', async ({ page, browserName }) => {
+  test.skip(browserName !== 'chromium', 'WebGPU hardware validation is Chromium-only.');
+  await page.goto('/');
+  const result = await page.evaluate(async () => {
+    if (!(navigator as unknown as { gpu?: unknown }).gpu) {
+      throw new Error('navigator.gpu unavailable; this runner is not a WebGPU hardware CI target.');
+    }
+    const modulePath = '/src/runtime/gpuChaosPromotion.ts';
+    const mod = await import(/* @vite-ignore */ modulePath) as typeof import('../src/runtime/gpuChaosPromotion');
+    const params = { m1: 1, m2: 1, l1: 1, l2: 1, g: 9.81 };
+    const clv = await mod.promotedDoublePendulumClv(
+      params,
+      [1.2, 0.7, 0.12, -0.04],
+      {
+        dt: 0.01,
+        renormEvery: 4,
+        forwardTransient: 4,
+        window: 10,
+        backwardTransient: 2,
+        seed: 0x1234,
+        tolerances: { exponents: 0.2, angle: 0.4 }
+      }
+    );
+    const ftle = await mod.promotedDoublePendulumVariationalFtleField(
+      params,
+      {
+        n: 4,
+        range: [-1.1, 1.1],
+        totalTime: 0.16,
+        dt: 0.04,
+        tolerances: { field: 0.12, aggregate: 0.08 }
+      }
+    );
+    return {
+      clvBackend: clv.backend,
+      clvPassed: clv.comparison?.passed ?? false,
+      clvMetrics: clv.comparison?.metrics ?? null,
+      clvExponents: clv.result.exponents,
+      ftleBackend: ftle.backend,
+      ftlePassed: ftle.comparison?.passed ?? false,
+      ftleMetrics: ftle.comparison?.metrics ?? null,
+      ftleShape: [ftle.field.width, ftle.field.height],
+      ftleRange: [ftle.field.min, ftle.field.max]
+    };
+  });
+  expect(result.clvBackend).toBe('webgpu');
+  expect(result.clvPassed).toBe(true);
+  expect(result.clvMetrics).not.toBeNull();
+  expect(result.clvExponents.length).toBe(4);
+  expect(result.ftleBackend).toBe('webgpu');
+  expect(result.ftlePassed).toBe(true);
+  expect(result.ftleMetrics).not.toBeNull();
+  expect(result.ftleShape).toEqual([4, 4]);
+  expect(Number.isFinite(result.ftleRange[0])).toBe(true);
+  expect(Number.isFinite(result.ftleRange[1])).toBe(true);
+});

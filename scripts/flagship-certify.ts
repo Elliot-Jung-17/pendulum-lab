@@ -25,6 +25,10 @@ const lines = [
   '',
   `Figure 1 SVG hash: \`${certification.figureHash}\``,
   '',
+  `Figure 1 caption: ${certification.figureCaption}`,
+  '',
+  `Reviewer appendix note: ${certification.reviewerAppendixNote}`,
+  '',
   '## Onset Localization Table',
   '',
   '| gamma | A_c | A_PD | ratio | ratio err | rho below | rho above | K below | K above | caveat |',
@@ -32,18 +36,7 @@ const lines = [
 ];
 
 for (const row of certification.rows) {
-  lines.push([
-    `| ${row.gamma.toFixed(2)}`,
-    row.Ac.toFixed(6),
-    row.Apd.toFixed(6),
-    row.ratio.toFixed(6),
-    row.ratioUncertainty.toExponential(2),
-    row.rhoBelow === null ? 'n/a' : row.rhoBelow.toFixed(4),
-    row.rhoAbove === null ? 'n/a' : row.rhoAbove.toFixed(4),
-    row.kBelow === null ? 'n/a' : row.kBelow.toFixed(3),
-    row.kAbove === null ? 'n/a' : row.kAbove.toFixed(3),
-    `${row.caveat} |`
-  ].join(' | '));
+  lines.push(`| ${row.gamma.toFixed(2)} | ${row.Ac.toFixed(6)} | ${row.Apd.toFixed(6)} | ${row.ratio.toFixed(6)} | ${row.ratioUncertainty.toExponential(2)} | ${row.rhoBelow === null ? 'n/a' : row.rhoBelow.toFixed(4)} | ${row.rhoAbove === null ? 'n/a' : row.rhoAbove.toFixed(4)} | ${row.kBelow === null ? 'n/a' : row.kBelow.toFixed(3)} | ${row.kAbove === null ? 'n/a' : row.kAbove.toFixed(3)} | ${row.caveat} |`);
 }
 
 lines.push('', '## Basin / Transient Caveat Map', '');
@@ -55,4 +48,3 @@ await writeFile('reports/flagship-certification.json', `${JSON.stringify(certifi
 await writeFile('reports/flagship-certification.md', `${lines.join('\n')}\n`, 'utf8');
 await writeFile('reports/flagship-figure1.svg', figureSvg, 'utf8');
 console.log(lines.join('\n'));
-

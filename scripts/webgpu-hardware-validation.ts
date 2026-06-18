@@ -77,6 +77,28 @@ interface WebGpuHardwareReport {
     cpuSpectrum?: number[];
     caveat?: string;
   };
+  clv?: {
+    backend?: string;
+    comparison?: {
+      passed?: boolean;
+      metrics?: Record<string, number | boolean>;
+    } | null;
+    exponents?: number[];
+    cpuExponents?: number[];
+    caveat?: string;
+  };
+  variationalFtleField?: {
+    backend?: string;
+    comparison?: {
+      passed?: boolean;
+      metrics?: Record<string, number | boolean>;
+    } | null;
+    width?: number;
+    height?: number;
+    min?: number;
+    max?: number;
+    caveat?: string;
+  };
   error?: string;
   /** Backwards-compatible top-level fields consumed by older scorecards. */
   backend?: string;
@@ -110,8 +132,10 @@ try {
     }
     const ensembleModulePath = '/src/runtime/gpuEnsemble.ts';
     const spectrumModulePath = '/src/runtime/gpuLyapunov.ts';
+    const promotionModulePath = '/src/runtime/gpuChaosPromotion.ts';
     const mod = await import(/* @vite-ignore */ ensembleModulePath) as typeof import('../src/runtime/gpuEnsemble');
     const spectrumMod = await import(/* @vite-ignore */ spectrumModulePath) as typeof import('../src/runtime/gpuLyapunov');
+    const promotionMod = await import(/* @vite-ignore */ promotionModulePath) as typeof import('../src/runtime/gpuChaosPromotion');
     const params = { m1: 1, m2: 1, l1: 1, l2: 1, g: 9.81 };
     const initial = mod.ensembleGrid(5, [-1.1, 1.1]);
     const gpuRun = await mod.runDoublePendulumEnsemble(params, initial, { steps: 80, dt: 0.01 });
@@ -138,6 +162,29 @@ try {
         tolerances: { spectrum: 0.1, aggregate: 0.12 }
       }
     );
+    const clvPromotion = await promotionMod.promotedDoublePendulumClv(
+      params,
+      [1.2, 0.7, 0.12, -0.04],
+      {
+        dt: 0.01,
+        renormEvery: 4,
+        forwardTransient: 4,
+        window: 10,
+        backwardTransient: 2,
+        seed: 0x1234,
+        tolerances: { exponents: 0.2, angle: 0.4 }
+      }
+    );
+    const ftlePromotion = await promotionMod.promotedDoublePendulumVariationalFtleField(
+      params,
+      {
+        n: 4,
+        range: [-1.1, 1.1],
+        totalTime: 0.16,
+        dt: 0.04,
+        tolerances: { field: 0.12, aggregate: 0.08 }
+      }
+    );
     return {
       backend: gpuRun.backend,
       comparison,
@@ -157,14 +204,34 @@ try {
         spectrum: lyapunovPromotion.result.spectrum,
         cpuSpectrum: lyapunovPromotion.cpuOracle.spectrum,
         caveat: lyapunovPromotion.caveat
+      },
+      clv: {
+        backend: clvPromotion.backend,
+        comparison: clvPromotion.comparison,
+        exponents: clvPromotion.result.exponents,
+        cpuExponents: clvPromotion.cpuOracle.exponents,
+        caveat: clvPromotion.caveat
+      },
+      variationalFtleField: {
+        backend: ftlePromotion.backend,
+        comparison: ftlePromotion.comparison,
+        width: ftlePromotion.field.width,
+        height: ftlePromotion.field.height,
+        min: ftlePromotion.field.min,
+        max: ftlePromotion.field.max,
+        caveat: ftlePromotion.caveat
       }
     };
   });
   const ensemble = payload.ensemble as WebGpuHardwareReport['ensemble'] | undefined;
   const lyapunovSpectrum = payload.lyapunovSpectrum as WebGpuHardwareReport['lyapunovSpectrum'] | undefined;
+  const clv = payload.clv as WebGpuHardwareReport['clv'] | undefined;
+  const variationalFtleField = payload.variationalFtleField as WebGpuHardwareReport['variationalFtleField'] | undefined;
   const ensemblePassed = ensemble?.backend === 'webgpu' && ensemble.comparison?.passed;
   const spectrumPassed = lyapunovSpectrum?.backend === 'webgpu' && lyapunovSpectrum.comparison?.passed;
-  status = ensemblePassed && spectrumPassed ? 'pass' : 'fail';
+  const clvPassed = clv?.backend === 'webgpu' && clv.comparison?.passed;
+  const ftlePassed = variationalFtleField?.backend === 'webgpu' && variationalFtleField.comparison?.passed;
+  status = ensemblePassed && spectrumPassed && clvPassed && ftlePassed ? 'pass' : 'fail';
 } catch (error) {
   payload = { error: error instanceof Error ? error.message : String(error) };
 } finally {
@@ -192,6 +259,10 @@ const ensemble = report.ensemble ?? {
 const ensembleComparison = ensemble.comparison;
 const spectrumComparison = report.lyapunovSpectrum?.comparison;
 const spectrumMetrics = spectrumComparison?.metrics ?? {};
+const clvComparison = report.clv?.comparison;
+const clvMetrics = clvComparison?.metrics ?? {};
+const ftleComparison = report.variationalFtleField?.comparison;
+const ftleMetrics = ftleComparison?.metrics ?? {};
 const lines = [
   '# WebGPU Hardware Validation',
   '',
@@ -204,6 +275,10 @@ const lines = [
   `Ensemble backend: \`${String(ensemble.backend ?? 'n/a')}\``,
   '',
   `Full-spectrum backend: \`${String(report.lyapunovSpectrum?.backend ?? 'n/a')}\``,
+  '',
+  `CLV backend: \`${String(report.clv?.backend ?? 'n/a')}\``,
+  '',
+  `Variational-FTLE backend: \`${String(report.variationalFtleField?.backend ?? 'n/a')}\``,
   '',
   '## Ensemble Reduction',
   '',
@@ -225,8 +300,26 @@ const lines = [
   `| sum abs diff | ${typeof spectrumMetrics.sumAbsDiff === 'number' ? spectrumMetrics.sumAbsDiff.toExponential(3) : 'n/a'} |`,
   `| Kaplan-Yorke abs diff | ${typeof spectrumMetrics.kaplanYorkeAbsDiff === 'number' ? spectrumMetrics.kaplanYorkeAbsDiff.toExponential(3) : 'n/a'} |`,
   '',
+  '## CLV Promotion',
+  '',
+  '| Metric | Value |',
+  '|---|---:|',
+  `| passed | ${String(clvComparison?.passed ?? false)} |`,
+  `| exponent max abs diff | ${typeof clvMetrics.exponentMaxAbsDiff === 'number' ? clvMetrics.exponentMaxAbsDiff.toExponential(3) : 'n/a'} |`,
+  `| mean angle abs diff | ${typeof clvMetrics.meanAngleAbsDiff === 'number' ? clvMetrics.meanAngleAbsDiff.toExponential(3) : 'n/a'} |`,
+  `| min angle abs diff | ${typeof clvMetrics.minAngleAbsDiff === 'number' ? clvMetrics.minAngleAbsDiff.toExponential(3) : 'n/a'} |`,
+  '',
+  '## Variational-FTLE Promotion',
+  '',
+  '| Metric | Value |',
+  '|---|---:|',
+  `| passed | ${String(ftleComparison?.passed ?? false)} |`,
+  `| shape | ${String(report.variationalFtleField?.width ?? 'n/a')}x${String(report.variationalFtleField?.height ?? 'n/a')} |`,
+  `| field max abs diff | ${typeof ftleMetrics.fieldMaxAbsDiff === 'number' ? ftleMetrics.fieldMaxAbsDiff.toExponential(3) : 'n/a'} |`,
+  `| field mean abs diff | ${typeof ftleMetrics.fieldMeanAbsDiff === 'number' ? ftleMetrics.fieldMeanAbsDiff.toExponential(3) : 'n/a'} |`,
+  '',
   status === 'pass'
-    ? 'The on-device WebGPU ensemble reduction and full-spectrum Lyapunov candidate matched the CPU f64 oracle within the declared f32 tolerances.'
+    ? 'The on-device WebGPU ensemble reduction, full-spectrum Lyapunov, CLV, and variational-FTLE candidates matched the CPU f64 oracle within the declared f32 tolerances.'
     : `Failure: ${String(report.error ?? 'comparison failed')}`,
   ''
 ];

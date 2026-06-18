@@ -1,5 +1,11 @@
 import { hashText } from './researchExportUtils';
 
+export const FLAGSHIP_FIGURE_1_CAPTION =
+  'Figure 1. Quantitative gap map between the analytic Melnikov homoclinic-tangle threshold A_c(gamma) and the measured period-doubling onset A_PD(gamma) of the primary period-1 attractor at omega=2/3. Error bars report the onset-localization contract, the dashed line marks A_PD/A_c=1, and the vertical marker is the interpolated reversal where the cascade begins below the first-order Melnikov prediction.';
+
+export const FLAGSHIP_REVIEWER_APPENDIX_NOTE =
+  'The flagship claim is not that Melnikov theory predicts the attractor cascade. It is a measured separation map: A_c is analytic first-order geometry, A_PD is a Floquet-refined attractor-branch instability, and the reported reversal is bounded by the exported caveat map and the independent Python A_PD probes.';
+
 export interface FlagshipPaperStudyMeasurement {
   gamma: number;
   Ac: number;
@@ -60,6 +66,8 @@ export interface FlagshipCertification {
   crossing: FlagshipCrossingEstimate | null;
   rows: FlagshipCertifiedRow[];
   refinedGrid: Array<{ gamma: number; ratio: number; ratioUncertainty: number }>;
+  figureCaption: string;
+  reviewerAppendixNote: string;
   figureHash: string;
   status: 'certified' | 'certified-with-caveats' | 'insufficient';
   caveats: string[];
@@ -222,9 +230,10 @@ export function certifyFlagshipGapMap(report: FlagshipPaperStudyReport, sourceSt
     crossing,
     rows,
     refinedGrid,
+    figureCaption: FLAGSHIP_FIGURE_1_CAPTION,
+    reviewerAppendixNote: FLAGSHIP_REVIEWER_APPENDIX_NOTE,
     figureHash: hashText(figureSvg),
     status: crossing ? (caveats.length > 2 ? 'certified-with-caveats' : 'certified') : 'insufficient',
     caveats
   };
 }
-

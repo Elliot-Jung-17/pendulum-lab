@@ -1,0 +1,303 @@
+{
+  "schemaVersion": "pendulum-gpu-benchmark-ladder/v1",
+  "generatedAt": "2026-06-18T12:28:02.860Z",
+  "channel": "chrome",
+  "url": "http://127.0.0.1:5173/",
+  "status": "pass",
+  "adapter": {
+    "vendor": "intel",
+    "architecture": "xe-2lpg",
+    "device": "",
+    "description": "",
+    "features": [
+      "bgra8unorm-storage",
+      "chromium-experimental-multi-draw-indirect",
+      "chromium-experimental-timestamp-query-inside-passes",
+      "clip-distances",
+      "core-features-and-limits",
+      "depth-clip-control",
+      "depth32float-stencil8",
+      "dual-source-blending",
+      "float32-blendable",
+      "float32-filterable",
+      "indirect-first-instance",
+      "primitive-index",
+      "rg11b10ufloat-renderable",
+      "shader-f16",
+      "subgroups",
+      "texture-component-swizzle",
+      "texture-compression-bc",
+      "texture-compression-bc-sliced-3d",
+      "texture-formats-tier1",
+      "texture-formats-tier2",
+      "timestamp-query"
+    ],
+    "limits": {}
+  },
+  "ensemble": {
+    "horizons": [
+      {
+        "steps": 40,
+        "backend": "webgpu",
+        "n": 25,
+        "gpuElapsedMs": 267.69999998807907,
+        "cpuElapsedMs": 3.099999964237213,
+        "reductionComparison": {
+          "passed": true,
+          "nMatches": true,
+          "tolerances": {
+            "mean": 0.0004,
+            "variance": 0.003,
+            "covariance": 0.003,
+            "rmsSpread": 0.003,
+            "flipFraction": 0
+          },
+          "maxMeanAbsDiff": 1.5265566588595902e-16,
+          "maxVarianceAbsDiff": 1.3910863305710564e-7,
+          "maxCovarianceAbsDiff": 1.8548148972286072e-7,
+          "rmsSpreadAbsDiff": 1.766732626862222e-8,
+          "flipFractionAbsDiff": 0,
+          "caveat": "This validates ensemble reduction statistics only; trajectory integration and chaotic divergence still require their own CPU probe gates."
+        },
+        "integrationDriftComparison": {
+          "passed": true,
+          "nMatches": true,
+          "tolerances": {
+            "mean": 0.005,
+            "variance": 0.02,
+            "covariance": 0.02,
+            "rmsSpread": 0.02,
+            "flipFraction": 0
+          },
+          "maxMeanAbsDiff": 1.5265566588595902e-16,
+          "maxVarianceAbsDiff": 0.00000731979761425805,
+          "maxCovarianceAbsDiff": 0.00000731979761425805,
+          "rmsSpreadAbsDiff": 0.0000014851995899789472,
+          "flipFractionAbsDiff": 0,
+          "caveat": "This validates ensemble reduction statistics only; trajectory integration and chaotic divergence still require their own CPU probe gates."
+        }
+      },
+      {
+        "steps": 80,
+        "backend": "webgpu",
+        "n": 25,
+        "gpuElapsedMs": 149.30000001192093,
+        "cpuElapsedMs": 3.599999964237213,
+        "reductionComparison": {
+          "passed": true,
+          "nMatches": true,
+          "tolerances": {
+            "mean": 0.0004,
+            "variance": 0.003,
+            "covariance": 0.003,
+            "rmsSpread": 0.003,
+            "flipFraction": 0
+          },
+          "maxMeanAbsDiff": 1.942890293094024e-16,
+          "maxVarianceAbsDiff": 2.4954673172317143e-7,
+          "maxCovarianceAbsDiff": 2.4954673172317143e-7,
+          "rmsSpreadAbsDiff": 1.5887784421408924e-8,
+          "flipFractionAbsDiff": 0,
+          "caveat": "This validates ensemble reduction statistics only; trajectory integration and chaotic divergence still require their own CPU probe gates."
+        },
+        "integrationDriftComparison": {
+          "passed": true,
+          "nMatches": true,
+          "tolerances": {
+            "mean": 0.005,
+            "variance": 0.02,
+            "covariance": 0.02,
+            "rmsSpread": 0.02,
+            "flipFraction": 0
+          },
+          "maxMeanAbsDiff": 1.942890293094024e-16,
+          "maxVarianceAbsDiff": 0.0000028022110809544643,
+          "maxCovarianceAbsDiff": 0.0000028022110809544643,
+          "rmsSpreadAbsDiff": 1.8931093270779797e-7,
+          "flipFractionAbsDiff": 0,
+          "caveat": "This validates ensemble reduction statistics only; trajectory integration and chaotic divergence still require their own CPU probe gates."
+        }
+      },
+      {
+        "steps": 160,
+        "backend": "webgpu",
+        "n": 25,
+        "gpuElapsedMs": 122.69999998807907,
+        "cpuElapsedMs": 8.399999976158142,
+        "reductionComparison": {
+          "passed": true,
+          "nMatches": true,
+          "tolerances": {
+            "mean": 0.0004,
+            "variance": 0.003,
+            "covariance": 0.003,
+            "rmsSpread": 0.003,
+            "flipFraction": 0
+          },
+          "maxMeanAbsDiff": 6.765421556309548e-17,
+          "maxVarianceAbsDiff": 2.414177719956001e-7,
+          "maxCovarianceAbsDiff": 2.414177719956001e-7,
+          "rmsSpreadAbsDiff": 3.873355325367811e-8,
+          "flipFractionAbsDiff": 0,
+          "caveat": "This validates ensemble reduction statistics only; trajectory integration and chaotic divergence still require their own CPU probe gates."
+        },
+        "integrationDriftComparison": {
+          "passed": true,
+          "nMatches": true,
+          "tolerances": {
+            "mean": 0.005,
+            "variance": 0.02,
+            "covariance": 0.02,
+            "rmsSpread": 0.02,
+            "flipFraction": 0
+          },
+          "maxMeanAbsDiff": 6.765421556309548e-17,
+          "maxVarianceAbsDiff": 0.0000039035271468534916,
+          "maxCovarianceAbsDiff": 0.000004895737389709609,
+          "rmsSpreadAbsDiff": 3.472380472047121e-8,
+          "flipFractionAbsDiff": 0,
+          "caveat": "This validates ensemble reduction statistics only; trajectory integration and chaotic divergence still require their own CPU probe gates."
+        }
+      }
+    ],
+    "allReductionComparisonsPassed": true,
+    "maxIntegrationMeanDrift": 1.942890293094024e-16,
+    "maxIntegrationCovarianceDrift": 0.00000731979761425805,
+    "caveat": "Reduction comparisons use identical CPU f64 states to isolate GPU-side reduction correctness; f32/f64 integration drift is recorded separately because chaotic trajectories diverge with horizon."
+  },
+  "lyapunovSpectrum": {
+    "horizons": [
+      {
+        "steps": 160,
+        "backend": "webgpu",
+        "elapsedMs": 521.9000000357628,
+        "comparison": {
+          "target": "lyapunov-spectrum",
+          "passed": true,
+          "tolerances": {
+            "spectrum": 0.14,
+            "exponents": 0.005,
+            "angle": 0.05,
+            "field": 0.05,
+            "aggregate": 0.16
+          },
+          "metrics": {
+            "spectrumMaxAbsDiff": 0.000016184104569605395,
+            "sumAbsDiff": 1.0664120209114003e-7,
+            "kaplanYorkeAbsDiff": 0
+          },
+          "caveat": "Compares finite-time spectrum outputs for identical settings; does not certify a different integration horizon or seed."
+        },
+        "spectrum": [
+          0.3592336177825928,
+          0.1259945034980774,
+          -0.14805518090724945,
+          -0.2430088222026825
+        ],
+        "cpuSpectrum": [
+          0.35921743367802317,
+          0.125999755421996,
+          -0.14805328952071686,
+          -0.24299990295092744
+        ]
+      },
+      {
+        "steps": 320,
+        "backend": "webgpu",
+        "elapsedMs": 86.89999997615814,
+        "comparison": {
+          "target": "lyapunov-spectrum",
+          "passed": true,
+          "tolerances": {
+            "spectrum": 0.14,
+            "exponents": 0.005,
+            "angle": 0.05,
+            "field": 0.05,
+            "aggregate": 0.16
+          },
+          "metrics": {
+            "spectrumMaxAbsDiff": 0.000004524102837577537,
+            "sumAbsDiff": 4.0721561900269876e-7,
+            "kaplanYorkeAbsDiff": 5.10891931870816e-7
+          },
+          "caveat": "Compares finite-time spectrum outputs for identical settings; does not certify a different integration horizon or seed."
+        },
+        "spectrum": [
+          0.4622645080089569,
+          -0.04176795855164528,
+          -0.07208041846752167,
+          -0.4007229208946228
+        ],
+        "cpuSpectrum": [
+          0.4622683084615795,
+          -0.041767963959451516,
+          -0.07208007799866793,
+          -0.4007274449974604
+        ]
+      }
+    ],
+    "allPromotionComparisonsPassed": true,
+    "maxAdjacentSpectrumShift": 0.16776246204972267,
+    "caveat": "Full-spectrum rows are promoted only after same-run CPU f64 oracle comparison; adjacent-horizon shift is a convergence/stability diagnostic, not a pass/fail tolerance."
+  },
+  "clv": {
+    "backend": "webgpu",
+    "comparison": {
+      "target": "clv",
+      "passed": true,
+      "tolerances": {
+        "spectrum": 0.005,
+        "exponents": 0.2,
+        "angle": 0.4,
+        "field": 0.05,
+        "aggregate": 0.02
+      },
+      "metrics": {
+        "exponentMaxAbsDiff": 0.0000017790113278071118,
+        "meanAngleAbsDiff": 0.0000167742646226543,
+        "minAngleAbsDiff": 0.000012061563667065123
+      },
+      "caveat": "Compares sign-invariant CLV summary quantities; individual vector signs and ordering must be handled by the caller."
+    },
+    "exponents": [
+      2.568254232406616,
+      0.9168167114257812,
+      -2.2300353050231934,
+      -1.8374910354614258
+    ],
+    "cpuExponents": [
+      2.568253480463102,
+      0.9168184614724887,
+      -2.2300348359453146,
+      -1.8374928144727536
+    ],
+    "caveat": "WebGPU f32 CLV summary promoted after same-run CPU f64 Ginelli-oracle comparison; CPU vectors/times are retained for full-resolution inspection."
+  },
+  "variationalFtleField": {
+    "backend": "webgpu",
+    "comparison": {
+      "target": "ftle-field",
+      "passed": true,
+      "tolerances": {
+        "spectrum": 0.005,
+        "exponents": 0.005,
+        "angle": 0.05,
+        "field": 0.12,
+        "aggregate": 0.08
+      },
+      "metrics": {
+        "sameShape": true,
+        "fieldMaxAbsDiff": 0.000024288018357410124,
+        "fieldMeanAbsDiff": 0.0000058587074793226,
+        "minAbsDiff": 7.348325183897941e-7,
+        "maxAbsDiff": 0.000024288018357410124
+      },
+      "caveat": "Compares like-for-like FTLE fields. Variational STM and finite-difference flow-map fields must not be mixed without a method caveat."
+    },
+    "width": 4,
+    "height": 4,
+    "min": 2.6052379608154297,
+    "max": 9.638538360595703,
+    "caveat": "WebGPU f32 variational-STM FTLE field promoted after same-run CPU f64 oracle comparison."
+  }
+}

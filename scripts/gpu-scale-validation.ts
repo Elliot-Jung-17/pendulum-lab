@@ -54,9 +54,35 @@ interface WebGpuHardwareEvidence {
     backend?: string;
     comparison?: { passed?: boolean; metrics?: Record<string, number | boolean> } | null;
   };
+  clv?: {
+    backend?: string;
+    comparison?: { passed?: boolean; metrics?: Record<string, number | boolean> } | null;
+  };
+  variationalFtleField?: {
+    backend?: string;
+    comparison?: { passed?: boolean; metrics?: Record<string, number | boolean> } | null;
+  };
+}
+
+interface GpuBenchmarkLadderEvidence {
+  status?: string;
+  generatedAt?: string;
+  adapter?: { vendor?: string; architecture?: string; name?: string };
+  ensemble?: {
+    allReductionComparisonsPassed?: boolean;
+    maxIntegrationMeanDrift?: number;
+    maxIntegrationCovarianceDrift?: number;
+  };
+  lyapunovSpectrum?: {
+    allPromotionComparisonsPassed?: boolean;
+    maxAdjacentSpectrumShift?: number;
+  };
+  clv?: { backend?: string; comparison?: { passed?: boolean; metrics?: Record<string, number | boolean> } | null } | null;
+  variationalFtleField?: { backend?: string; comparison?: { passed?: boolean; metrics?: Record<string, number | boolean> } | null } | null;
 }
 
 const hardwareEvidence = await readJson<WebGpuHardwareEvidence>('reports/webgpu-hardware-validation.json');
+const gpuBenchmarkLadder = await readJson<GpuBenchmarkLadderEvidence>('reports/gpu-benchmark-ladder.json');
 const hasNavigatorGpu = typeof navigator !== 'undefined' && Boolean((navigator as unknown as { gpu?: unknown }).gpu);
 const summary = {
   schemaVersion: 'pendulum-gpu-scale-validation/v2',
@@ -66,6 +92,7 @@ const summary = {
     ? 'hardware-webgpu-oracle-gates-passed'
     : hasNavigatorGpu ? 'hardware-webgpu-path-available' : 'cpu-reference-mock-and-contract-gates-ready',
   hardwareEvidence,
+  gpuBenchmarkLadder,
   contracts: GPU_SCALE_VALIDATION_CONTRACTS,
   cpuReference: {
     ensemble: {
@@ -129,6 +156,11 @@ lines.push(
   `| GPU-side reduction oracle | ${hardwareReduction ? 'webgpu' : 'unavailable in this runtime'} | ${ensemble.n} | ${hardwareReductionOracle ? `pass=${hardwareReductionOracle.passed}, maxMeanDiff=${hardwareReductionOracle.maxMeanAbsDiff.toExponential(3)}` : 'requires real WebGPU adapter'} |`,
   `| hardware report reduction oracle | ${hardwareEvidence?.ensemble?.backend ?? 'no report'} | 25 | pass=${String(hardwareEvidence?.ensemble?.comparison?.passed ?? false)}, maxMeanDiff=${typeof hardwareEvidence?.ensemble?.comparison?.maxMeanAbsDiff === 'number' ? hardwareEvidence.ensemble.comparison.maxMeanAbsDiff.toExponential(3) : 'n/a'} |`,
   `| hardware report full-spectrum oracle | ${hardwareEvidence?.lyapunovSpectrum?.backend ?? 'no report'} | 4 exponents | pass=${String(hardwareEvidence?.lyapunovSpectrum?.comparison?.passed ?? false)}, spectrumDiff=${typeof hardwareEvidence?.lyapunovSpectrum?.comparison?.metrics?.spectrumMaxAbsDiff === 'number' ? hardwareEvidence.lyapunovSpectrum.comparison.metrics.spectrumMaxAbsDiff.toExponential(3) : 'n/a'} |`,
+  `| hardware report CLV oracle | ${hardwareEvidence?.clv?.backend ?? 'no report'} | 4 exponents | pass=${String(hardwareEvidence?.clv?.comparison?.passed ?? false)}, exponentDiff=${typeof hardwareEvidence?.clv?.comparison?.metrics?.exponentMaxAbsDiff === 'number' ? hardwareEvidence.clv.comparison.metrics.exponentMaxAbsDiff.toExponential(3) : 'n/a'} |`,
+  `| hardware report variational-FTLE oracle | ${hardwareEvidence?.variationalFtleField?.backend ?? 'no report'} | 4x4 | pass=${String(hardwareEvidence?.variationalFtleField?.comparison?.passed ?? false)}, maxDiff=${typeof hardwareEvidence?.variationalFtleField?.comparison?.metrics?.fieldMaxAbsDiff === 'number' ? hardwareEvidence.variationalFtleField.comparison.metrics.fieldMaxAbsDiff.toExponential(3) : 'n/a'} |`,
+  `| GPU benchmark ladder | ${gpuBenchmarkLadder?.status ?? 'no report'} | adapter | vendor=${gpuBenchmarkLadder?.adapter?.vendor ?? 'n/a'}, arch=${gpuBenchmarkLadder?.adapter?.architecture ?? 'n/a'} |`,
+  `| GPU ladder ensemble reductions | ${gpuBenchmarkLadder?.ensemble?.allReductionComparisonsPassed ? 'pass' : 'missing/fail'} | horizons | maxMeanDrift=${typeof gpuBenchmarkLadder?.ensemble?.maxIntegrationMeanDrift === 'number' ? gpuBenchmarkLadder.ensemble.maxIntegrationMeanDrift.toExponential(3) : 'n/a'}, maxCovDrift=${typeof gpuBenchmarkLadder?.ensemble?.maxIntegrationCovarianceDrift === 'number' ? gpuBenchmarkLadder.ensemble.maxIntegrationCovarianceDrift.toExponential(3) : 'n/a'} |`,
+  `| GPU ladder full-spectrum sensitivity | ${gpuBenchmarkLadder?.lyapunovSpectrum?.allPromotionComparisonsPassed ? 'pass' : 'missing/fail'} | horizons | adjacentShift=${typeof gpuBenchmarkLadder?.lyapunovSpectrum?.maxAdjacentSpectrumShift === 'number' ? gpuBenchmarkLadder.lyapunovSpectrum.maxAdjacentSpectrumShift.toExponential(3) : 'n/a'} |`,
   `| flip basin | ${basin.backend} | ${basin.width}x${basin.height} | labelHash=${summary.cpuReference.basin.labelHash} |`,
   `| sweep lambda | ${sweep.backend} | ${sweep.width}x${sweep.height} | lambdaHash=${summary.cpuReference.sweep.lambdaHash} |`,
   `| CLV promotion gate | contract probe | 2 exponents | pass=${clvAccelerationProbe.passed}, exponentDiff=${Number(clvAccelerationProbe.metrics.exponentMaxAbsDiff).toExponential(3)} |`,
@@ -140,11 +172,12 @@ lines.push(
   '- `tests/gpu-ensemble.test.ts` verifies CPU fallback and forceCpu A/B control.',
   '- `tests/gpu-fields-validation.test.ts` installs a mock WebGPU device and proves accept/fallback behavior.',
   '- `tests/ensemble-statistics.test.ts` pins the f64 reduction oracle and the f32-candidate comparison gate.',
-  '- `e2e/webgpu-hardware-reductions.spec.ts` is the hardware-only gate: it fails unless a real adapter returns `backend=webgpu`, the GPU-side reduction matches the CPU oracle, and the WebGPU full-spectrum candidate passes its CPU f64 promotion gate.',
+  '- `e2e/webgpu-hardware-reductions.spec.ts` is the hardware-only gate: it fails unless a real adapter returns `backend=webgpu`, the GPU-side reduction matches the CPU oracle, and the WebGPU full-spectrum, CLV, and variational-FTLE candidates pass their CPU f64 promotion gates.',
+  '- `npm run benchmark:gpu-ladder` records adapter metadata, f32/f64 horizon drift, full-spectrum horizon sensitivity, and CLV/FTLE promotion metrics for release artifacts.',
   '',
   '## CLV / FTLE Promotion Gate',
   '',
-  'CLV, full-spectrum, and variational FTLE acceleration now has executable comparison contracts. A GPU path must emit the same public result schema, pass CPU oracle comparisons on representative regular/chaotic cases, attach Trust Inspector caveats, and fail closed to the CPU path when validation is unavailable.',
+  'CLV, full-spectrum, and variational FTLE acceleration now has executable comparison contracts and 4D double-pendulum WebGPU candidates. A GPU path must emit the same public result schema, pass CPU oracle comparisons on representative regular/chaotic cases, attach Trust Inspector caveats, and fail closed to the CPU path when validation is unavailable.',
   ''
 );
 

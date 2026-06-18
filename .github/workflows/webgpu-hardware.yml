@@ -33,6 +33,9 @@ jobs:
       - run: npm run validate:webgpu-hardware
         env:
           WEBGPU_BROWSER_CHANNEL: chrome
+      - run: npm run benchmark:gpu-ladder
+        env:
+          WEBGPU_BROWSER_CHANNEL: chrome
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -40,3 +43,4 @@ jobs:
           path: |
             reports/playwright/
             reports/webgpu-hardware-validation.*
+            reports/gpu-benchmark-ladder.*

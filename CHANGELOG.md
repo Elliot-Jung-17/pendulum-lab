@@ -2,6 +2,30 @@
 
 ## Unreleased
 
+### WebGPU CLV/FTLE promotion and GPU benchmark ladder (additive; suite 940 -> 944)
+
+The GPU acceleration claim now covers the missing chaos diagnostics without
+pretending beyond the verified scope.
+
+- **CLV WebGPU promotion** (`src/runtime/gpuChaosPromotion.ts`, `experimental`):
+  a scoped 4D double-pendulum WGSL kernel records a forward QR tape and performs
+  the backward triangular solve in storage-buffer compute. The public promotion
+  path still computes the CPU f64 Ginelli oracle first and returns WebGPU only
+  when the exponent and hyperbolicity-angle comparison passes.
+- **Variational-FTLE WebGPU promotion** (`src/runtime/gpuChaosPromotion.ts`,
+  `experimental`): a separate WGSL STM field kernel propagates the variational
+  flow per grid cell and compares cellwise against the CPU f64 variational-STM
+  oracle before promotion.
+- **Hardware evidence expanded** (`e2e/webgpu-hardware-reductions.spec.ts`,
+  `scripts/webgpu-hardware-validation.ts`): the self-hosted WebGPU gate now
+  fails unless ensemble GPU-side reductions, full-spectrum Lyapunov, CLV, and
+  variational-FTLE all report `backend=webgpu` and pass CPU-oracle comparison.
+- **GPU benchmark ladder** (`scripts/gpu-benchmark-ladder.ts`): a release
+  artifact records adapter metadata, f32/f64 ensemble horizon drift, reduction
+  correctness, full-spectrum horizon sensitivity, and CLV/FTLE promotion
+  metrics. It is wired into the WebGPU hardware workflow and release readiness
+  package.
+
 Inverse-problem and uncertainty-quantification library extensions, a symmetry-breaking branch-following step, multiplicative-noise SDEs, reproducibility packaging, and build/line-ending hygiene — followed by **Neimark–Sacker torus continuation**, a **singularity-free embedded spherical-pendulum chart**, and **ensemble statistics**, then a **forward-list pass** that turns the library-only solvers into a full research toolchain: the **embedded spherical *chain*** (pole-clamp-free), the **NS-torus research instruments** (Arnold tongues, torus Lyapunov spectrum, spectral-convergence gate, SciPy cross-validation, Bifurcation-tab UI), **matrix-noise + adaptive SDE schemes**, a **structure-preservation drift profiler**, **transcritical** branch-switching surfacing, a **one-command reproduce pipeline**, expanded **mutation coverage**, and a **Research+ Lab tab** surfacing the inverse problem / PCE surrogate / SDE ensemble. All additive — the 595-test suite grows to 674 with no behavioural change to existing APIs.
 
 ### FPUT recurrence, kink collisions, trajectory derivatives, restarted Arnoldi & WebGPU spectrum gate (additive; suite 907 -> 940)

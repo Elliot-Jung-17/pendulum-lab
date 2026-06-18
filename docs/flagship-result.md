@@ -66,8 +66,10 @@ npm run validate:literature
   `reports/paper-study.json`.
 - Figure 1 is certified separately by `reports/flagship-certification.json`,
   `reports/flagship-certification.md`, and `reports/flagship-figure1.svg`.
-- A dependency-free Python external check recomputes `A_c` and the ratio crossing
-  from the exported `A_PD` values in `reports/flagship-external-check.json`.
+- A dependency-free Python external check recomputes `A_c`, recomputes the ratio
+  crossing, and independently remeasures selected `A_PD` values by RK4
+  stroboscopic integration plus finite-difference Floquet bisection in
+  `reports/flagship-external-check.json`.
 - The caveat is part of the claim: first-order Melnikov theory is asymptotic
   and should not be treated as a strong-damping ordering bound.
 

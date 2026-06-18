@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-06-18T01:08:15.766Z",
+  "generatedAt": "2026-06-18T12:22:57.416Z",
   "results": [
     {
       "label": "original",
       "url": "http://127.0.0.1:5173/",
-      "fps": 9.301748728709436,
-      "physicsMsPerFrame": 0.20000001788139343,
+      "fps": 11.059092417197565,
+      "physicsMsPerFrame": 0.10000002384185791,
       "memoryBytes": 12700000,
       "workerLatencyMs": null
     },
     {
       "label": "candidate",
       "url": "http://127.0.0.1:5173/",
-      "fps": 10.353395913881043,
-      "physicsMsPerFrame": 0.20000001788139343,
+      "fps": 11.156563778356265,
+      "physicsMsPerFrame": 0.20000004768371582,
       "memoryBytes": 12700000,
       "workerLatencyMs": null
     }
@@ -26,23 +26,23 @@
     "deltas": [
       {
         "metric": "fps",
-        "original": 9.301748728709436,
-        "candidate": 10.353395913881043,
-        "delta": 1.051647185171607,
-        "relativeDelta": 0.11305908338780905,
+        "original": 11.059092417197565,
+        "candidate": 11.156563778356265,
+        "delta": 0.09747136115869992,
+        "relativeDelta": 0.00881368538046811,
         "threshold": 0.25,
         "direction": "higher-is-better",
         "status": "pass"
       },
       {
         "metric": "physicsMsPerFrame",
-        "original": 0.20000001788139343,
-        "candidate": 0.20000001788139343,
-        "delta": 0,
-        "relativeDelta": 0,
+        "original": 0.10000002384185791,
+        "candidate": 0.20000004768371582,
+        "delta": 0.10000002384185791,
+        "relativeDelta": 1,
         "threshold": 0.25,
         "direction": "lower-is-better",
-        "status": "pass"
+        "status": "warn"
       },
       {
         "metric": "memoryBytes",
@@ -65,6 +65,6 @@
         "status": "missing"
       }
     ],
-    "status": "pass"
+    "status": "warn"
   }
 }

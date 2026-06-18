@@ -1,6 +1,6 @@
 # Flagship Certification
 
-Generated: 2026-06-18T00:57:53.534Z
+Generated: 2026-06-18T12:22:29.586Z
 
 Status: **CERTIFIED-WITH-CAVEATS**
 
@@ -9,6 +9,10 @@ Source study: `reports/paper-study.json`
 Crossing: `gamma = 0.692973` with localization interval [0.692970, 0.692977].
 
 Figure 1 SVG hash: `07f877d6fdb816`
+
+Figure 1 caption: Figure 1. Quantitative gap map between the analytic Melnikov homoclinic-tangle threshold A_c(gamma) and the measured period-doubling onset A_PD(gamma) of the primary period-1 attractor at omega=2/3. Error bars report the onset-localization contract, the dashed line marks A_PD/A_c=1, and the vertical marker is the interpolated reversal where the cascade begins below the first-order Melnikov prediction.
+
+Reviewer appendix note: The flagship claim is not that Melnikov theory predicts the attractor cascade. It is a measured separation map: A_c is analytic first-order geometry, A_PD is a Floquet-refined attractor-branch instability, and the reported reversal is bounded by the exported caveat map and the independent Python A_PD probes.
 
 ## Onset Localization Table
 

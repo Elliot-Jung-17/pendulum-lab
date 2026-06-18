@@ -6,7 +6,7 @@ authors:
   - family-names: "Jung"
     given-names: "Elliot"
     email: "chanminyoo0417@gmail.com"
-version: "10.34.1"
+version: "10.34.2"
 date-released: "2026-06-18"
 license: MIT
 keywords:

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "pendulum-webgpu-hardware-validation/v1",
-  "generatedAt": "2026-06-18T11:41:38.569Z",
+  "generatedAt": "2026-06-18T12:28:36.119Z",
   "channel": "chrome",
   "url": "http://127.0.0.1:5173/",
   "status": "pass",
@@ -80,5 +80,65 @@
       -0.4007274449974604
     ],
     "caveat": "WebGPU f32 full-spectrum result promoted after same-run CPU f64 oracle comparison; CPU-derived uncertainty estimates are retained."
+  },
+  "clv": {
+    "backend": "webgpu",
+    "comparison": {
+      "target": "clv",
+      "passed": true,
+      "tolerances": {
+        "spectrum": 0.005,
+        "exponents": 0.2,
+        "angle": 0.4,
+        "field": 0.05,
+        "aggregate": 0.02
+      },
+      "metrics": {
+        "exponentMaxAbsDiff": 0.0000017790113278071118,
+        "meanAngleAbsDiff": 0.0000167742646226543,
+        "minAngleAbsDiff": 0.000012061563667065123
+      },
+      "caveat": "Compares sign-invariant CLV summary quantities; individual vector signs and ordering must be handled by the caller."
+    },
+    "exponents": [
+      2.568254232406616,
+      0.9168167114257812,
+      -2.2300353050231934,
+      -1.8374910354614258
+    ],
+    "cpuExponents": [
+      2.568253480463102,
+      0.9168184614724887,
+      -2.2300348359453146,
+      -1.8374928144727536
+    ],
+    "caveat": "WebGPU f32 CLV summary promoted after same-run CPU f64 Ginelli-oracle comparison; CPU vectors/times are retained for full-resolution inspection."
+  },
+  "variationalFtleField": {
+    "backend": "webgpu",
+    "comparison": {
+      "target": "ftle-field",
+      "passed": true,
+      "tolerances": {
+        "spectrum": 0.005,
+        "exponents": 0.005,
+        "angle": 0.05,
+        "field": 0.12,
+        "aggregate": 0.08
+      },
+      "metrics": {
+        "sameShape": true,
+        "fieldMaxAbsDiff": 0.000024288018357410124,
+        "fieldMeanAbsDiff": 0.0000058587074793226,
+        "minAbsDiff": 7.348325183897941e-7,
+        "maxAbsDiff": 0.000024288018357410124
+      },
+      "caveat": "Compares like-for-like FTLE fields. Variational STM and finite-difference flow-map fields must not be mixed without a method caveat."
+    },
+    "width": 4,
+    "height": 4,
+    "min": 2.6052379608154297,
+    "max": 9.638538360595703,
+    "caveat": "WebGPU f32 variational-STM FTLE field promoted after same-run CPU f64 oracle comparison."
   }
 }

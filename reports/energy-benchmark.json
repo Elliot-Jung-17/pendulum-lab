@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-09T07:08:47.108Z",
+  "generatedAt": "2026-06-18T12:22:47.319Z",
   "parameters": {
     "m1": 1,
     "m2": 1,
@@ -16,7 +16,7 @@
       "order": "adaptive",
       "maxRelDrift": 8.974070677127805e-13,
       "finalRelDrift": 3.710185950345992e-13,
-      "wallMs": 383.61439999999993,
+      "wallMs": 401.00929999999994,
       "blewUp": false
     },
     {
@@ -25,7 +25,7 @@
       "order": "5",
       "maxRelDrift": 3.793105569030346e-10,
       "finalRelDrift": 3.8151225320675533e-10,
-      "wallMs": 99.39229999999998,
+      "wallMs": 109.06949999999983,
       "blewUp": false
     },
     {
@@ -34,7 +34,7 @@
       "order": "implicit",
       "maxRelDrift": 9.344328777498148e-10,
       "finalRelDrift": 4.618812358697035e-10,
-      "wallMs": 118.82659999999998,
+      "wallMs": 141.88750000000005,
       "blewUp": false
     },
     {
@@ -43,7 +43,7 @@
       "order": "adaptive",
       "maxRelDrift": 8.292864766017602e-9,
       "finalRelDrift": 8.350665397806893e-9,
-      "wallMs": 76.18060000000003,
+      "wallMs": 101.31770000000006,
       "blewUp": false
     },
     {
@@ -52,7 +52,7 @@
       "order": "4",
       "maxRelDrift": 5.447442742183149e-8,
       "finalRelDrift": 5.43505831437369e-8,
-      "wallMs": 54.0034,
+      "wallMs": 85.7337,
       "blewUp": false
     },
     {
@@ -61,7 +61,7 @@
       "order": "implicit",
       "maxRelDrift": 0.00004336731096288303,
       "finalRelDrift": 1.3059506446600296e-7,
-      "wallMs": 64.85460000000006,
+      "wallMs": 75.08100000000002,
       "blewUp": false
     },
     {
@@ -70,7 +70,7 @@
       "order": "implicit",
       "maxRelDrift": 0.000065512373532857,
       "finalRelDrift": 7.584242545637609e-7,
-      "wallMs": 254.82369999999992,
+      "wallMs": 298.64099999999985,
       "blewUp": false
     },
     {
@@ -79,7 +79,7 @@
       "order": "2",
       "maxRelDrift": 0.00033478632213105957,
       "finalRelDrift": 0.00026450377460319417,
-      "wallMs": 44.58980000000001,
+      "wallMs": 70.31979999999999,
       "blewUp": false
     },
     {
@@ -88,7 +88,16 @@
       "order": "4",
       "maxRelDrift": 0.5390990754912687,
       "finalRelDrift": 0.346458963726784,
-      "wallMs": 207.08820000000003,
+      "wallMs": 249.6531,
+      "blewUp": false
+    },
+    {
+      "id": "verlet",
+      "name": "Velocity Verlet Alias",
+      "order": "2",
+      "maxRelDrift": 0.544779332907903,
+      "finalRelDrift": 0.5448385176223696,
+      "wallMs": 85.10340000000002,
       "blewUp": false
     },
     {
@@ -97,7 +106,7 @@
       "order": "2",
       "maxRelDrift": 0.544779332907903,
       "finalRelDrift": 0.5448385176223696,
-      "wallMs": 53.07989999999998,
+      "wallMs": 81.8954,
       "blewUp": false
     },
     {
@@ -106,7 +115,7 @@
       "order": "1",
       "maxRelDrift": 0.5777911911220786,
       "finalRelDrift": 0.5731628126692367,
-      "wallMs": 44.258399999999995,
+      "wallMs": 64.62620000000004,
       "blewUp": false
     },
     {
@@ -115,7 +124,7 @@
       "order": "1",
       "maxRelDrift": 9.921571027177423,
       "finalRelDrift": 9.759320164752548,
-      "wallMs": 43.040800000000004,
+      "wallMs": 75.5975,
       "blewUp": false
     }
   ]

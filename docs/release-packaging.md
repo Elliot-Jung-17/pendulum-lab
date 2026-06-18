@@ -13,6 +13,7 @@ npm run flagship:certify
 npm run flagship:external
 npm run validate:gpu-scale
 npm run validate:webgpu-hardware
+npm run benchmark:gpu-ladder
 npm run release:package
 npm run reviewer:kit
 ```
@@ -25,6 +26,7 @@ Required outputs:
 - `reports/flagship-external-check.json`
 - `reports/gpu-scale-validation.md`
 - `reports/webgpu-hardware-validation.md`
+- `reports/gpu-benchmark-ladder.md`
 - `reports/release-readiness.md`
 - `reports/release-one-page.pdf`
 - `reports/walkthrough-30s.gif`
@@ -46,6 +48,7 @@ Required outputs:
 - `npm run flagship:external`
 - `npm run validate:gpu-scale`
 - `npm run validate:webgpu-hardware`
+- `npm run benchmark:gpu-ladder`
 - `npm run benchmark:memory`
 - `npm run release:package`
 - `npm run reviewer:kit`

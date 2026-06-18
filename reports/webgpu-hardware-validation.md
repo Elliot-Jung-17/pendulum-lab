@@ -1,6 +1,6 @@
 # WebGPU Hardware Validation
 
-Generated: 2026-06-18T11:41:38.569Z
+Generated: 2026-06-18T12:28:36.119Z
 
 Status: **pass**
 
@@ -9,6 +9,10 @@ Browser channel: `chrome`
 Ensemble backend: `webgpu`
 
 Full-spectrum backend: `webgpu`
+
+CLV backend: `webgpu`
+
+Variational-FTLE backend: `webgpu`
 
 ## Ensemble Reduction
 
@@ -30,4 +34,22 @@ Full-spectrum backend: `webgpu`
 | sum abs diff | 4.072e-7 |
 | Kaplan-Yorke abs diff | 5.109e-7 |
 
-The on-device WebGPU ensemble reduction and full-spectrum Lyapunov candidate matched the CPU f64 oracle within the declared f32 tolerances.
+## CLV Promotion
+
+| Metric | Value |
+|---|---:|
+| passed | true |
+| exponent max abs diff | 1.779e-6 |
+| mean angle abs diff | 1.677e-5 |
+| min angle abs diff | 1.206e-5 |
+
+## Variational-FTLE Promotion
+
+| Metric | Value |
+|---|---:|
+| passed | true |
+| shape | 4x4 |
+| field max abs diff | 2.429e-5 |
+| field mean abs diff | 5.859e-6 |
+
+The on-device WebGPU ensemble reduction, full-spectrum Lyapunov, CLV, and variational-FTLE candidates matched the CPU f64 oracle within the declared f32 tolerances.

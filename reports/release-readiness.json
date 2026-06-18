@@ -1,6 +1,6 @@
 {
   "schemaVersion": "pendulum-release-readiness/v1",
-  "generatedAt": "2026-06-18T11:43:10.643Z",
+  "generatedAt": "2026-06-18T12:28:52.631Z",
   "status": "ready-for-owner-publish",
   "externalPublishSteps": [
     "Enable GitHub Pages for the repository if it is not already enabled.",
@@ -45,7 +45,7 @@
       "path": "reports/reviewer-kit-manifest.json",
       "required": true,
       "available": true,
-      "hash": "1a3068a00b1089",
+      "hash": "126afcaaef6f32",
       "note": "Reviewer kit manifest exists."
     },
     {
@@ -53,8 +53,24 @@
       "path": "reports/webgpu-hardware-validation.md",
       "required": false,
       "available": true,
-      "hash": "16b7765fa9d23a",
+      "hash": "1198fdeaebb1c4",
       "note": "Real WebGPU adapter validation report exists when run on a hardware target."
+    },
+    {
+      "id": "gpu-benchmark-ladder",
+      "path": "reports/gpu-benchmark-ladder.md",
+      "required": true,
+      "available": true,
+      "hash": "03222353ffdfa8",
+      "note": "Hardware GPU benchmark ladder records adapter metadata, f32/f64 drift, and CPU-oracle promotion metrics."
+    },
+    {
+      "id": "gpu-benchmark-ladder-json",
+      "path": "reports/gpu-benchmark-ladder.json",
+      "required": true,
+      "available": true,
+      "hash": "1d216177465ecd",
+      "note": "Machine-readable GPU benchmark ladder for release artifacts."
     },
     {
       "id": "one-page-pdf",

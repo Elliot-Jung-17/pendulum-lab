@@ -216,7 +216,7 @@ const summaryLines = [
   'Flagship: Melnikov threshold vs period-doubling onset gap map.',
   'Reviewer path: npm run validate:gpu-scale; npm run validate:webgpu-hardware; npm run flagship:certify; npm run flagship:external; npm run reviewer:kit.',
   'Trust model: every headline number carries source, params, uncertainty, reproduce command, artifact hash, and caveat.',
-  'GPU rule: accelerated results must match CPU f64 or fail closed to CPU.',
+  'GPU rule: accelerated results must match CPU f64 or fail closed to CPU; benchmark ladder records adapter metadata and horizon drift.',
   'Release surfaces: GitHub Pages workflow, manual npm publish workflow, Zenodo metadata, paper PDF, reviewer manifest.',
   '',
   `Reviewer manifest hash: ${reviewerManifestText ? hashText(reviewerManifestText).slice(0, 16) : 'missing'}`,
@@ -236,6 +236,8 @@ const artifactSpecs = [
   ['paper-pdf', 'paper/paper.pdf', true, 'Flagship paper PDF exists.'],
   ['reviewer-manifest', 'reports/reviewer-kit-manifest.json', true, 'Reviewer kit manifest exists.'],
   ['webgpu-hardware-validation', 'reports/webgpu-hardware-validation.md', false, 'Real WebGPU adapter validation report exists when run on a hardware target.'],
+  ['gpu-benchmark-ladder', 'reports/gpu-benchmark-ladder.md', true, 'Hardware GPU benchmark ladder records adapter metadata, f32/f64 drift, and CPU-oracle promotion metrics.'],
+  ['gpu-benchmark-ladder-json', 'reports/gpu-benchmark-ladder.json', true, 'Machine-readable GPU benchmark ladder for release artifacts.'],
   ['one-page-pdf', 'reports/release-one-page.pdf', true, 'One-page reviewer PDF generated locally.'],
   ['walkthrough-gif', 'reports/walkthrough-30s.gif', true, 'Thirty-second GIF walkthrough generated locally.'],
   ['walkthrough-storyboard', 'reports/walkthrough-storyboard.svg', false, 'Editable storyboard companion for the GIF.']

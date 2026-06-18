@@ -73,6 +73,95 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
 }
 `;
 
+const WGSL_STATS_KERNEL = /* wgsl */ `
+struct Params {
+  n: f32, outputOffset: f32, pad0: f32, pad1: f32,
+};
+@group(0) @binding(0) var<storage, read_write> data: array<f32>;
+@group(0) @binding(1) var<uniform> params: Params;
+
+var<workgroup> sums: array<vec4<f32>, 64>;
+var<workgroup> xx0: array<vec4<f32>, 64>;
+var<workgroup> xx1: array<vec4<f32>, 64>;
+var<workgroup> xx2: array<vec4<f32>, 64>;
+var<workgroup> xx3: array<vec4<f32>, 64>;
+var<workgroup> flips: array<f32, 64>;
+
+@compute @workgroup_size(64)
+fn main(@builtin(local_invocation_id) lid: vec3<u32>) {
+  let local = lid.x;
+  let n = u32(params.n);
+  var s = vec4<f32>(0.0);
+  var r0 = vec4<f32>(0.0);
+  var r1 = vec4<f32>(0.0);
+  var r2 = vec4<f32>(0.0);
+  var r3 = vec4<f32>(0.0);
+  var flip = 0.0;
+  if (local < n) {
+    let base = local * 4u;
+    let x = vec4<f32>(data[base], data[base + 1u], data[base + 2u], data[base + 3u]);
+    s = x;
+    r0 = x.x * x;
+    r1 = x.y * x;
+    r2 = x.z * x;
+    r3 = x.w * x;
+    if (abs(x.x) > 3.14159265358979) {
+      flip = 1.0;
+    }
+  }
+  sums[local] = s;
+  xx0[local] = r0;
+  xx1[local] = r1;
+  xx2[local] = r2;
+  xx3[local] = r3;
+  flips[local] = flip;
+  workgroupBarrier();
+
+  var stride = 32u;
+  loop {
+    if (local < stride) {
+      sums[local] = sums[local] + sums[local + stride];
+      xx0[local] = xx0[local] + xx0[local + stride];
+      xx1[local] = xx1[local] + xx1[local + stride];
+      xx2[local] = xx2[local] + xx2[local + stride];
+      xx3[local] = xx3[local] + xx3[local + stride];
+      flips[local] = flips[local] + flips[local + stride];
+    }
+    workgroupBarrier();
+    if (stride == 1u) {
+      break;
+    }
+    stride = stride / 2u;
+  }
+
+  if (local == 0u) {
+    let out = u32(params.outputOffset);
+    data[out] = f32(n);
+    data[out + 1u] = sums[0].x;
+    data[out + 2u] = sums[0].y;
+    data[out + 3u] = sums[0].z;
+    data[out + 4u] = sums[0].w;
+    data[out + 5u] = xx0[0].x;
+    data[out + 6u] = xx0[0].y;
+    data[out + 7u] = xx0[0].z;
+    data[out + 8u] = xx0[0].w;
+    data[out + 9u] = xx1[0].x;
+    data[out + 10u] = xx1[0].y;
+    data[out + 11u] = xx1[0].z;
+    data[out + 12u] = xx1[0].w;
+    data[out + 13u] = xx2[0].x;
+    data[out + 14u] = xx2[0].y;
+    data[out + 15u] = xx2[0].z;
+    data[out + 16u] = xx2[0].w;
+    data[out + 17u] = xx3[0].x;
+    data[out + 18u] = xx3[0].y;
+    data[out + 19u] = xx3[0].z;
+    data[out + 20u] = xx3[0].w;
+    data[out + 21u] = flips[0];
+  }
+}
+`;
+
 function cpuEnsemble(params: PendulumParameters, damping: number, initial: ArrayLike<number>, options: EnsembleOptions): Float64Array {
   const n = Math.floor(initial.length / 4);
   const out = new Float64Array(initial.length);
@@ -244,6 +333,41 @@ export interface EnsembleStatistics {
   flipFraction: number;
 }
 
+export interface EnsembleStatisticsTolerances {
+  mean?: number;
+  variance?: number;
+  covariance?: number;
+  rmsSpread?: number;
+  flipFraction?: number;
+}
+
+export interface EnsembleStatisticsComparison {
+  passed: boolean;
+  nMatches: boolean;
+  tolerances: Required<EnsembleStatisticsTolerances>;
+  maxMeanAbsDiff: number;
+  maxVarianceAbsDiff: number;
+  maxCovarianceAbsDiff: number;
+  rmsSpreadAbsDiff: number;
+  flipFractionAbsDiff: number;
+  caveat: string;
+}
+
+const DEFAULT_ENSEMBLE_STAT_TOLERANCES: Required<EnsembleStatisticsTolerances> = {
+  mean: 1e-5,
+  variance: 1e-4,
+  covariance: 1e-4,
+  rmsSpread: 1e-4,
+  flipFraction: 0
+};
+
+function maxAbsDiff(a: Float64Array, b: Float64Array): number {
+  const n = Math.min(a.length, b.length);
+  let max = Math.abs(a.length - b.length);
+  for (let i = 0; i < n; i += 1) max = Math.max(max, Math.abs((a[i] ?? 0) - (b[i] ?? 0)));
+  return max;
+}
+
 /**
  * Reduce a packed ensemble ([θ1, θ2, ω1, ω2] per trajectory) to the statistics
  * a basin / uncertainty-cloud study consumes: mean, full covariance, dispersion
@@ -285,6 +409,75 @@ export function ensembleStatistics(states: Float64Array): EnsembleStatistics {
 }
 
 /** Build a grid of initial conditions over (θ1, θ2), released from rest. */
+/**
+ * Compare an accelerated or f32-rounded ensemble reduction with the CPU f64
+ * oracle. Hardware GPU reduction must pass this check before it can be treated
+ * as the same scientific result rather than only as a faster rendering path.
+ */
+export function compareEnsembleStatistics(
+  candidate: EnsembleStatistics,
+  reference: EnsembleStatistics,
+  tolerances: EnsembleStatisticsTolerances = {}
+): EnsembleStatisticsComparison {
+  const resolved = { ...DEFAULT_ENSEMBLE_STAT_TOLERANCES, ...tolerances };
+  const maxMeanAbsDiff = maxAbsDiff(candidate.mean, reference.mean);
+  const maxVarianceAbsDiff = maxAbsDiff(candidate.variance, reference.variance);
+  const maxCovarianceAbsDiff = maxAbsDiff(candidate.covariance, reference.covariance);
+  const rmsSpreadAbsDiff = Math.abs(candidate.rmsSpread - reference.rmsSpread);
+  const flipFractionAbsDiff = Math.abs(candidate.flipFraction - reference.flipFraction);
+  const nMatches = candidate.n === reference.n;
+  const passed = nMatches
+    && maxMeanAbsDiff <= resolved.mean
+    && maxVarianceAbsDiff <= resolved.variance
+    && maxCovarianceAbsDiff <= resolved.covariance
+    && rmsSpreadAbsDiff <= resolved.rmsSpread
+    && flipFractionAbsDiff <= resolved.flipFraction;
+  return {
+    passed,
+    nMatches,
+    tolerances: resolved,
+    maxMeanAbsDiff,
+    maxVarianceAbsDiff,
+    maxCovarianceAbsDiff,
+    rmsSpreadAbsDiff,
+    flipFractionAbsDiff,
+    caveat: 'This validates ensemble reduction statistics only; trajectory integration and chaotic divergence still require their own CPU probe gates.'
+  };
+}
+
+/**
+ * WebGPU-side ensemble reduction for the hardware validation gate. The current
+ * kernel intentionally supports one 64-thread workgroup, which is enough for CI
+ * probes and prevents a false "scale" claim before multi-workgroup reductions
+ * are separately validated.
+ */
+export async function webgpuEnsembleStatistics(states: Float64Array): Promise<EnsembleStatistics | null> {
+  const n = Math.floor(states.length / 4);
+  if (n <= 0 || n > 64) return null;
+  const outputOffset = n * 4;
+  const data = new Float32Array(outputOffset + 22);
+  data.set(new Float32Array(states), 0);
+  const reduced = await runComputeKernel(WGSL_STATS_KERNEL, new Float32Array([n, outputOffset, 0, 0]), data, 64);
+  if (!reduced) return null;
+  const count = Math.round(reduced[outputOffset] ?? 0);
+  if (count !== n) return null;
+  const mean = new Float64Array(4);
+  for (let i = 0; i < 4; i += 1) mean[i] = (reduced[outputOffset + 1 + i] ?? 0) / n;
+  const covariance = new Float64Array(16);
+  const variance = new Float64Array(4);
+  const secondOffset = outputOffset + 5;
+  for (let a = 0; a < 4; a += 1) {
+    for (let b = 0; b < 4; b += 1) {
+      const secondMoment = (reduced[secondOffset + a * 4 + b] ?? 0) / n;
+      covariance[a * 4 + b] = secondMoment - (mean[a] ?? 0) * (mean[b] ?? 0);
+    }
+    variance[a] = covariance[a * 4 + a] ?? 0;
+  }
+  const rmsSpread = Math.sqrt(Math.max(0, (variance[0] ?? 0) + (variance[1] ?? 0) + (variance[2] ?? 0) + (variance[3] ?? 0)));
+  const flipFraction = (reduced[outputOffset + 21] ?? 0) / n;
+  return { n, mean, variance, covariance, rmsSpread, flipFraction };
+}
+
 export function ensembleGrid(n: number, range: [number, number]): Float64Array {
   const out = new Float64Array(n * n * 4);
   for (let j = 0; j < n; j += 1) {

@@ -42,6 +42,33 @@ export interface UnitaryFloquetKrylovSpectrum {
   basisSize: number;
 }
 
+export interface UnitaryFloquetArnoldiSchurOptions extends UnitaryFloquetKrylovOptions {
+  /** Number of Ritz values to keep from the projected Schur/Ritz spectrum. */
+  targetCount?: number;
+  /** Residual bound required for the projected subspace to be accepted. */
+  residualTolerance?: number;
+  /** Optional phase window; values nearest these target phases are reported first. */
+  targetPhases?: readonly number[];
+}
+
+export interface UnitaryFloquetArnoldiSchurPair {
+  eigenvalue: Complex;
+  phase: number;
+  quasiEnergy: number;
+  /** Shared Arnoldi residual bound from the final Krylov step. */
+  residualBound: number;
+}
+
+export interface UnitaryFloquetArnoldiSchurSpectrum {
+  projectedMatrix: ComplexMatrix;
+  selected: UnitaryFloquetArnoldiSchurPair[];
+  spectrum: UnitaryFloquetSpectrum;
+  residualNorms: number[];
+  basisSize: number;
+  converged: boolean;
+  caveat: string;
+}
+
 const c = (re = 0, im = 0): Complex => ({ re, im });
 const cAdd = (a: Complex, b: Complex): Complex => ({ re: a.re + b.re, im: a.im + b.im });
 const cSub = (a: Complex, b: Complex): Complex => ({ re: a.re - b.re, im: a.im - b.im });
@@ -346,5 +373,55 @@ export function complexUnitaryFloquetKrylovSpectrum(
     spectrum: complexUnitaryFloquetSpectrum(projectedMatrix, options),
     residualNorms,
     basisSize
+  };
+}
+
+function principalPhaseDistance(a: number, b: number): number {
+  return Math.abs(Math.atan2(Math.sin(a - b), Math.cos(a - b)));
+}
+
+/**
+ * Matrix-free Arnoldi-Schur style Floquet spectrum for sparse/large unitary
+ * operators. The large operator is accessed only through `apply(v) = Uv`; the
+ * small projected Hessenberg matrix is diagonalised densely, then the selected
+ * Ritz values are reported with the final Arnoldi residual bound. This is the
+ * publication-facing large-Floquet path: dense `complexUnitaryFloquetSpectrum`
+ * remains the small-matrix oracle, while this function carries the explicit
+ * subspace size, convergence flag, and caveat expected by Trust Inspector.
+ */
+export function complexUnitaryFloquetArnoldiSchurSpectrum(
+  apply: ComplexLinearOperator,
+  options: UnitaryFloquetArnoldiSchurOptions
+): UnitaryFloquetArnoldiSchurSpectrum {
+  const projected = complexUnitaryFloquetKrylovSpectrum(apply, options);
+  const residualBound = projected.residualNorms.at(-1) ?? Infinity;
+  const residualTolerance = options.residualTolerance ?? options.tolerance ?? 1e-10;
+  const hbar = options.hbar ?? 1;
+  const period = options.period ?? 1;
+  const rows = projected.spectrum.eigenvalues.map((eigenvalue, index) => ({
+    eigenvalue,
+    phase: projected.spectrum.phases[index] ?? Math.atan2(eigenvalue.im, eigenvalue.re),
+    quasiEnergy: projected.spectrum.quasiEnergies[index] ?? (-hbar * Math.atan2(eigenvalue.im, eigenvalue.re)) / period,
+    residualBound
+  }));
+  const targetPhases = options.targetPhases ?? [];
+  rows.sort((a, b) => {
+    if (targetPhases.length) {
+      const da = Math.min(...targetPhases.map((phase) => principalPhaseDistance(a.phase, phase)));
+      const db = Math.min(...targetPhases.map((phase) => principalPhaseDistance(b.phase, phase)));
+      if (da !== db) return da - db;
+    }
+    return a.phase - b.phase;
+  });
+  const targetCount = Math.max(1, Math.min(rows.length, Math.trunc(options.targetCount ?? rows.length)));
+  const selected = rows.slice(0, targetCount);
+  return {
+    projectedMatrix: projected.projectedMatrix,
+    selected,
+    spectrum: projected.spectrum,
+    residualNorms: projected.residualNorms,
+    basisSize: projected.basisSize,
+    converged: residualBound <= residualTolerance,
+    caveat: 'Arnoldi-Schur projection of a matrix-free unitary operator; increase krylovDim or use shift/filtering for crowded phase windows.'
   };
 }

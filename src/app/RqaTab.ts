@@ -52,7 +52,16 @@ export class RqaTab extends TabController {
       this.render();
       const verdict = r.determinism > 0.85 && r.divergence < 0.1 ? 'regular/structured' : 'chaotic/stochastic';
       this.dom.setText('rqaStatus', `done · DET=${r.determinism.toFixed(3)}±${r.determinismStdError.toFixed(3)} · DIV=${r.divergence.toFixed(3)}±${r.divergenceStdError.toFixed(3)} (${r.uncertaintyBlocks} blocks) · ${verdict}`);
-      this.badge('rqaStatus', 'finite-time-estimate', 'RQA metrics: finite-window estimates with block std errors.');
+      this.badge('rqaStatus', 'finite-time-estimate', 'RQA metrics: finite-window estimates with block std errors.', {
+        title: 'RQA Trust',
+        source: 'RQA tab -> ChaosClient.rqa',
+        parameters: { system: spec.kind, dimension, delay, targetRecurrenceRate: 0.1, blocks: r.uncertaintyBlocks },
+        uncertainty: `DET SE ${r.determinismStdError.toPrecision(4)}, DIV SE ${r.divergenceStdError.toPrecision(4)} from block resampling.`,
+        externalValidation: 'Non-variational recurrence geometry cross-check; pinned by sine/noise and pendulum fixtures.',
+        reproduce: 'npm test -- tests/rqa.test.ts tests/uncertainty.test.ts',
+        caveat: 'Delay embedding, threshold choice, and finite sequence length affect DET/DIV comparability.',
+        artifact: 'CSV export: pendulum_rqa.csv'
+      });
     } catch (err) {
       this.dom.setText('rqaStatus', `error: ${err instanceof Error ? err.message : String(err)}`);
     } finally {

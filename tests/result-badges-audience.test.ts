@@ -73,5 +73,8 @@ describe('audience modes', () => {
       expect(meta.label.length).toBeGreaterThan(2);
       expect(meta.description.length).toBeGreaterThan(10);
     }
+    expect(AUDIENCE_MODES.beginner.summary).toContain('without paper');
+    expect(AUDIENCE_MODES.research.description).toContain('Trust Inspector');
+    expect(AUDIENCE_MODES.research.summary).toContain('reviewer commands');
   });
 });

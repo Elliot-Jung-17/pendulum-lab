@@ -52,15 +52,22 @@ const packageJson = await readJson<{ scripts?: Record<string, string> }>('packag
 const scripts = packageJson.scripts ?? {};
 const vitest = await readJson<{ numTotalTests?: number; numPassedTests?: number; testResults?: unknown[] }>('reports/vitest-results.json', {});
 const benchmark = await readJson<{ comparison?: { deltas?: unknown[] } }>('reports/benchmark-report.json', {});
+const gpuScaleValidation = await readJson<{ cpuReference?: { ensemble?: { f32ReductionOracle?: { passed?: boolean } } } }>('reports/gpu-scale-validation.json', {});
+const webgpuHardwareValidation = await readJson<{ status?: string; backend?: string }>('reports/webgpu-hardware-validation.json', {});
+const releaseReadiness = await readJson<{ status?: string }>('reports/release-readiness.json', {});
 const unitTestSummary = Number.isInteger(vitest.numTotalTests) && Array.isArray(vitest.testResults)
   ? `${vitest.numPassedTests ?? 0}/${vitest.numTotalTests} unit tests across ${vitest.testResults.length} files`
   : 'unit test JSON report missing; run npm run test:json';
 const ciWorkflow = await readText('.github/workflows/ci.yml');
 const mainWorkflow = await readText('.github/workflows/main.yml');
+const webgpuHardwareWorkflow = await readText('.github/workflows/webgpu-hardware.yml');
 const resultBadgesSource = await readText('src/app/resultBadges.ts');
 const researchWorkbenchSource = await readText('src/app/parity/research-workbench.ts');
 const storageSyncSource = await readText('src/app/parity/storage-sync.ts');
+const researchSessionStorageSource = await readText('src/app/parity/research-session-storage.ts');
 const certifiedWorkbenchSource = await readText('src/research/certifiedWorkbench.ts');
+const accelerationContractSource = await readText('src/chaos/accelerationContract.ts');
+const unitaryFloquetSource = await readText('src/research/unitaryFloquet.ts');
 const weightedLegacyCounts = Object.entries(legacy.counts)
   .filter(([key]) => (legacy.weights?.[key] ?? 1) > 0)
   .map(([, value]) => value);
@@ -73,13 +80,24 @@ const has = {
   memoryRegression: await exists('reports/memory-regression-report.md'),
   memoryBaseline: await exists('reports/memory-baseline.json'),
   flagshipDoc: await exists('docs/flagship-result.md'),
+  flagshipCertification: await exists('reports/flagship-certification.json'),
+  flagshipFigure: await exists('reports/flagship-figure1.svg'),
+  flagshipExternalCheck: await exists('reports/flagship-external-check.json'),
   reviewerKitDoc: await exists('docs/reviewer-kit.md'),
   reviewerKitManifest: await exists('reports/reviewer-kit-manifest.json'),
   reviewerKitManifestMd: await exists('reports/reviewer-kit-manifest.md'),
   reviewerKitScript: await exists('scripts/reviewer-kit.ts'),
+  releasePackagingDoc: await exists('docs/release-packaging.md'),
+  releaseReadiness: await exists('reports/release-readiness.json'),
+  releaseOnePagePdf: await exists('reports/release-one-page.pdf'),
+  walkthroughGif: await exists('reports/walkthrough-30s.gif'),
   gpuScaleReport: await exists('reports/gpu-scale-validation.md'),
   gpuScaleJson: await exists('reports/gpu-scale-validation.json'),
   gpuScaleScript: await exists('scripts/gpu-scale-validation.ts'),
+  gpuReductionOracle: gpuScaleValidation.cpuReference?.ensemble?.f32ReductionOracle?.passed === true,
+  webgpuHardwareReport: await exists('reports/webgpu-hardware-validation.md'),
+  webgpuHardwareJson: await exists('reports/webgpu-hardware-validation.json'),
+  webgpuHardwarePass: webgpuHardwareValidation.status === 'pass' && webgpuHardwareValidation.backend === 'webgpu',
   mojibakeAudit: await exists('reports/mojibake-audit.md'),
   validation: await exists('reports/validation-report.md'),
   reference: await exists('reports/validation-reference.md'),
@@ -91,6 +109,8 @@ const has = {
   nightlyWorkflow: await exists('.github/workflows/nightly.yml'),
   releaseWorkflow: await exists('.github/workflows/release.yml'),
   pagesWorkflow: await exists('.github/workflows/pages.yml'),
+  webgpuHardwareWorkflow: await exists('.github/workflows/webgpu-hardware.yml'),
+  webgpuHardwareE2e: await exists('e2e/webgpu-hardware-reductions.spec.ts'),
   distIndex: await exists('dist/index.html'),
   license: await exists('LICENSE'),
   citation: await exists('CITATION.cff'),
@@ -105,34 +125,50 @@ const has = {
   visualSnapshots: await exists('e2e/visual-regression.spec.ts-snapshots'),
   certifiedWorkbenchModule: await exists('src/research/certifiedWorkbench.ts'),
   trustInspectorUi: resultBadgesSource.includes('openTrustInspector') && resultBadgesSource.includes('trust-inspector-panel'),
+  trustInspectorE2e: await exists('e2e/trust-inspector.spec.ts'),
   researchWorkspaceCard: researchWorkbenchSource.includes('researchWorkspaceCard') && researchWorkbenchSource.includes('rwWorkspaceSelect'),
   researchWorkspaceList: researchWorkbenchSource.includes('workspaces') && storageSyncSource.includes('sanitizeWorkspaceList'),
+  researchProjectSessions: researchWorkbenchSource.includes('rwProjectName') && researchWorkbenchSource.includes('activeResearchSession') && researchSessionStorageSource.includes('sanitizeResearchSession'),
   visualTier: Boolean(scripts['test:visual']),
   quickTier: Boolean(scripts['test:quick']),
   slowTier: Boolean(scripts['test:slow']),
+  flagshipCertifyCommand: Boolean(scripts['flagship:certify']),
+  flagshipExternalCommand: Boolean(scripts['flagship:external']),
+  releasePackageCommand: Boolean(scripts['release:package']),
+  webgpuHardwareCommand: Boolean(scripts['test:webgpu-hardware']),
+  webgpuHardwareValidateCommand: Boolean(scripts['validate:webgpu-hardware']),
   reviewerKitCommand: Boolean(scripts['reviewer:kit']),
   gpuScaleCommand: Boolean(scripts['validate:gpu-scale']),
   benchmarkMemoryScript: Boolean(scripts['benchmark:memory']),
   ciRunsQuickTier: ciWorkflow.includes('npm run test:quick'),
   ciRunsGpuScale: ciWorkflow.includes('npm run validate:gpu-scale') || mainWorkflow.includes('npm run validate:gpu-scale'),
+  webgpuWorkflowRunsValidation: webgpuHardwareWorkflow.includes('npm run validate:webgpu-hardware'),
   ciRunsReviewerKit: ciWorkflow.includes('npm run reviewer:kit') || mainWorkflow.includes('npm run reviewer:kit'),
   ciRunsVerify: ciWorkflow.includes('npm run verify'),
   mainRunsSlowTier: mainWorkflow.includes('npm run test:slow'),
   mainRunsBenchmark: mainWorkflow.includes('npm run benchmark'),
   mainRunsMemoryRegression: mainWorkflow.includes('npm run benchmark:memory'),
-  mainRunsMojibakeStrict: mainWorkflow.includes('npm run audit:mojibake:strict')
+  mainRunsMojibakeStrict: mainWorkflow.includes('npm run audit:mojibake:strict'),
+  mainRunsReleasePackage: mainWorkflow.includes('npm run release:package'),
+  releaseReadyStatus: releaseReadiness.status === 'ready-for-owner-publish',
+  chaosAccelerationContracts: accelerationContractSource.includes('compareClvAcceleration') && accelerationContractSource.includes('compareFtleFieldAcceleration') && accelerationContractSource.includes('compareLyapunovSpectrumAcceleration'),
+  arnoldiSchurFloquet: unitaryFloquetSource.includes('complexUnitaryFloquetArnoldiSchurSpectrum')
 };
 
 const pagesReady = has.pagesWorkflow && has.distIndex;
-const packagingReady = pagesReady && has.license && has.citation && has.typedocIndex;
+const releasePackageReady = has.releasePackageCommand && has.releaseReadiness && has.releaseOnePagePdf && has.walkthroughGif && has.mainRunsReleasePackage && has.releaseReadyStatus;
+const packagingReady = pagesReady && has.license && has.citation && has.typedocIndex && releasePackageReady;
 const testTierReady = has.quickTier && has.slowTier && has.ciRunsQuickTier && has.ciRunsVerify && has.mainRunsSlowTier;
 const visualReady = has.visualRegressionE2e && has.visualSnapshots && has.visualTier;
 const memoryReady = has.benchmarkMemoryScript && has.memoryRegression && has.memoryBaseline;
 const benchmarkReady = has.benchmark && has.energy && benchmarkHasComparison;
 const flagshipReady = has.certifiedWorkbenchModule && has.flagshipDoc && certifiedWorkbenchSource.includes('melnikov-gap-map');
-const reviewerKitReady = flagshipReady && has.reviewerKitDoc && has.reviewerKitScript && has.reviewerKitCommand && has.reviewerKitManifest && has.reviewerKitManifestMd;
-const gpuScaleReady = has.gpuScaleCommand && has.gpuScaleScript && has.gpuScaleReport && has.gpuScaleJson && has.ciRunsGpuScale;
-const trustWorkspaceReady = has.trustInspectorUi && has.researchWorkspaceCard && has.researchWorkspaceList;
+const flagshipCertified = flagshipReady && has.flagshipCertifyCommand && has.flagshipCertification && has.flagshipFigure && has.flagshipExternalCommand && has.flagshipExternalCheck;
+const reviewerKitReady = flagshipCertified && has.reviewerKitDoc && has.reviewerKitScript && has.reviewerKitCommand && has.reviewerKitManifest && has.reviewerKitManifestMd;
+const gpuScaleReady = has.gpuScaleCommand && has.gpuScaleScript && has.gpuScaleReport && has.gpuScaleJson && has.gpuReductionOracle && has.ciRunsGpuScale && has.webgpuHardwareWorkflow && has.webgpuHardwareE2e && has.webgpuHardwareCommand && has.webgpuHardwareValidateCommand && has.webgpuWorkflowRunsValidation && has.webgpuHardwareReport && has.webgpuHardwareJson && has.webgpuHardwarePass;
+const chaosAccelerationReady = has.chaosAccelerationContracts;
+const sparseFloquetReady = has.arnoldiSchurFloquet;
+const trustWorkspaceReady = has.trustInspectorUi && has.trustInspectorE2e && has.researchWorkspaceCard && has.researchWorkspaceList && has.researchProjectSessions;
 
 const items: ScorecardItem[] = [
   {
@@ -159,12 +195,15 @@ const items: ScorecardItem[] = [
     status: reviewerKitReady ? 'done' : flagshipReady ? 'partial' : 'gap',
     evidence: [
       flagshipReady ? 'flagship module and docs name the Melnikov threshold vs period-doubling gap map as the crown result' : 'flagship result contract missing',
+      has.flagshipCertification ? 'flagship certification report exists with Figure 1 hash, crossing interval, onset table, and caveat map' : 'flagship certification report missing',
+      has.flagshipExternalCheck ? 'dependency-free Python external check exists for A_c and ratio crossing arithmetic' : 'flagship external check missing',
       has.reviewerKitCommand ? 'npm run reviewer:kit exists' : 'reviewer kit command missing',
       has.reviewerKitManifest ? 'reviewer-kit manifest exists' : 'reviewer-kit manifest missing',
       has.reviewerKitDoc ? 'reviewer-kit documentation exists' : 'reviewer-kit documentation missing'
     ],
     remaining: [
       ...(!flagshipReady ? ['Define one flagship result contract and paper-facing doc'] : []),
+      ...(!flagshipCertified ? ['Run npm run flagship:certify and npm run flagship:external to generate Figure 1 certification artifacts'] : []),
       ...(!reviewerKitReady ? ['Generate reports/reviewer-kit-manifest.json and .md with npm run reviewer:kit'] : [])
     ]
   },
@@ -173,33 +212,37 @@ const items: ScorecardItem[] = [
     status: trustWorkspaceReady ? 'done' : 'partial',
     evidence: [
       has.trustInspectorUi ? 'result badges open a Trust Inspector with source, parameters, uncertainty, external validation, reproduce command, caveat, artifact, and hash fields' : 'Trust Inspector badge panel missing',
+      has.trustInspectorE2e ? 'Trust Inspector DOM/e2e spec verifies click, keyboard open, content, Escape, and close behavior' : 'Trust Inspector DOM/e2e spec missing',
       has.researchWorkspaceCard ? 'Research tab includes the Certified Workspace card' : 'Certified Workspace card missing',
       has.researchWorkspaceList ? 'workspace profile list and storage sanitizer exist' : 'workspace profile list or storage sanitizer missing',
+      has.researchProjectSessions ? 'workspace storage now models Project -> Sessions -> Runs -> Artifacts' : 'project/session/artifact hierarchy missing',
       'audience modes gate beginner/student/research surfaces'
     ],
-    remaining: trustWorkspaceReady ? [] : ['Complete Trust Inspector wiring and persisted workspace profile list']
+    remaining: trustWorkspaceReady ? [] : ['Complete Trust Inspector e2e coverage and Project -> Sessions -> Runs -> Artifacts workspace hierarchy']
   },
   {
     area: 'Numerics and physics depth',
-    status: 'partial',
+    status: sparseFloquetReady ? 'done' : 'partial',
     evidence: [
       'RKF45, Dormand-Prince 5(4), DOP853-adjacent GBS extrapolation, Gauss-Legendre 4/6, TR-BDF2, canonical midpoint, N-pendulum, driven, spring systems are present in src',
       'Floquet multipliers, natural + pseudo-arclength continuation, period-doubling branch switching, and the Melnikov analytic threshold are implemented and tested',
       'external cross-validation vs an independent SciPy DOP853 reference covers the double AND triple pendulum; literature anchors pin the elliptic period, normal modes, and the period-doubling onset',
-      gpuScaleReady ? 'GPU/scale validation contract report exists and is wired into CI' : 'GPU/scale validation contract or CI wiring is incomplete'
+      gpuScaleReady ? 'GPU/scale validation contract report exists, CI runs it, and real WebGPU hardware validation has passed against the CPU oracle' : 'GPU/scale validation contract or CI wiring is incomplete',
+      sparseFloquetReady ? 'matrix-free Arnoldi-Schur Floquet wrapper exists for sparse/large unitary operators' : 'sparse/large Floquet Arnoldi-Schur wrapper missing'
     ],
-    remaining: ['Sparse/large-unitary Floquet eigensolvers and optional MATLAB/Julia second references remain future work']
+    remaining: sparseFloquetReady ? ['Optional MATLAB/Julia second references remain release-hardening work'] : ['Sparse/large-unitary Floquet eigensolver still missing']
   },
   {
     area: 'Chaos analysis',
-    status: 'partial',
+    status: chaosAccelerationReady ? 'done' : 'partial',
     evidence: [
       'Maximal Lyapunov convergence, full spectrum, Kaplan-Yorke dimension, SALI/FLI, Poincare, bifurcation modules exist and are tested',
       'covariant Lyapunov vectors (Ginelli), 0-1 test, RQA, FTLE fields, basin entropy and the Wada grid test are implemented as tabs + library APIs',
       'every non-variational diagnostic reports an uncertainty estimate (bootstrap / block-resampled / regression CI)',
-      has.gpuScaleReport ? 'gpu-scale validation report separates acceleration caveats from scientific claims' : 'gpu-scale validation report missing'
+      has.gpuScaleReport ? 'gpu-scale validation report separates acceleration caveats from scientific claims' : 'gpu-scale validation report missing',
+      chaosAccelerationReady ? 'CLV, full-spectrum, and FTLE acceleration promotion contracts are executable comparison functions' : 'CLV/FTLE/full-spectrum acceleration contracts missing'
     ],
-    remaining: ['CLV and some full-spectrum workflows remain CPU-side; broader GPU acceleration is limited to the existing grid/ensemble kernels with CPU reference gates']
+    remaining: chaosAccelerationReady ? ['Production CLV/full-spectrum GPU kernels remain CPU-fallback until a hardware candidate passes the contract'] : ['Add executable CLV/FTLE/full-spectrum acceleration comparison contracts']
   },
   {
     area: 'GPU and scale validation',
@@ -208,10 +251,16 @@ const items: ScorecardItem[] = [
       has.gpuScaleCommand ? 'npm run validate:gpu-scale exists' : 'validate:gpu-scale command missing',
       has.gpuScaleReport ? 'reports/gpu-scale-validation.md exists' : 'gpu-scale validation report missing',
       has.gpuScaleJson ? 'reports/gpu-scale-validation.json exists' : 'gpu-scale validation JSON missing',
+      has.gpuReductionOracle ? 'ensemble f32-candidate reduction passes the CPU f64 oracle comparison' : 'ensemble reduction oracle result missing from gpu-scale validation JSON',
       has.ciRunsGpuScale ? 'CI runs validate:gpu-scale' : 'CI does not run validate:gpu-scale',
+      has.webgpuHardwareWorkflow ? 'self-hosted WebGPU hardware workflow exists and fails when a real adapter is absent' : 'WebGPU hardware workflow missing',
+      has.webgpuHardwareE2e ? 'hardware e2e compares GPU-side ensemble reduction with the CPU oracle' : 'hardware GPU reduction e2e missing',
+      has.webgpuHardwareValidateCommand ? 'npm run validate:webgpu-hardware exists' : 'validate:webgpu-hardware command missing',
+      has.webgpuWorkflowRunsValidation ? 'self-hosted WebGPU workflow writes the hardware validation report' : 'WebGPU workflow does not run validate:webgpu-hardware',
+      has.webgpuHardwarePass ? 'reports/webgpu-hardware-validation.json records backend=webgpu and status=pass' : 'hardware WebGPU validation report is missing or not passing',
       'current contract treats CPU f64 as the scientific oracle; WebGPU may accelerate only after agreement or fallback'
     ],
-    remaining: gpuScaleReady ? [] : ['Run npm run validate:gpu-scale and wire it into CI']
+    remaining: gpuScaleReady ? [] : ['Run npm run validate:gpu-scale and npm run validate:webgpu-hardware, then wire both into CI/hardware WebGPU workflow']
   },
   {
     area: 'Testing and browser coverage',
@@ -265,11 +314,15 @@ const items: ScorecardItem[] = [
   },
   {
     area: 'Documentation and portfolio readiness',
-    status: has.architecture && has.numerics && has.limitations && has.validation && packagingReady && reviewerKitReady ? 'done' : 'partial',
+    status: has.architecture && has.numerics && has.limitations && has.validation && has.releasePackagingDoc && packagingReady && reviewerKitReady ? 'done' : 'partial',
     evidence: [
       'README, architecture, numerics, security, validation, energy benchmark, changelog, roadmap, and portfolio summary artifacts exist',
       has.flagshipDoc ? 'flagship result doc exists' : 'flagship result doc missing',
       has.reviewerKitDoc ? 'reviewer-kit doc exists' : 'reviewer-kit doc missing',
+      has.releasePackagingDoc ? 'release packaging checklist exists' : 'release packaging checklist missing',
+      has.releaseReadiness ? 'release-readiness manifest exists' : 'release-readiness manifest missing',
+      has.releaseOnePagePdf ? 'one-page release PDF exists' : 'one-page release PDF missing',
+      has.walkthroughGif ? '30-second walkthrough GIF exists' : 'walkthrough GIF missing',
       has.pagesWorkflow ? 'GitHub Pages workflow exists' : 'GitHub Pages workflow missing',
       has.mainWorkflow ? 'mainline full-validation workflow exists' : 'mainline full-validation workflow missing',
       has.nightlyWorkflow ? 'nightly mutation workflow exists' : 'nightly mutation workflow missing',
@@ -282,7 +335,7 @@ const items: ScorecardItem[] = [
     remaining: [
       ...(packagingReady ? [] : ['Complete missing packaging artifacts reported in evidence']),
       ...(reviewerKitReady ? [] : ['Complete flagship/reviewer-kit artifacts']),
-      'Project introduction video and npm package release remain packaging tasks'
+      'External DOI minting and npm publish remain owner-authenticated release actions, not local CI actions'
     ]
   }
 ];

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="790" height="170" viewBox="0 0 790 170" role="img" aria-label="30 second reviewer walkthrough storyboard">
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<text x="28" y="26" font-size="18" font-family="Arial" fill="#0f172a">30 second walkthrough storyboard</text>
+<rect x="28" y="42" width="102" height="86" rx="8" fill="#0f766e"/><text x="79" y="92" text-anchor="middle" font-size="13" font-family="Arial" fill="#fff">Reviewer Kit</text>
+<rect x="150" y="42" width="102" height="86" rx="8" fill="#b45309"/><text x="201" y="92" text-anchor="middle" font-size="13" font-family="Arial" fill="#fff">Figure 1</text>
+<rect x="272" y="42" width="102" height="86" rx="8" fill="#2563eb"/><text x="323" y="92" text-anchor="middle" font-size="13" font-family="Arial" fill="#fff">Trust Inspector</text>
+<rect x="394" y="42" width="102" height="86" rx="8" fill="#be185d"/><text x="445" y="92" text-anchor="middle" font-size="13" font-family="Arial" fill="#fff">GPU Oracle</text>
+<rect x="516" y="42" width="102" height="86" rx="8" fill="#475569"/><text x="567" y="92" text-anchor="middle" font-size="13" font-family="Arial" fill="#fff">Workspace</text>
+<rect x="638" y="42" width="102" height="86" rx="8" fill="#166534"/><text x="689" y="92" text-anchor="middle" font-size="13" font-family="Arial" fill="#fff">Release</text>
+<text x="28" y="152" font-size="12" font-family="Arial" fill="#475569">Six five-second beats: reproduce, inspect evidence, validate GPU/CPU agreement, continue in the research workspace, publish release artifacts.</text>
+</svg>

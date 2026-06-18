@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "pendulum-release-readiness/v1",
+  "generatedAt": "2026-06-18T08:33:13.013Z",
+  "status": "ready-for-owner-publish",
+  "externalPublishSteps": [
+    "Enable GitHub Pages for the repository if it is not already enabled.",
+    "Create a GitHub release tag; Zenodo mints the DOI after the repo is enabled in Zenodo.",
+    "Run the manual npm workflow with dry-run=false after adding the NPM_TOKEN repository secret.",
+    "Attach reports/release-one-page.pdf and reports/walkthrough-30s.gif to the release notes."
+  ],
+  "artifacts": [
+    {
+      "id": "zenodo-metadata",
+      "path": ".zenodo.json",
+      "required": true,
+      "available": true,
+      "hash": "119b13b40087a7",
+      "note": "Zenodo DOI metadata is present; actual DOI minting requires a GitHub release and Zenodo account link."
+    },
+    {
+      "id": "pages-workflow",
+      "path": ".github/workflows/pages.yml",
+      "required": true,
+      "available": true,
+      "hash": "00d30bffaf9b9e",
+      "note": "GitHub Pages deploy workflow is present."
+    },
+    {
+      "id": "npm-workflow",
+      "path": ".github/workflows/publish-npm.yml",
+      "required": true,
+      "available": true,
+      "hash": "0b4da9c35499cd",
+      "note": "Manual npm publish workflow is present; live publish requires an NPM_TOKEN repository secret."
+    },
+    {
+      "id": "paper-pdf",
+      "path": "paper/paper.pdf",
+      "required": true,
+      "available": true,
+      "note": "Flagship paper PDF exists."
+    },
+    {
+      "id": "reviewer-manifest",
+      "path": "reports/reviewer-kit-manifest.json",
+      "required": true,
+      "available": true,
+      "hash": "1f7cac1a1d9137",
+      "note": "Reviewer kit manifest exists."
+    },
+    {
+      "id": "webgpu-hardware-validation",
+      "path": "reports/webgpu-hardware-validation.md",
+      "required": false,
+      "available": true,
+      "hash": "075511ebcddbe0",
+      "note": "Real WebGPU adapter validation report exists when run on a hardware target."
+    },
+    {
+      "id": "one-page-pdf",
+      "path": "reports/release-one-page.pdf",
+      "required": true,
+      "available": true,
+      "note": "One-page reviewer PDF generated locally."
+    },
+    {
+      "id": "walkthrough-gif",
+      "path": "reports/walkthrough-30s.gif",
+      "required": true,
+      "available": true,
+      "note": "Thirty-second GIF walkthrough generated locally."
+    },
+    {
+      "id": "walkthrough-storyboard",
+      "path": "reports/walkthrough-storyboard.svg",
+      "required": false,
+      "available": true,
+      "hash": "1bf296172c17cd",
+      "note": "Editable storyboard companion for the GIF."
+    }
+  ]
+}

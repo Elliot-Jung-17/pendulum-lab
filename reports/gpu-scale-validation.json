@@ -1,0 +1,152 @@
+{
+  "schemaVersion": "pendulum-gpu-scale-validation/v2",
+  "generatedAt": "2026-06-18T08:29:46.438Z",
+  "hardwareWebGpuAvailable": false,
+  "verdict": "cpu-reference-mock-and-contract-gates-ready",
+  "contracts": [
+    {
+      "id": "ensemble-rk4",
+      "cpuReference": "src/runtime/gpuEnsemble.ts CPU f64 RK4 path",
+      "acceleratedPath": "WGSL RK4 ensemble kernel in src/runtime/gpuEnsemble.ts",
+      "acceptanceRule": "GPU integration may feed research outputs only through validated statistics; CPU force path remains the trajectory oracle.",
+      "ciEvidence": [
+        "tests/gpu-ensemble.test.ts",
+        "tests/ensemble-statistics.test.ts"
+      ],
+      "caveat": "Node CI has no real adapter; hardware WebGPU runs must still report backend=webgpu and caveat=f32."
+    },
+    {
+      "id": "ensemble-reduction-oracle",
+      "cpuReference": "ensembleStatistics CPU f64 mean/covariance/rms/flip reduction",
+      "acceleratedPath": "webgpuEnsembleStatistics GPU reduction or f32 candidate reduction",
+      "acceptanceRule": "compareEnsembleStatistics(candidate, cpuOracle) must pass declared tolerances before a reduction can be used as a publication result.",
+      "ciEvidence": [
+        "tests/ensemble-statistics.test.ts",
+        "scripts/gpu-scale-validation.ts"
+      ],
+      "caveat": "The local CI candidate is f32-rounded CPU output; the self-hosted hardware workflow runs the on-device reduction when a WebGPU adapter is present."
+    },
+    {
+      "id": "field-scans",
+      "cpuReference": "f64 probe-cell recomputation in src/runtime/gpuFields.ts",
+      "acceleratedPath": "WGSL flip-basin / sweep / FTLE field kernels",
+      "acceptanceRule": "GPU output is accepted only when deterministic CPU probe validation passes; otherwise the f64 CPU grid is returned.",
+      "ciEvidence": [
+        "tests/gpu-fields-validation.test.ts",
+        "tests/gpu-fields.test.ts"
+      ],
+      "caveat": "Fractal basin boundaries allow isolated probe disagreements; the gate is on disagreement fraction."
+    },
+    {
+      "id": "chaos-acceleration-contract",
+      "cpuReference": "existing CPU CLV/full-spectrum/variational FTLE implementations",
+      "acceleratedPath": "GPU or parallel candidate that emits the same public result schema",
+      "acceptanceRule": "GPU candidates must pass compareClvAcceleration / compareFtleFieldAcceleration / compareLyapunovSpectrumAcceleration against the CPU oracle before promotion.",
+      "ciEvidence": [
+        "tests/clv.test.ts",
+        "tests/ftle.test.ts",
+        "tests/lyapunov-spectrum-job.test.ts",
+        "tests/acceleration-contract.test.ts"
+      ],
+      "caveat": "The acceleration contract is implemented; the default production CLV/full-spectrum kernels remain CPU until a hardware candidate passes it."
+    }
+  ],
+  "cpuReference": {
+    "ensemble": {
+      "backend": "cpu",
+      "n": 36,
+      "steps": 80,
+      "dt": 0.01,
+      "rmsSpread": 2.8798780993072555,
+      "flipFraction": 0,
+      "f32ReductionOracle": {
+        "passed": true,
+        "nMatches": true,
+        "tolerances": {
+          "mean": 0.00001,
+          "variance": 0.0001,
+          "covariance": 0.0001,
+          "rmsSpread": 0.0001,
+          "flipFraction": 0
+        },
+        "maxMeanAbsDiff": 2.0816681711721685e-16,
+        "maxVarianceAbsDiff": 1.0067430000759714e-7,
+        "maxCovarianceAbsDiff": 1.0067430000759714e-7,
+        "rmsSpreadAbsDiff": 1.4127989889090031e-8,
+        "flipFractionAbsDiff": 0,
+        "caveat": "This validates ensemble reduction statistics only; trajectory integration and chaotic divergence still require their own CPU probe gates."
+      },
+      "gpuSideReductionOracle": null,
+      "gpuSideReductionAvailable": false
+    },
+    "basin": {
+      "backend": "cpu",
+      "width": 12,
+      "height": 12,
+      "validation": null,
+      "labelHash": "12f8f890837060"
+    },
+    "sweep": {
+      "backend": "cpu",
+      "width": 4,
+      "height": 4,
+      "validation": null,
+      "lambdaHash": "086036e1ab0bf6"
+    }
+  },
+  "promotionGates": {
+    "lyapunovSpectrum": {
+      "target": "lyapunov-spectrum",
+      "passed": true,
+      "tolerances": {
+        "spectrum": 0.005,
+        "exponents": 0.005,
+        "angle": 0.05,
+        "field": 0.05,
+        "aggregate": 0.01
+      },
+      "metrics": {
+        "spectrumMaxAbsDiff": 0.0010000000000000009,
+        "sumAbsDiff": 0,
+        "kaplanYorkeAbsDiff": 0.002000000000000224
+      },
+      "caveat": "Compares finite-time spectrum outputs for identical settings; does not certify a different integration horizon or seed."
+    },
+    "clv": {
+      "target": "clv",
+      "passed": true,
+      "tolerances": {
+        "spectrum": 0.005,
+        "exponents": 0.005,
+        "angle": 0.01,
+        "field": 0.05,
+        "aggregate": 0.02
+      },
+      "metrics": {
+        "exponentMaxAbsDiff": 0.0010000000000000009,
+        "meanAngleAbsDiff": 0.0010000000000000009,
+        "minAngleAbsDiff": 0.0010000000000000009
+      },
+      "caveat": "Compares sign-invariant CLV summary quantities; individual vector signs and ordering must be handled by the caller."
+    },
+    "ftleField": {
+      "target": "ftle-field",
+      "passed": true,
+      "tolerances": {
+        "spectrum": 0.005,
+        "exponents": 0.005,
+        "angle": 0.05,
+        "field": 0.01,
+        "aggregate": 0.01
+      },
+      "metrics": {
+        "sameShape": true,
+        "fieldMaxAbsDiff": 0.0020000000000000018,
+        "fieldMeanAbsDiff": 0.0015000000000000013,
+        "minAbsDiff": 0.0010000000000000009,
+        "maxAbsDiff": 0.0020000000000000018
+      },
+      "caveat": "Compares like-for-like FTLE fields. Variational STM and finite-difference flow-map fields must not be mixed without a method caveat."
+    }
+  }
+}

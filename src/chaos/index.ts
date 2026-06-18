@@ -39,6 +39,14 @@ export type { RqaOptions, RqaResult, RecurrenceMatrix, RqaUncertainty, RqaMeasur
 export { flowMapGradient, largestSingularValue, determinant, finiteTimeLyapunov, doublePendulumFtleField } from './ftle';
 export type { FtleOptions, FlowMapGradient, FtleFieldOptions, FtleField } from './ftle';
 
+export {
+  CHAOS_ACCELERATION_CONTRACTS,
+  compareClvAcceleration,
+  compareFtleFieldAcceleration,
+  compareLyapunovSpectrumAcceleration
+} from './accelerationContract';
+export type { AccelerationComparison, AccelerationTolerance, ChaosAccelerationContract, ChaosAccelerationTarget } from './accelerationContract';
+
 export { melnikovScaled, melnikovCriticalAmplitude, melnikovFunction, melnikovFunctionNumeric, melnikovVerdict } from './melnikov';
 export type { MelnikovScaled, MelnikovVerdict } from './melnikov';
 

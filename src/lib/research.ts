@@ -32,6 +32,7 @@ export * from '../research/libraryUx';
 export * from '../research/structurePreservation';
 export * from '../research/cliBatchSpec';
 export * from '../research/certifiedWorkbench';
+export * from '../research/flagshipCertification';
 export { hashText, csvCell, dataUrlByteEstimate } from '../research/researchExportUtils';
 
 // Worker job protocol (pure handlers usable headlessly).

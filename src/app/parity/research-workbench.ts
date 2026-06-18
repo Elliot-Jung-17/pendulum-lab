@@ -6,7 +6,6 @@ import type { RuntimeSnapshot } from '../../types/domain';
 import { downloadJson } from '../../export/manifest';
 import { chaosWorkerTransportFactory, JobCancelledError, JobClient } from '../../runtime/JobClient';
 import type { StudyPointResponse } from '../../workers/chaosProtocol';
-import type { SystemSpec } from '../../physics/systemSpec';
 import { csvCell, hashText } from '../../research/researchExportUtils';
 import { CERTIFIED_WORKBENCH_FLAGSHIP } from '../../research/certifiedWorkbench';
 import { generateStudyValues } from '../../research/researchSampling';
@@ -31,7 +30,7 @@ import {
   type MultiStrategy,
   type StudyVariable
 } from '../../research/experimentDesign';
-import { ParameterStudyPlan, ParameterStudyPoint, ResearchBatchStatus, ResearchExperiment, ResearchMetrics, ResearchRunLogEntry, ResearchRunType, ResearchWorkspaceProfile, StudyPointResults, append, button, card, clear, currentParameters, currentSnapshot, detailsCard, downloadText, html, kvGrid, modernLab, numberFrom, researchUid, selectValue, setControl, setText, state, toast } from './shared';
+import { ParameterStudyPlan, ParameterStudyPoint, ResearchBatchStatus, ResearchExperiment, ResearchMetrics, ResearchRunLogEntry, ResearchRunType, StudyPointResults, append, button, card, clear, currentParameters, currentSnapshot, detailsCard, downloadText, html, kvGrid, modernLab, numberFrom, researchUid, selectValue, setControl, setText, state, toast } from './shared';
 import { MAX_RESEARCH_EXPERIMENTS, RESEARCH_STUDY_STRATEGIES, clampNumber, clearResearchDb, exportResearchDbArchive, exportWorkspaceJson, finiteNumber, importResearchDbArchive, importWorkspaceJson, persistResearchState, renderResearchStoragePanel, researchDbInstance } from './storage-sync';
 import { orbitBaseFromControls, renderPerfBudgetPanel, runBranchTrace, runEnsembleBenchmark, runLegacyValidationSurface, runNumericalProbe, runOrbitFinder } from './runtime-diagnostics';
 import { FIGURE_CAPTIONS, exportPaperFigureManifestJson, exportPaperFiguresHtml, exportPaperMethodsLatex, exportPaperMethodsMarkdown, exportPaperPackJson, exportProvenanceJson, exportResearchBundleJson, exportResearchBundleZip, exportResearchNotebook, exportScaledCanvases, exportStudyFigureCsv, exportStudyFigurePng, exportStudyFigureSvg, renderFigureStudio, renderProvenanceViewer, saveSelectedFigureCaption } from './figure-export';
@@ -39,15 +38,29 @@ import { exportManifest, setMode } from './governance-ui';
 import { $ } from './shared';
 import { buildComparisonRows, renderComparisonMatrix, renderPaperSummary } from './research-comparison';
 import { renderResearchTable } from './research-renderers';
+import { renderResearchRunLog } from './research-run-log';
+import { studyBatch, studyBatchTargets, studySpecFromSnapshot } from './research-batch-runner';
+import { DESIGN_VARIABLE_KEYS, createDesignBudget, parseDesignVariableLines } from './research-design-controller';
 import { researchActions, researchCard, researchFormRow, researchInput, researchSelect, researchTextArea } from './research-ui-components';
+import {
+  activeResearchSession,
+  createWorkspaceProfileState,
+  ensureWorkspaceList,
+  recordRunInActiveSession,
+  saveWorkspaceProfileState,
+  selectWorkspaceProfile,
+  workspaceOptions
+} from './research-workspace-controller';
 export { researchActions, researchCard, researchFormRow, researchInput, researchSelect, researchTextArea } from './research-ui-components';
 export { buildComparisonRows, comparisonRowFromExperiment, comparisonRowFromRun, renderComparisonMatrix, renderPaperSummary } from './research-comparison';
 export { renderResearchTable } from './research-renderers';
+export { renderResearchRunLog } from './research-run-log';
+export { studySpecFromSnapshot } from './research-batch-runner';
+export { activeResearchSession, ensureWorkspaceList, upsertResearchSession, upsertWorkspaceProfile, workspaceOptions } from './research-workspace-controller';
 // eslint-disable-next-line import/no-cycle
 import { doubleSpecFromCurrent, runBifurcationDetectPanel, runCodimTwoPanel, runFixedPointPanel, runFtleRidgePanel, runMelnikovPanel, runRecurrenceNetworkPanel, runShadowingPanel, runSobolPanel, runWadaConvergencePanel, superpackChaosClient, superpackClient, superpackSection } from './superpack-panels';
 
 const RESEARCH_WORKBENCH_CHANGED_EVENT = 'pendulum-lab:research-workbench-changed';
-const MAX_WORKSPACE_PROFILES = 24;
 let researchWorkbenchEventBridgeInstalled = false;
 let researchWorkbenchRenderScheduled = false;
 
@@ -95,11 +108,15 @@ export function installResearchTab(): void {
   const workspaceSelect = researchSelect('rwWorkspaceSelect', workspaceOptions());
   workspaceSelect.value = state.research.workspace.id;
   workspaceSelect.addEventListener('change', () => switchWorkspaceProfile());
+  const projectName = researchInput('rwProjectName', 'text', state.research.project.name, 'project name');
+  const sessionName = researchInput('rwSessionName', 'text', activeResearchSession().name, 'session name');
   const workspaceName = researchInput('rwWorkspaceName', 'text', state.research.workspace.name, 'workspace name');
   const workspaceObjective = researchTextArea('rwWorkspaceObjective', 'research objective, flagship claim, reviewer goal');
   workspaceObjective.value = state.research.workspace.objective;
   append(
     workspaceCard,
+    researchFormRow('Project', projectName),
+    researchFormRow('Session', sessionName),
     researchFormRow('Workspace', workspaceSelect),
     researchFormRow('Name', workspaceName),
     workspaceObjective,
@@ -468,43 +485,13 @@ export function selectedResearchExperiment(): ResearchExperiment | undefined {
   return state.research.experiments.find((experiment) => experiment.id === id);
 }
 
-export function ensureWorkspaceList(): void {
-  const active = state.research.workspace;
-  const byId = new Map<string, ResearchWorkspaceProfile>();
-  if (active?.id) byId.set(active.id, active);
-  for (const workspace of state.research.workspaces ?? []) {
-    if (workspace?.id) byId.set(workspace.id, workspace.id === active.id ? { ...workspace, ...active } : workspace);
-    if (byId.size >= MAX_WORKSPACE_PROFILES) break;
-  }
-  if (!byId.size && active?.id) byId.set(active.id, active);
-  state.research.workspaces = Array.from(byId.values()).slice(0, MAX_WORKSPACE_PROFILES);
-}
-
-export function workspaceOptions(): Array<[string, string]> {
-  ensureWorkspaceList();
-  return state.research.workspaces.map((workspace) => [
-    workspace.id,
-    workspace.name || workspace.id
-  ]);
-}
-
-export function upsertWorkspaceProfile(profile: ResearchWorkspaceProfile): void {
-  ensureWorkspaceList();
-  const next = state.research.workspaces.filter((workspace) => workspace.id !== profile.id);
-  state.research.workspaces = [profile, ...next].slice(0, MAX_WORKSPACE_PROFILES);
-}
-
 export function switchWorkspaceProfile(): void {
   const select = $('rwWorkspaceSelect');
   const id = select instanceof HTMLSelectElement ? select.value : '';
-  const workspace = state.research.workspaces.find((entry) => entry.id === id);
-  if (!workspace) {
+  if (!selectWorkspaceProfile(id)) {
     toast('Workspace profile not found');
     return;
   }
-  state.research.workspace = { ...workspace, updatedAt: new Date().toISOString() };
-  upsertWorkspaceProfile(state.research.workspace);
-  state.research.layout.lastTab = 'research';
   persistResearchState();
   renderWorkspaceProfile();
   logResearchRun('workspace', 'Switched workspace profile', state.research.workspace.name);
@@ -514,23 +501,13 @@ export function switchWorkspaceProfile(): void {
 export function createWorkspaceProfile(): void {
   const nameInput = $('rwWorkspaceName');
   const objectiveInput = $('rwWorkspaceObjective');
-  const now = new Date().toISOString();
   const baseName = nameInput instanceof HTMLInputElement && nameInput.value.trim()
     ? nameInput.value.trim()
     : 'Certified Chaotic Dynamics Workbench';
   const objective = objectiveInput instanceof HTMLTextAreaElement && objectiveInput.value.trim()
     ? objectiveInput.value.trim()
     : CERTIFIED_WORKBENCH_FLAGSHIP.thesis;
-  state.research.workspace = {
-    id: researchUid('workspace'),
-    name: `${baseName} ${state.research.workspaces.length + 1}`,
-    objective,
-    flagshipId: CERTIFIED_WORKBENCH_FLAGSHIP.id,
-    createdAt: now,
-    updatedAt: now
-  };
-  upsertWorkspaceProfile(state.research.workspace);
-  state.research.layout.lastTab = 'research';
+  createWorkspaceProfileState(baseName, objective);
   persistResearchState();
   renderWorkspaceProfile();
   logResearchRun('workspace', 'Created workspace profile', state.research.workspace.name);
@@ -538,31 +515,25 @@ export function createWorkspaceProfile(): void {
 }
 
 export function saveWorkspaceProfile(): void {
+  const projectInput = $('rwProjectName');
+  const sessionInput = $('rwSessionName');
   const nameInput = $('rwWorkspaceName');
   const objectiveInput = $('rwWorkspaceObjective');
   const densitySelect = $('rwWorkspaceDensity');
-  const now = new Date().toISOString();
   const name = nameInput instanceof HTMLInputElement && nameInput.value.trim()
     ? nameInput.value.trim()
     : CERTIFIED_WORKBENCH_FLAGSHIP.title;
   const objective = objectiveInput instanceof HTMLTextAreaElement && objectiveInput.value.trim()
     ? objectiveInput.value.trim()
     : CERTIFIED_WORKBENCH_FLAGSHIP.thesis;
-  state.research.workspace = {
-    ...state.research.workspace,
-    name,
+  saveWorkspaceProfileState({
+    projectName: projectInput instanceof HTMLInputElement && projectInput.value.trim() ? projectInput.value.trim() : state.research.project.name,
+    sessionName: sessionInput instanceof HTMLInputElement && sessionInput.value.trim() ? sessionInput.value.trim() : activeResearchSession().name,
+    workspaceName: name,
     objective,
-    flagshipId: CERTIFIED_WORKBENCH_FLAGSHIP.id,
-    updatedAt: now
-  };
-  if (!state.research.workspace.createdAt) state.research.workspace.createdAt = now;
-  upsertWorkspaceProfile(state.research.workspace);
-  state.research.layout = {
-    ...state.research.layout,
     density: densitySelect instanceof HTMLSelectElement && densitySelect.value === 'compact' ? 'compact' : 'comfortable',
-    lastTab: 'research',
     panelCollapsed: document.body.classList.contains('panel-collapsed')
-  };
+  });
   persistResearchState();
   renderWorkspaceProfile();
   logResearchRun('workspace', 'Saved workspace profile', state.research.workspace.name);
@@ -575,6 +546,8 @@ export function renderWorkspaceProfile(): void {
   const workbench = $('researchWorkbench');
   workbench?.classList.toggle('research-compact', state.research.layout.density === 'compact');
   const workspaceSelect = $('rwWorkspaceSelect');
+  const projectInput = $('rwProjectName');
+  const sessionInput = $('rwSessionName');
   const nameInput = $('rwWorkspaceName');
   const objectiveInput = $('rwWorkspaceObjective');
   const densitySelect = $('rwWorkspaceDensity');
@@ -584,6 +557,9 @@ export function renderWorkspaceProfile(): void {
     for (const [id, label] of options) workspaceSelect.append(html('option', { value: id, text: label }));
     workspaceSelect.value = workspace.id;
   }
+  const session = activeResearchSession();
+  if (projectInput instanceof HTMLInputElement && projectInput.value !== state.research.project.name) projectInput.value = state.research.project.name;
+  if (sessionInput instanceof HTMLInputElement && sessionInput.value !== session.name) sessionInput.value = session.name;
   if (nameInput instanceof HTMLInputElement && nameInput.value !== workspace.name) nameInput.value = workspace.name;
   if (objectiveInput instanceof HTMLTextAreaElement && objectiveInput.value !== workspace.objective) objectiveInput.value = workspace.objective;
   if (densitySelect instanceof HTMLSelectElement) densitySelect.value = state.research.layout.density;
@@ -591,11 +567,12 @@ export function renderWorkspaceProfile(): void {
     `${state.research.experiments.length} experiment(s)`,
     `${state.research.runLog.length} run(s)`,
     `${state.research.parameterStudy?.count ?? 0} study point(s)`,
-    `${state.research.comparisonRows.length || buildComparisonRows().length} comparison row(s)`
+    `${state.research.comparisonRows.length || buildComparisonRows().length} comparison row(s)`,
+    `${session.artifactManifest.length} session artifact(s)`
   ];
   setText(
     'rwWorkspaceSummary',
-    `${workspace.name} - ${state.research.workspaces.length} workspace profile(s), flagship=${workspace.flagshipId || CERTIFIED_WORKBENCH_FLAGSHIP.id}. ${readyPieces.join(', ')}. Objective: ${workspace.objective}`
+    `${state.research.project.name} / ${session.name} - ${state.research.workspaces.length} workspace profile(s), flagship=${workspace.flagshipId || CERTIFIED_WORKBENCH_FLAGSHIP.id}. ${readyPieces.join(', ')}. Objective: ${workspace.objective}`
   );
 }
 
@@ -712,6 +689,7 @@ export function logResearchRun(type: ResearchRunType, label: string, summary: st
   if (artifact) entry.artifact = artifact;
   state.research.runLog.unshift(entry);
   state.research.runLog = state.research.runLog.slice(0, 100);
+  recordRunInActiveSession(entry);
   persistResearchState();
   dispatchResearchWorkbenchChanged(entry);
   return entry;
@@ -840,18 +818,6 @@ export function applySelectedStudyPoint(): void {
   toast('Study point applied');
 }
 
-export const studyBatch = {
-  running: false,
-  cancelled: false,
-  current: 0,
-  total: 0,
-  completed: 0,
-  failed: 0,
-  timeoutMs: 45_000,
-  poolSize: 2,
-  cancelInFlight: null as (() => void) | null
-};
-
 export let studyJobClient: JobClient | null = null;
 export let studyJobClientPoolSize = 0;
 
@@ -905,22 +871,6 @@ export function studyBatchTimeoutMs(): number {
   return Math.round(seconds * 1000);
 }
 
-/** Map a study-point snapshot onto the declarative chaos-job system spec. */
-export function studySpecFromSnapshot(snapshot: RuntimeSnapshot): { spec: SystemSpec; state0: number[] } {
-  const p = snapshot.parameters;
-  if (snapshot.systemType === 'triple') {
-    const spec: SystemSpec = {
-      kind: 'triple',
-      m1: p.m1, m2: p.m2, m3: p.m3 ?? 1,
-      l1: p.l1, l2: p.l2, l3: p.l3 ?? 0.8,
-      g: p.g
-    };
-    return { spec, state0: snapshot.state.slice(0, 6) };
-  }
-  const spec: SystemSpec = { kind: 'double', m1: p.m1, m2: p.m2, l1: p.l1, l2: p.l2, g: p.g };
-  return { spec, state0: snapshot.state.slice(0, 4) };
-}
-
 /**
  * Batch-execute every point of the current parameter study on the chaos worker:
  * maximal Lyapunov (+block SE), RQA determinism/divergence, and per-point FTLE.
@@ -937,9 +887,7 @@ export async function runStudyBatch(options: { failedOnly?: boolean; resume?: bo
     toast('Batch already running');
     return;
   }
-  const targets = plan.experiments
-    .map((point, index) => ({ point, index }))
-    .filter(({ point }) => options.failedOnly ? Boolean(point.error) : !point.results);
+  const targets = studyBatchTargets(plan, options);
   if (targets.length === 0) {
     toast(options.failedOnly ? 'No failed study points to retry' : 'All study points already have results');
     return;
@@ -1185,7 +1133,6 @@ export interface DesignStudyState {
 }
 
 export const DESIGN_STORAGE_KEY = 'pendulum-lab/design-study/v1';
-export const DESIGN_VARIABLE_KEYS = new Set(['theta1', 'theta2', 'omega1', 'omega2', 'damping', 'dt', 'mass-ratio', 'length-ratio']);
 
 export let designStudy: DesignStudyState | null = null;
 
@@ -1231,26 +1178,20 @@ export function parseDesignVariables(): StudyVariable[] {
   const textarea = $('rwDesignVars');
   const text = textarea instanceof HTMLTextAreaElement ? textarea.value : '';
   const variables: StudyVariable[] = [];
-  for (const line of text.split('\n')) {
-    const parts = line.split(',').map((part) => part.trim());
-    if (parts.length < 3) continue;
-    const key = parts[0] ?? '';
-    const min = Number(parts[1]);
-    const max = Number(parts[2]);
-    if (!DESIGN_VARIABLE_KEYS.has(key) || !Number.isFinite(min) || !Number.isFinite(max) || min >= max) continue;
-    if (variables.some((variable) => variable.key === key)) continue;
-    variables.push({ key, min, max });
+  for (const variable of parseDesignVariableLines(text)) {
+    if (variables.some((existing) => existing.key === variable.key)) continue;
+    variables.push(variable);
     if (variables.length >= 4) break;
   }
   return variables;
 }
 
 export function designBudgetFromControls(): DesignBudget {
-  return {
-    maxPoints: Math.round(clampNumber(numberFrom('rwDesignMaxPoints', 48), 48, 4, 256)),
-    maxTimeMs: Math.round(clampNumber(numberFrom('rwDesignMaxTime', 300), 300, 10, 3600) * 1000),
-    maxFailures: Math.round(clampNumber(numberFrom('rwDesignMaxFailures', 6), 6, 1, 64))
-  };
+  return createDesignBudget(
+    clampNumber(numberFrom('rwDesignMaxPoints', 48), 48, 4, 256),
+    clampNumber(numberFrom('rwDesignMaxTime', 300), 300, 10, 3600) * 1000,
+    clampNumber(numberFrom('rwDesignMaxFailures', 6), 6, 1, 64)
+  );
 }
 
 export function generateDesignStudy(): void {
@@ -1771,18 +1712,6 @@ export function toggleExperimentTimeline(): void {
   }
   const rows = groups.flatMap((group) => group.items.map((item, index) => [index === 0 ? group.day : '', item.time, item.name]));
   renderResearchTable('rwLibTimeline', ['day', 'time', 'experiment'], rows.slice(0, 40), 'No experiments yet.');
-}
-
-export function renderResearchRunLog(): void {
-  const rows = state.research.runLog.slice(0, 12).map((entry) => [
-    new Date(entry.timestamp).toLocaleTimeString(),
-    entry.type,
-    entry.label,
-    entry.method,
-    String(entry.metrics.qualityScore),
-    entry.summary
-  ]);
-  renderResearchTable('rwRunLog', ['time', 'type', 'label', 'method', 'score', 'summary'], rows, 'No run log entries yet.');
 }
 
 export function renderParameterStudy(): void {

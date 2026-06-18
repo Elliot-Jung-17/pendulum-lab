@@ -114,7 +114,17 @@ export function exportChainSnapshot(): void {
     reproducibilityHash: hashText(JSON.stringify({ spec: chainSpec(), state: Array.from(lab3d.chain.current()), dt: diag.dt, method: diag.method }))
   };
   downloadJson('pendulum_spherical_chain_diagnostics.json', payload);
-  attachBadge('d3Readout', 'publication-ready', 'Snapshot ships spec, state, dt, method and a reproducibility hash.');
+  attachBadge('d3Readout', 'publication-ready', 'Snapshot ships spec, state, dt, method and a reproducibility hash.', {
+    title: '3D Chain Snapshot Trust',
+    source: '3D Lab -> exportChainSnapshot',
+    parameters: { system: payload.system, dt: diag.dt, method: diag.method, chainLinks: lab3d.chain.params.masses.length },
+    uncertainty: `energyDrift=${diag.energyDrift.toExponential(3)}, lzDrift=${diag.lzDrift.toExponential(3)}.`,
+    externalValidation: 'Snapshot JSON includes spec, state, diagnostics, camera, and reproducibility hash.',
+    reproduce: 'Re-import the JSON state/spec and rerun the spherical-chain diagnostics.',
+    caveat: 'PNG is a rendered view; the JSON payload is the scientific artifact.',
+    artifact: 'pendulum_spherical_chain_diagnostics.json',
+    hash: payload.reproducibilityHash
+  });
   logResearchRun('export', `3D chain snapshot (N=${lab3d.chain.params.masses.length})`, `E drift ${diag.energyDrift.toExponential(2)}, Lz drift ${diag.lzDrift.toExponential(2)}, method=${diag.method}`, 'pendulum_spherical_chain_snapshot.png');
   toast('Chain snapshot exported (PNG + JSON)');
 }

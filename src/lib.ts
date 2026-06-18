@@ -272,5 +272,5 @@ export * from './research/cliBatchSpec';
 export { hashText, csvCell, dataUrlByteEstimate } from './research/researchExportUtils';
 
 // Ensembles
-export { runDoublePendulumEnsemble, ensembleGrid, ensembleStatistics } from './runtime/gpuEnsemble';
-export type { EnsembleOptions, EnsembleResult, EnsembleStatistics } from './runtime/gpuEnsemble';
+export { runDoublePendulumEnsemble, ensembleGrid, ensembleStatistics, webgpuEnsembleStatistics, compareEnsembleStatistics } from './runtime/gpuEnsemble';
+export type { EnsembleOptions, EnsembleResult, EnsembleStatistics, EnsembleStatisticsComparison, EnsembleStatisticsTolerances } from './runtime/gpuEnsemble';

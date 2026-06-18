@@ -34,7 +34,7 @@ versions evolve and the compatibility matrix for reading old archives.
 
 | Artifact | Current version | Writer | Reader/sanitizer |
 |---|---|---|---|
-| Research workbench (localStorage) | `pendulum-research-workbench/v3` | `storage-sync.persistResearchState` | `normalizeResearchStorage` |
+| Research workbench (localStorage) | `pendulum-research-workbench/v4` | `storage-sync.persistResearchState` | `normalizeResearchStorage` |
 | Workspace file | `pendulum-workspace/v1` | `exportWorkspaceJson` | `importWorkspaceJson` |
 | Design study | `pendulum-design-study/v1` | `persistDesignStudy` | `loadDesignStudy` / workspace import |
 | IndexedDB archive | `pendulum-research-db/v1` | `ResearchDb.exportArchive` | `validateResearchDbArchive` |
@@ -51,6 +51,12 @@ versions evolve and the compatibility matrix for reading old archives.
 | Submission manifest | `pendulum-submission/v10-ts` | `createSubmissionManifest` | reviewers |
 
 ## Archive compatibility matrix
+
+Current-build note: the research workbench writer now emits
+`pendulum-research-workbench/v4`. Version 4 adds project/session/artifact
+manifest metadata on top of the v3 workspace-profile shape; older readers ignore
+those additive fields, while the current sanitizer synthesizes them for older
+payloads.
 
 Rows: artifact version found in a file. Columns: app build reading it.
 

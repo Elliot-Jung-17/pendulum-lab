@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2026-06-17T08:09:49.206Z",
+  "generatedAt": "2026-06-18T01:08:15.766Z",
   "results": [
     {
       "label": "original",
       "url": "http://127.0.0.1:5173/",
-      "fps": 9.324299123498609,
+      "fps": 9.301748728709436,
       "physicsMsPerFrame": 0.20000001788139343,
-      "memoryBytes": 11900000,
+      "memoryBytes": 12700000,
       "workerLatencyMs": null
     },
     {
       "label": "candidate",
       "url": "http://127.0.0.1:5173/",
-      "fps": 10.278196519180412,
-      "physicsMsPerFrame": 0,
-      "memoryBytes": 11200000,
+      "fps": 10.353395913881043,
+      "physicsMsPerFrame": 0.20000001788139343,
+      "memoryBytes": 12700000,
       "workerLatencyMs": null
     }
   ],
@@ -26,10 +26,10 @@
     "deltas": [
       {
         "metric": "fps",
-        "original": 9.324299123498609,
-        "candidate": 10.278196519180412,
-        "delta": 0.9538973956818033,
-        "relativeDelta": 0.10230231602907731,
+        "original": 9.301748728709436,
+        "candidate": 10.353395913881043,
+        "delta": 1.051647185171607,
+        "relativeDelta": 0.11305908338780905,
         "threshold": 0.25,
         "direction": "higher-is-better",
         "status": "pass"
@@ -37,19 +37,19 @@
       {
         "metric": "physicsMsPerFrame",
         "original": 0.20000001788139343,
-        "candidate": 0,
-        "delta": -0.20000001788139343,
-        "relativeDelta": -1,
+        "candidate": 0.20000001788139343,
+        "delta": 0,
+        "relativeDelta": 0,
         "threshold": 0.25,
         "direction": "lower-is-better",
         "status": "pass"
       },
       {
         "metric": "memoryBytes",
-        "original": 11900000,
-        "candidate": 11200000,
-        "delta": -700000,
-        "relativeDelta": -0.058823529411764705,
+        "original": 12700000,
+        "candidate": 12700000,
+        "delta": 0,
+        "relativeDelta": 0,
         "threshold": 50000000,
         "direction": "lower-is-better",
         "status": "pass"

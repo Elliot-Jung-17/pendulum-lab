@@ -13,8 +13,8 @@ export type AudienceMode = 'beginner' | 'student' | 'research';
 export const AUDIENCE_MODES: Record<AudienceMode, { label: string; description: string; summary: string; icon: IconName }> = {
   beginner: {
     label: 'Beginner',
-    description: 'Main simulator, presets, and core physical controls.',
-    summary: 'Explore motion with a calm canvas and a small control set.',
+    description: 'Simulator-first view with presets and core physical controls only.',
+    summary: 'Explore motion without paper, audit, or advanced numeric surfaces.',
     icon: 'spark'
   },
   student: {
@@ -25,8 +25,8 @@ export const AUDIENCE_MODES: Record<AudienceMode, { label: string; description: 
   },
   research: {
     label: 'Research',
-    description: 'Full chaos diagnostics, reproducibility, governance, and audit tools.',
-    summary: 'Use every diagnostic, reproducibility, audit, and export surface.',
+    description: 'Full diagnostics, Trust Inspector evidence, reviewer kit, governance, and audit tools.',
+    summary: 'Run diagnostics with provenance, caveats, artifacts, and reviewer commands visible.',
     icon: 'lab'
   }
 };
@@ -165,6 +165,8 @@ body.audience-beginner .diag-row,
 body.audience-beginner header .badge,
 body.audience-beginner header #qualBadge,
 body.audience-beginner header #fpsBadge,
+body.audience-beginner .rb-badge,
+body.audience-beginner .trust-inspector-backdrop,
 body.audience-beginner #savePreset,
 body.audience-beginner #tab-lab .scrub-row,
 body.audience-beginner #tab-lab .plots-row,
@@ -180,6 +182,8 @@ body.audience-beginner #tab-lab #main{height:100%;min-height:clamp(300px,55vh,64
 body.audience-beginner #tab-lab .ctrl-sticky{border-radius:var(--radius-lg) var(--radius-lg) 0 0}
 body.audience-beginner #tab-lab .controls .acc[open]>.acc-body{padding-bottom:12px}
 body.audience-beginner .presets{position:sticky;top:0;z-index:50}
+body.audience-research .rb-badge{box-shadow:0 0 0 1px rgba(255,255,255,.025),0 6px 18px rgba(0,0,0,.14)}
+body.audience-research #tab-research .research-card:first-child{border-color:rgba(240,196,25,.42)}
 .rail-menu-icon,.tab-icon{color:var(--cyan)}
 .rail-icon-svg{width:20px;height:20px;display:block;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .rail-menu-icon .rail-icon-svg{width:19px;height:19px}

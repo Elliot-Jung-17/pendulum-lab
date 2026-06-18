@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { complexUnitaryFloquetKrylovSpectrum, complexUnitaryFloquetSpectrum, unitaryDefect, type ComplexMatrix, type ComplexVector } from '../src/research/unitaryFloquet';
+import {
+  complexUnitaryFloquetArnoldiSchurSpectrum,
+  complexUnitaryFloquetKrylovSpectrum,
+  complexUnitaryFloquetSpectrum,
+  unitaryDefect,
+  type ComplexMatrix,
+  type ComplexVector
+} from '../src/research/unitaryFloquet';
 
 function diagonalUnitary(phases: readonly number[]): ComplexMatrix {
   const n = phases.length;
@@ -59,5 +66,29 @@ describe('complex unitary Floquet spectrum', () => {
       expect(r.spectrum.phases[i]!).toBeCloseTo(phases[i]!, 8);
       expect(r.spectrum.quasiEnergies[i]!).toBeCloseTo((-0.5 * phases[i]!) / 2, 8);
     }
+  });
+
+  it('reports selected large-Floquet Ritz phases with an Arnoldi-Schur residual bound', () => {
+    const phases = [-1.1, 0.2, 1.6, 2.4];
+    const apply = (vector: ComplexVector): ComplexVector => ({
+      re: phases.map((phase, i) => Math.cos(phase) * (vector.re[i] ?? 0) - Math.sin(phase) * (vector.im[i] ?? 0)),
+      im: phases.map((phase, i) => Math.sin(phase) * (vector.re[i] ?? 0) + Math.cos(phase) * (vector.im[i] ?? 0))
+    });
+    const r = complexUnitaryFloquetArnoldiSchurSpectrum(apply, {
+      dimension: phases.length,
+      krylovDim: phases.length,
+      seed: { re: [1, 1, 1, 1], im: [0, 0, 0, 0] },
+      targetCount: 2,
+      targetPhases: [0.2],
+      period: 2,
+      hbar: 0.5,
+      residualTolerance: 1e-10
+    });
+    expect(r.converged).toBe(true);
+    expect(r.selected).toHaveLength(2);
+    expect(r.selected[0]!.phase).toBeCloseTo(0.2, 8);
+    expect(r.selected[0]!.quasiEnergy).toBeCloseTo(-0.5 * 0.2 / 2, 8);
+    expect(r.selected[0]!.residualBound).toBeLessThan(1e-10);
+    expect(r.caveat).toContain('matrix-free');
   });
 });

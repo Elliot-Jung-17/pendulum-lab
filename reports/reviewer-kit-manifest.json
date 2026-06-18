@@ -1,0 +1,183 @@
+{
+  "schemaVersion": "pendulum-reviewer-kit/v1",
+  "generatedAt": "2026-06-18T08:33:13.664Z",
+  "flagship": {
+    "id": "melnikov-gap-map",
+    "shortName": "Melnikov gap map",
+    "title": "Melnikov threshold vs period-doubling onset: a quantitative gap map",
+    "thesis": "For the damped driven pendulum at omega=2/3, the analytic Melnikov homoclinic-tangle threshold and the measured period-doubling onset are distinct objects; their ratio closes and reverses near gamma ~= 0.69.",
+    "primaryMetric": "A_PD(gamma) / A_c(gamma), with A_PD located by Floquet multiplier rho=-1 and A_c from the closed-form Melnikov integral.",
+    "flagshipCommand": "npm run paper:study",
+    "paperCommand": "npm run paper:build",
+    "trustContract": [
+      "A_c is analytic and pinned by quadrature in tests.",
+      "A_PD is measured on the attractor branch and refined by the monodromy/Floquet multiplier crossing rho=-1.",
+      "The gamma=0.5 onset is anchored to the Baker-Gollub literature value.",
+      "0-1 test samples corroborate regular/chaotic sides without replacing the Floquet criterion.",
+      "Every artifact carries parameters, commands, hashes, and caveats."
+    ],
+    "evidenceArtifacts": [
+      "reports/paper-study.json",
+      "paper/index.html",
+      "paper/paper.pdf",
+      "reports/literature-anchors.json",
+      "reports/reproduce/manifest.json"
+    ],
+    "caveats": [
+      "The comparison fixes omega=2/3 and follows the primary attractor branch; coexisting basins may have different events.",
+      "Melnikov theory is first-order in forcing/damping and is not an ordering bound at strong damping.",
+      "Chaotic comparisons are bounded by the predictability horizon."
+    ]
+  },
+  "status": "ready",
+  "artifacts": [
+    {
+      "id": "flagship-study-json",
+      "path": "reports/paper-study.json",
+      "command": "npm run paper:study",
+      "priority": "required",
+      "description": "Numerical source of truth for the flagship Melnikov gap map.",
+      "available": true
+    },
+    {
+      "id": "flagship-certification",
+      "path": "reports/flagship-certification.json",
+      "command": "npm run flagship:certify",
+      "priority": "required",
+      "description": "Figure 1 hash, crossing interval, onset localization table, and caveat map.",
+      "available": true
+    },
+    {
+      "id": "flagship-figure-1",
+      "path": "reports/flagship-figure1.svg",
+      "command": "npm run flagship:certify",
+      "priority": "recommended",
+      "description": "Reviewer-facing Figure 1 SVG for the Melnikov gap map.",
+      "available": true
+    },
+    {
+      "id": "flagship-external-check",
+      "path": "reports/flagship-external-check.json",
+      "command": "npm run flagship:external",
+      "priority": "recommended",
+      "description": "Dependency-free Python recomputation of A_c and the ratio crossing from exported A_PD values.",
+      "available": true
+    },
+    {
+      "id": "flagship-paper-html",
+      "path": "paper/index.html",
+      "command": "npm run paper:build",
+      "priority": "required",
+      "description": "Self-contained paper with figures rendered from the study JSON.",
+      "available": true
+    },
+    {
+      "id": "flagship-paper-pdf",
+      "path": "paper/paper.pdf",
+      "command": "npm run paper:build",
+      "priority": "recommended",
+      "description": "Print-reviewable PDF generated from the same HTML paper.",
+      "available": true
+    },
+    {
+      "id": "one-command-manifest",
+      "path": "reports/reproduce/manifest.json",
+      "command": "npm run reproduce",
+      "priority": "required",
+      "description": "Hash-stamped deterministic manifest for headline claims.",
+      "available": true
+    },
+    {
+      "id": "external-cross-validation",
+      "path": "reports/cross-validation.json",
+      "command": "npm run validate:cross",
+      "priority": "recommended",
+      "description": "Independent SciPy DOP853 trajectory comparison.",
+      "available": true
+    },
+    {
+      "id": "symbolic-validation",
+      "path": "reports/sympy-validation.json",
+      "command": "npm run validate:sympy",
+      "priority": "recommended",
+      "description": "Independent SymPy Euler-Lagrange RHS derivation check.",
+      "available": true
+    },
+    {
+      "id": "notebook",
+      "path": "reports/research-notebook.html",
+      "command": "npm run notebook",
+      "priority": "optional",
+      "description": "Figure-rich notebook driven through the same analysis handlers.",
+      "available": true
+    },
+    {
+      "id": "gpu-scale-contract",
+      "path": "reports/gpu-scale-validation.md",
+      "command": "npm run validate:gpu-scale",
+      "priority": "recommended",
+      "description": "CPU reference plus mocked-WebGPU contract for accelerated field/ensemble paths.",
+      "available": true
+    },
+    {
+      "id": "webgpu-hardware-validation",
+      "path": "reports/webgpu-hardware-validation.md",
+      "command": "npm run validate:webgpu-hardware",
+      "priority": "recommended",
+      "description": "Real-adapter WebGPU reduction comparison against the CPU f64 oracle.",
+      "available": true
+    },
+    {
+      "id": "release-readiness",
+      "path": "reports/release-readiness.json",
+      "command": "npm run release:package",
+      "priority": "required",
+      "description": "Machine-readable DOI/Pages/npm/PDF/GIF release readiness manifest.",
+      "available": true
+    },
+    {
+      "id": "release-one-page-pdf",
+      "path": "reports/release-one-page.pdf",
+      "command": "npm run release:package",
+      "priority": "recommended",
+      "description": "One-page reviewer handout for release notes and external review.",
+      "available": true
+    },
+    {
+      "id": "walkthrough-gif",
+      "path": "reports/walkthrough-30s.gif",
+      "command": "npm run release:package",
+      "priority": "recommended",
+      "description": "Thirty-second walkthrough artifact for the GitHub release and project page.",
+      "available": true
+    },
+    {
+      "id": "memory-regression-report",
+      "path": "reports/memory-regression-report.md",
+      "command": "npm run benchmark:memory",
+      "priority": "required",
+      "description": "Browser memory regression report for the current build.",
+      "available": true
+    },
+    {
+      "id": "memory-baseline",
+      "path": "reports/memory-baseline.json",
+      "command": "npm run benchmark:memory",
+      "priority": "required",
+      "description": "Machine-readable browser memory baseline consumed by the world-class audit.",
+      "available": true
+    },
+    {
+      "id": "reviewer-kit-manifest",
+      "path": "reports/reviewer-kit-manifest.json",
+      "command": "npm run reviewer:kit",
+      "priority": "required",
+      "description": "Machine-readable checklist of the reviewer kit itself.",
+      "available": true
+    }
+  ],
+  "missingRequired": [],
+  "missingRecommended": [],
+  "missingOptional": [],
+  "commandsToComplete": []
+}

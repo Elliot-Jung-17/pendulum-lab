@@ -3,10 +3,10 @@ name: Publish npm package
 # Manual-only: publishing the headless `pendulum-lab-core` library to npm is an
 # explicit, irreversible action, so this never runs automatically.
 #
-# Prerequisites (one-time, owner decisions — intentionally NOT automated):
-#   1. Set `"private": false` in package.json (it is `true` today so an accidental
-#      publish is impossible) and confirm the package `name` is the desired,
-#      available npm name.
+# Prerequisites (one-time, owner decisions, intentionally NOT automated):
+#   1. Confirm the package `name` and `version` are the desired public release
+#      coordinates. The package is publishable, but this workflow is manual-only
+#      so a release still requires an explicit owner action.
 #   2. Add an `NPM_TOKEN` repository secret (an npm automation token with publish
 #      rights).
 #   3. Run this workflow from the Actions tab (workflow_dispatch). It re-runs the

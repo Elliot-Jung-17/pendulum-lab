@@ -51,7 +51,16 @@ export class LyapunovTab extends TabController {
       const verdict = c ? (c.symplectic ? 'symplectic ✓' : 'pairing ✗') : '';
       const pairing = c ? `, pairErr=${c.pairingError.toExponential(1)}` : '';
       this.dom.setText('lyapStatus', `done · Σλ=${result.sum.toExponential(1)}${pairing}${verdict ? ` · ${verdict}` : ''}`);
-      this.badge('lyapStatus', 'finite-time-estimate', 'Lyapunov spectrum: finite-time Benettin/QR estimate with block std errors.');
+      this.badge('lyapStatus', 'finite-time-estimate', 'Lyapunov spectrum: finite-time Benettin/QR estimate with block std errors.', {
+        title: 'Lyapunov Spectrum Trust',
+        source: 'Lyapunov tab -> ChaosClient.lyapunovSpectrum',
+        parameters: { system: spec.kind, dimensions: count, dt, steps, renormEvery },
+        uncertainty: 'Per-exponent standard errors plus block standard errors from the finite renormalization sequence.',
+        externalValidation: c ? `Hamiltonian spectrum consistency gate: symplectic=${c.symplectic}, pairingError=${c.pairingError.toExponential(2)}` : 'Spectrum consistency is reported when the selected system exposes the required structure.',
+        reproduce: 'npm test -- tests/lyapunov-spectrum-job.test.ts tests/spectrum-consistency.test.ts',
+        caveat: 'Finite-time exponents depend on integration horizon, transient trimming, and tangent-space conditioning.',
+        artifact: 'CSV export: pendulum_lyapunov_spectrum.csv'
+      });
     } catch (err) {
       this.dom.setText('lyapStatus', `error: ${err instanceof Error ? err.message : String(err)}`);
     } finally {

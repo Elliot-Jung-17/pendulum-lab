@@ -1,0 +1,35 @@
+name: WebGPU Hardware Validation
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '41 2 * * 2'
+
+jobs:
+  hardware-reductions:
+    # This job is intentionally pinned to an owner-provisioned runner with a real
+    # GPU/WebGPU stack. GitHub-hosted runners are allowed to lack navigator.gpu;
+    # this workflow is the place where absence of an adapter is a failure.
+    runs-on: [self-hosted, webgpu]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install chrome
+      - run: npm run test:webgpu-hardware
+        env:
+          WEBGPU_BROWSER_CHANNEL: chrome
+      - run: npm run validate:webgpu-hardware
+        env:
+          WEBGPU_BROWSER_CHANNEL: chrome
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: webgpu-hardware-playwright-report
+          path: |
+            reports/playwright/
+            reports/webgpu-hardware-validation.*

@@ -46,7 +46,16 @@ export class ResearchPlusTab extends TabController {
           result.times.map((t, k) => `t=${t.toFixed(2)}  Var[θ₁]=${(result.variance[k]![0] ?? 0).toExponential(3)}  E[θ₁]=${(result.mean[k]![0] ?? 0).toFixed(4)}`).join('\n') +
           `\n\nScheme: ${result.scheme}; ${result.strongOrder}\nCaveat: ${result.caveats.join(' ')}`
       );
-      this.badge('rpSdeStatus', 'validated', `Langevin ensemble (additive noise) — mean/variance via Welford. ${result.strongOrder}. Matrix-noise commutative Milstein reports when non-commutative noise is not strong order 1.`);
+      this.badge('rpSdeStatus', 'validated', `Langevin ensemble (additive noise) - mean/variance via Welford. ${result.strongOrder}. Matrix-noise commutative Milstein reports when non-commutative noise is not strong order 1.`, {
+        title: 'Stochastic Ensemble Trust',
+        source: 'Research+ tab -> runLangevinEnsemble',
+        parameters: { scheme: result.scheme, realizations: result.realizations, dt: 0.005, steps: 2000, sigma, seed: 1 },
+        uncertainty: 'Mean and variance are accumulated by Welford statistics across the ensemble.',
+        externalValidation: 'Pinned against Brownian, Ornstein-Uhlenbeck, and GBM fixtures.',
+        reproduce: 'npm test -- tests/stochastic.test.ts tests/stochastic-resonance.test.ts',
+        caveat: result.caveats.join(' '),
+        artifact: 'Research+ canvas/summary output'
+      });
     }, 'rpSdeStatus');
   }
 
@@ -75,7 +84,16 @@ export class ResearchPlusTab extends TabController {
           `  |ĝ − 9.81| = ${Math.abs(gHat - 9.81).toExponential(2)}\n` +
           `  iterations = ${fit.iterations}, dof = ${fit.degreesOfFreedom}, converged = ${fit.converged}`
       );
-      this.badge('rpFitStatus', 'validated', 'Levenberg–Marquardt with the engine RHS in the fit loop; covariance s²(JᵀJ)⁻¹ standard errors. Short window keeps the chaotic forward map well-conditioned.');
+      this.badge('rpFitStatus', 'validated', 'Levenberg-Marquardt with the engine RHS in the fit loop; covariance standard errors. Short window keeps the chaotic forward map well-conditioned.', {
+        title: 'Inverse Fit Trust',
+        source: 'Research+ tab -> fitDoublePendulum',
+        parameters: { estimated: 'g', samples: times.length, timeWindow: `${times[0]}..${times[times.length - 1]}`, initialGuess: 8 },
+        uncertainty: `Linearized standard error for g: ${se.toExponential(3)}.`,
+        externalValidation: 'Parameter-estimation covariance is pinned by synthetic recovery and Monte Carlo tests.',
+        reproduce: 'npm test -- tests/parameter-estimation.test.ts',
+        caveat: 'Long chaotic windows make the inverse problem ill-conditioned; this demo uses a short synthetic window.',
+        artifact: 'Research+ text output'
+      });
     }, 'rpFitStatus');
   }
 
@@ -111,7 +129,16 @@ export class ResearchPlusTab extends TabController {
           `  ΣS = ${model.firstOrderSobol.reduce((a, b) => a + b, 0).toFixed(4)} (≈1 for additive f)\n` +
           `  R² = ${model.rSquared.toFixed(6)}, cond ≈ ${model.conditionEstimate.toExponential(2)}`
       );
-      this.badge('rpPceStatus', 'validated', 'Total-degree Legendre PCE → analytic Sobol indices (independent-uniform measure). For additive f the first-order indices sum to ≈1.');
+      this.badge('rpPceStatus', 'validated', 'Total-degree Legendre PCE -> analytic Sobol indices (independent-uniform measure). For additive f the first-order indices sum to approximately 1.', {
+        title: 'Polynomial Chaos Trust',
+        source: 'Research+ tab -> fitPolynomialChaos',
+        parameters: { variables: 2, samples: samples.length, degree: 5, basis: 'Legendre total-degree' },
+        uncertainty: `R^2=${model.rSquared.toPrecision(6)}, conditionEstimate=${model.conditionEstimate.toExponential(2)}.`,
+        externalValidation: 'Sobol decomposition and surrogate fit are pinned by analytic additive fixtures.',
+        reproduce: 'npm test -- tests/surrogate.test.ts tests/sobol-sensitivity.test.ts',
+        caveat: 'Assumes independent uniform inputs and a smooth response; correlated or discontinuous responses need a different basis.',
+        artifact: 'Research+ text output'
+      });
     }, 'rpPceStatus');
   }
 

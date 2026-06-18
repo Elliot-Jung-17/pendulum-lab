@@ -88,7 +88,17 @@ export class SweepTab extends TabController {
       this.badge(
         'sweepStatus',
         result.backend === 'webgpu' ? (result.validation?.passed ? 'finite-time-estimate' : 'caveat') : 'finite-time-estimate',
-        result.caveat
+        result.caveat,
+        {
+          title: 'GPU Chaos Map Trust',
+          source: 'Sweep tab -> sweepLambdaField',
+          parameters: { backend: result.backend, resolution: `${result.width}x${result.height}`, steps: this.steps, dt: 0.02 },
+          uncertainty: `CPU probe max difference ${result.validation?.maxAbsDiff ?? 0} with tolerance ${result.validation?.tolerance ?? 'cpu-fallback'}.`,
+          externalValidation: 'GPU lambda field is accepted only after CPU probe validation, otherwise the CPU f64 field is returned.',
+          reproduce: 'npm run validate:gpu-scale',
+          caveat: result.caveat,
+          artifact: 'reports/gpu-scale-validation.md'
+        }
       );
     } catch (err) {
       this.dom.setText('sweepStatus', `WebGPU sweep failed: ${err instanceof Error ? err.message : String(err)} — use the CPU path`);
@@ -136,7 +146,16 @@ export class SweepTab extends TabController {
       this.rafId = requestAnimationFrame(() => this.chunk());
     } else {
       this.dom.setText('sweepStatus', `done · ${this.res}×${this.res}`);
-      this.badge('sweepStatus', 'finite-time-estimate', 'Chaos map: finite-time lambda estimates per cell.');
+      this.badge('sweepStatus', 'finite-time-estimate', 'Chaos map: finite-time lambda estimates per cell.', {
+        title: 'Chaos Map Trust',
+        source: 'Sweep tab -> maximalLyapunov per grid cell',
+        parameters: { resolution: `${this.res}x${this.res}`, steps: this.steps, dt: 0.02, quickPreview: this.quickPreview },
+        uncertainty: 'Finite-time lambda estimates; no per-cell bootstrap is computed in the interactive CPU sweep.',
+        externalValidation: 'Maximal Lyapunov implementation is pinned by chaos and convergence tests.',
+        reproduce: 'npm test -- tests/chaos.test.ts tests/sweep-and-plots.test.ts',
+        caveat: 'Grid cells can shift near basin/chaos boundaries under horizon, dt, and initial-condition resolution changes.',
+        artifact: 'CSV export: pendulum_chaos_map.csv'
+      });
       this.rafId = null;
     }
   }

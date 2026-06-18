@@ -32,6 +32,9 @@ describe('research workspace storage v3', () => {
     });
 
     expect(normalized.migrations).toEqual([`pendulum-research-workbench/v2 -> ${RESEARCH_STORAGE_SCHEMA_VERSION}`]);
+    expect(RESEARCH_STORAGE_SCHEMA_VERSION).toBe('pendulum-research-workbench/v4');
+    expect(normalized.research.project.activeSessionId).toBe(normalized.research.sessions[0]?.id);
+    expect(normalized.research.sessions[0]?.artifactManifest).toEqual([]);
     expect(normalized.research.workspace.name).toBe('Active Study');
     expect(normalized.research.workspaces.map((workspace) => workspace.id)).toEqual(['workspace-active', 'workspace-secondary']);
     expect(normalized.research.workspaces[0]?.name).toBe('Active Study');

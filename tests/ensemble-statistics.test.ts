@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { ensembleStatistics, ensembleGrid, runDoublePendulumEnsemble } from '../src/runtime/gpuEnsemble';
+import { compareEnsembleStatistics, ensembleStatistics, ensembleGrid, runDoublePendulumEnsemble, webgpuEnsembleStatistics } from '../src/runtime/gpuEnsemble';
 
 /**
  * Ensemble reduction (the layer a basin / uncertainty-cloud study consumes).
@@ -68,5 +68,29 @@ describe('ensembleStatistics', () => {
     expect(s.rmsSpread).toBeCloseTo(Math.sqrt(Array.from(s.variance).reduce((acc, v) => acc + v, 0)), 12);
     expect(s.flipFraction).toBeGreaterThanOrEqual(0);
     expect(s.flipFraction).toBeLessThanOrEqual(1);
+  });
+
+  test('compares an f32-style reduction candidate against the CPU oracle', async () => {
+    const result = await runDoublePendulumEnsemble({ m1: 1, m2: 1, l1: 1, l2: 1, g: 9.81 }, ensembleGrid(5, [-1.2, 1.2]), { steps: 120, dt: 0.01, forceCpu: true });
+    const reference = ensembleStatistics(result.states);
+    const roundedStates = new Float64Array(new Float32Array(result.states));
+    const candidate = ensembleStatistics(roundedStates);
+    const comparison = compareEnsembleStatistics(candidate, reference);
+    expect(comparison.passed).toBe(true);
+    expect(comparison.nMatches).toBe(true);
+    expect(comparison.maxMeanAbsDiff).toBeLessThanOrEqual(comparison.tolerances.mean);
+    expect(comparison.maxCovarianceAbsDiff).toBeLessThanOrEqual(comparison.tolerances.covariance);
+  });
+
+  test('rejects reduction candidates outside the declared tolerance', () => {
+    const reference = ensembleStatistics(Float64Array.of(0, 0, 0, 0, 2, 4, 6, 8));
+    const candidate = ensembleStatistics(Float64Array.of(0, 0, 0, 0, 20, 4, 6, 8));
+    const comparison = compareEnsembleStatistics(candidate, reference);
+    expect(comparison.passed).toBe(false);
+    expect(comparison.maxMeanAbsDiff).toBeGreaterThan(comparison.tolerances.mean);
+  });
+
+  test('hardware GPU-side reduction is unavailable in the Node unit-test runtime', async () => {
+    await expect(webgpuEnsembleStatistics(Float64Array.of(0, 0, 0, 0, 1, 1, 0, 0))).resolves.toBeNull();
   });
 });

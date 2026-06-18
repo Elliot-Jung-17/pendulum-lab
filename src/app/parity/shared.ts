@@ -161,6 +161,36 @@ export interface ResearchWorkspaceProfile {
   updatedAt: string;
 }
 
+export interface ResearchArtifactManifestEntry {
+  id: string;
+  label: string;
+  path: string;
+  kind: 'report' | 'figure' | 'dataset' | 'workspace' | 'export';
+  createdAt: string;
+  hash?: string;
+}
+
+export interface ResearchSessionProfile {
+  id: string;
+  projectId: string;
+  name: string;
+  objective: string;
+  createdAt: string;
+  updatedAt: string;
+  pinnedRunIds: string[];
+  artifactManifest: ResearchArtifactManifestEntry[];
+  comparisonHistory: string[];
+}
+
+export interface ResearchProjectProfile {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  activeSessionId: string;
+  sessionIds: string[];
+}
+
 export interface ResearchLayoutPreferences {
   density: 'comfortable' | 'compact';
   lastTab: string;
@@ -168,6 +198,8 @@ export interface ResearchLayoutPreferences {
 }
 
 export interface ResearchWorkbenchState {
+  project: ResearchProjectProfile;
+  sessions: ResearchSessionProfile[];
   workspace: ResearchWorkspaceProfile;
   workspaces: ResearchWorkspaceProfile[];
   layout: ResearchLayoutPreferences;
@@ -194,6 +226,32 @@ export function defaultResearchWorkspaceProfile(now = new Date().toISOString()):
     flagshipId: 'melnikov-gap-map',
     createdAt: now,
     updatedAt: now
+  };
+}
+
+export function defaultResearchSessionProfile(projectId = 'project-certified-chaotic-dynamics', now = new Date().toISOString()): ResearchSessionProfile {
+  return {
+    id: 'session-melnikov-gap-map',
+    projectId,
+    name: 'Melnikov Gap Map Certification',
+    objective: 'Accumulate runs, artifacts, and caveats for the flagship Melnikov threshold vs period-doubling gap map.',
+    createdAt: now,
+    updatedAt: now,
+    pinnedRunIds: [],
+    artifactManifest: [],
+    comparisonHistory: []
+  };
+}
+
+export function defaultResearchProjectProfile(now = new Date().toISOString()): ResearchProjectProfile {
+  const session = defaultResearchSessionProfile('project-certified-chaotic-dynamics', now);
+  return {
+    id: 'project-certified-chaotic-dynamics',
+    name: 'Certified Chaotic Dynamics Workbench',
+    createdAt: now,
+    updatedAt: now,
+    activeSessionId: session.id,
+    sessionIds: [session.id]
   };
 }
 
@@ -242,6 +300,8 @@ export const COMPAT_ANCHOR_IDS = [
 ] as const;
 
 const initialResearchWorkspace = defaultResearchWorkspaceProfile();
+const initialResearchProject = defaultResearchProjectProfile(initialResearchWorkspace.createdAt);
+const initialResearchSession = defaultResearchSessionProfile(initialResearchProject.id, initialResearchWorkspace.createdAt);
 
 export const state = {
   mode: 'demo' as RunMode,
@@ -253,6 +313,8 @@ export const state = {
   lastAudit: null as AuditResult | null,
   lastFault: 'No runtime faults recorded.',
   research: {
+    project: initialResearchProject,
+    sessions: [initialResearchSession],
     workspace: initialResearchWorkspace,
     workspaces: [initialResearchWorkspace],
     layout: defaultResearchLayoutPreferences(),

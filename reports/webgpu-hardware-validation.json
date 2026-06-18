@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "pendulum-webgpu-hardware-validation/v1",
+  "generatedAt": "2026-06-18T08:32:58.262Z",
+  "channel": "chrome",
+  "url": "http://127.0.0.1:5173/",
+  "status": "pass",
+  "backend": "webgpu",
+  "comparison": {
+    "passed": true,
+    "nMatches": true,
+    "tolerances": {
+      "mean": 0.0004,
+      "variance": 0.003,
+      "covariance": 0.003,
+      "rmsSpread": 0.003,
+      "flipFraction": 0
+    },
+    "maxMeanAbsDiff": 1.6653345369377348e-16,
+    "maxVarianceAbsDiff": 0.0000010824517786556243,
+    "maxCovarianceAbsDiff": 0.0000010824517786556243,
+    "rmsSpreadAbsDiff": 2.4196521808406146e-7,
+    "flipFractionAbsDiff": 0,
+    "caveat": "This validates ensemble reduction statistics only; trajectory integration and chaotic divergence still require their own CPU probe gates."
+  },
+  "rmsSpreadGpu": 2.7608410199357043,
+  "rmsSpreadCpu": 2.760840777970486,
+  "n": 25
+}

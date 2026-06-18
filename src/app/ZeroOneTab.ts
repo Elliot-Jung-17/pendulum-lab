@@ -35,7 +35,16 @@ export class ZeroOneTab extends TabController {
       this.dom.setText('zeroOneVerdict', `${verdict} (K${result.K > 0.5 ? ' ≈ 1' : ' ≈ 0'})`);
       this.render();
       this.dom.setText('zeroOneStatus', `done · K=${result.K.toFixed(3)}±${result.kStdError.toFixed(3)} · 95% CI [${result.kCi95[0].toFixed(3)}, ${result.kCi95[1].toFixed(3)}] · ${verdict}`);
-      this.badge('zeroOneStatus', 'finite-time-estimate', '0–1 test K: finite-sample estimate with bootstrap CI.');
+      this.badge('zeroOneStatus', 'finite-time-estimate', '0-1 test K: finite-sample estimate with bootstrap CI.', {
+        title: '0-1 Test Trust',
+        source: '0-1 tab -> ChaosClient.zeroOne',
+        parameters: { system: spec.kind, samples, observable: 'cos(theta)', seed: 12345 },
+        uncertainty: `Bootstrap SE ${result.kStdError.toPrecision(4)} with 95% CI [${result.kCi95[0].toPrecision(4)}, ${result.kCi95[1].toPrecision(4)}].`,
+        externalValidation: 'Independent of Lyapunov tangent-space machinery; pinned by periodic/noise fixtures and chaotic pendulum tests.',
+        reproduce: 'npm test -- tests/zero-one-test.test.ts tests/chaos-protocol-diagnostics.test.ts',
+        caveat: 'Finite scalar-observable test; sticky transients and short series can understate chaos.',
+        artifact: 'CSV export: pendulum_zero_one_test.csv'
+      });
     } catch (err) {
       this.dom.setText('zeroOneStatus', `error: ${err instanceof Error ? err.message : String(err)}`);
     } finally {

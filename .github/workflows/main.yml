@@ -22,13 +22,11 @@ jobs:
       - run: npm run audit:mojibake:strict
       - run: npm run reports
       - run: npm run validate:gpu-scale
-      - run: npm run reviewer:kit
       - run: npm run build
       - run: npm run build:standalone
       - run: npm run build:lib
       - run: npm run budget
       - run: npm run docs:api
-      - run: npm run audit:worldclass
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -36,6 +34,13 @@ jobs:
       - run: npx playwright install --with-deps chromium firefox webkit
       - run: npm run benchmark
       - run: npm run benchmark:memory
+      - run: npm run flagship:certify
+      - run: npm run flagship:external
+      - run: npm run release:package
+      - run: npm run reviewer:kit
+      # The world-class scorecard reads generated benchmark, memory, reviewer-kit,
+      # release, flagship, external-check, and GPU-scale artifacts, so keep it after those producers.
+      - run: npm run audit:worldclass
       # Full browser suite: includes visual fingerprints, storage, design,
       # superpack, 3D lab, accessibility, and long-run performance specs.
       - run: npm run test:e2e

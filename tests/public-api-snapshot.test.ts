@@ -187,6 +187,7 @@ describe('public grouped API surface', () => {
 
   it('keeps the stable analysis namespace intentional', () => {
     expect(namespaceKeys(analysis)).toEqual([
+      'CHAOS_ACCELERATION_CONTRACTS',
       'analyzeSpectrumConsistency',
       'autoBatchedStandardError',
       'basinEntropy',
@@ -200,6 +201,9 @@ describe('public grouped API surface', () => {
       'classifyBifurcation',
       'classifyFixedPoint',
       'codimTwoDiagram',
+      'compareClvAcceleration',
+      'compareFtleFieldAcceleration',
+      'compareLyapunovSpectrumAcceleration',
       'continueArclength',
       'continueDrivenPeriodicOrbit',
       'continueExpansionNSBranch',
@@ -310,10 +314,12 @@ describe('public grouped API surface', () => {
       'boundaryRefinement',
       'budgetAllows',
       'buildFeatureLibrary',
+      'buildFlagshipFigureSvg',
       'buildNextStepTargets',
       'buildNotebookV2',
       'buildZip',
       'bytesToText',
+      'certifyFlagshipGapMap',
       'characteristicPolynomial',
       'checksumEntries',
       'checksumEntriesSha256',
@@ -323,6 +329,7 @@ describe('public grouped API surface', () => {
       'complexLog',
       'complexMatrixEigenvalues',
       'complexPolynomialRoots',
+      'complexUnitaryFloquetArnoldiSchurSpectrum',
       'complexUnitaryFloquetKrylovSpectrum',
       'complexUnitaryFloquetSpectrum',
       'crc32',
@@ -333,6 +340,7 @@ describe('public grouped API surface', () => {
       'dynamicModeDecomposition',
       'eigenvaluesGeneral',
       'energyDriftProfile',
+      'estimateFlagshipCrossing',
       'estimatePhaseSpaceDerivatives',
       'evaluateHamiltonian',
       'evaluateReviewerKit',
@@ -344,6 +352,7 @@ describe('public grouped API surface', () => {
       'finiteDifferenceDerivatives',
       'fitDoublePendulum',
       'fitPolynomialChaos',
+      'flagshipCertifiedRows',
       'flagshipMarkdown',
       'forkExperimentData',
       'francisEigenvalues',
@@ -374,6 +383,7 @@ describe('public grouped API surface', () => {
       'qkrFloquetMatrix',
       'qkrQuasiEnergySpectrum',
       'qualityBadges',
+      'refinedFlagshipGrid',
       'renderStudyFigureSvg',
       'restartedArnoldi',
       'restartedLanczos',
@@ -402,13 +412,15 @@ describe('public grouped API surface', () => {
 
   it('keeps the experimental namespace explicit', () => {
     expect(namespaceKeys(experimental)).toEqual([
+      'compareEnsembleStatistics',
       'ensembleGrid',
       'ensembleStatistics',
       'flipBasinField',
       'ftleFieldFiniteDifference',
       'runComputeKernel',
       'runDoublePendulumEnsemble',
-      'sweepLambdaField'
+      'sweepLambdaField',
+      'webgpuEnsembleStatistics'
     ]);
   });
 });

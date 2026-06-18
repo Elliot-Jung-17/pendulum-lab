@@ -50,7 +50,16 @@ export class BasinTab extends TabController {
       this.render();
       const wada = result.wadaCandidate ? 'Wada candidate ✓' : `Wada fraction ${(result.wadaFraction * 100).toFixed(0)}%`;
       this.dom.setText('basinStatus', `done · Sb=${result.basinEntropy.toFixed(3)}±${result.basinEntropyStdError.toFixed(3)} · dim=${result.boxCountingDimension.toFixed(3)}±${result.boxCountingStdError.toFixed(3)} (R²=${result.boxCountingR2.toFixed(3)}) · ${wada}`);
-      this.badge('basinStatus', 'finite-time-estimate', 'Basin entropy/dimension: finite-resolution estimates with std errors.');
+      this.badge('basinStatus', 'finite-time-estimate', 'Basin entropy/dimension: finite-resolution estimates with std errors.', {
+        title: 'Flip Basin Trust',
+        source: 'Basin tab -> ChaosClient.basin',
+        parameters: { system: spec.kind, resolution: `${n}x${n}`, classifier: 'first rod flip from rest' },
+        uncertainty: `Basin entropy SE ${result.basinEntropyStdError.toPrecision(4)}, boundary entropy SE ${result.boundaryBasinEntropyStdError.toPrecision(4)}, box-counting SE ${result.boxCountingStdError.toPrecision(4)}.`,
+        externalValidation: 'Daza-style basin entropy and Wada candidate grid tests are pinned by unit fixtures.',
+        reproduce: 'npm test -- tests/basin.test.ts tests/wada-convergence.test.ts',
+        caveat: 'Finite-resolution basin grids are evidence of fractal boundaries, not a proof of Wada structure.',
+        artifact: 'PNG export: pendulum_flip_basin.png'
+      });
     } catch (err) {
       this.dom.setText('basinStatus', `error: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
@@ -91,7 +100,17 @@ export class BasinTab extends TabController {
       this.badge(
         'basinStatus',
         field.backend === 'webgpu' ? (field.validation?.passed ? 'finite-time-estimate' : 'caveat') : 'finite-time-estimate',
-        field.caveat
+        field.caveat,
+        {
+          title: 'GPU Flip Basin Trust',
+          source: 'Basin tab -> flipBasinField',
+          parameters: { backend: field.backend, resolution: `${field.width}x${field.height}`, validationPassed: field.validation?.passed ?? 'cpu-fallback' },
+          uncertainty: `CPU probe disagreement fraction ${field.validation?.maxAbsDiff ?? 0}; box-counting SE ${box.stdError.toPrecision(4)}.`,
+          externalValidation: 'GPU field output is accepted only after CPU probe validation, otherwise the CPU f64 grid is returned.',
+          reproduce: 'npm run validate:gpu-scale',
+          caveat: field.caveat,
+          artifact: 'reports/gpu-scale-validation.md'
+        }
       );
     } catch (err) {
       this.dom.setText('basinStatus', `WebGPU basin failed: ${err instanceof Error ? err.message : String(err)} — use the CPU path`);

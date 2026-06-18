@@ -80,10 +80,15 @@ but its extraction boundary is now explicit:
   `research-renderers.ts`; comparison matrix assembly belongs in
   `research-comparison.ts`; superpack analysis panels belong in
   `superpack-panels.ts`.
-- Remaining extraction candidates are the run-log renderer, design-study state
-  machine, workspace/session controller, and batch-runner orchestration. Those
-  should leave `research-workbench.ts` one at a time with focused unit or e2e
-  coverage so persisted study/run-log behavior does not drift.
+- The run-log renderer now lives in `research-run-log.ts`, keeping table-only
+  rendering out of the main workbench orchestrator.
+- Workspace/session persistence and run recording live in
+  `research-workspace-controller.ts`; batch target/spec helpers live in
+  `research-batch-runner.ts`; design-study parsing and budget logic live in
+  `research-design-controller.ts`. Remaining extraction candidates are the
+  design-study render loop, adaptive batch UI state, and export-panel wiring.
+  Those should leave `research-workbench.ts` one at a time with focused unit or
+  e2e coverage so persisted study/run-log behavior does not drift.
 
 ## Module Size Ratchet
 

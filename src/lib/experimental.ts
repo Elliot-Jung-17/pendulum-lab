@@ -9,8 +9,8 @@
  * FTLE) with their CPU cross-validation contract.
  */
 
-export { runComputeKernel, runDoublePendulumEnsemble, ensembleGrid, ensembleStatistics } from '../runtime/gpuEnsemble';
-export type { EnsembleOptions, EnsembleResult, EnsembleStatistics } from '../runtime/gpuEnsemble';
+export { runComputeKernel, runDoublePendulumEnsemble, ensembleGrid, ensembleStatistics, webgpuEnsembleStatistics, compareEnsembleStatistics } from '../runtime/gpuEnsemble';
+export type { EnsembleOptions, EnsembleResult, EnsembleStatistics, EnsembleStatisticsComparison, EnsembleStatisticsTolerances } from '../runtime/gpuEnsemble';
 export { flipBasinField, sweepLambdaField, ftleFieldFiniteDifference } from '../runtime/gpuFields';
 export type {
   FlipBasinFieldOptions,

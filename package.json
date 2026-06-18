@@ -1,7 +1,7 @@
 {
   "name": "pendulum-lab-v10",
   "version": "10.34.0",
-  "private": true,
+  "private": false,
   "type": "module",
   "description": "Typed, modular Pendulum Lab V10 research platform for nonlinear pendulum dynamics.",
   "keywords": [
@@ -83,6 +83,8 @@
     "test:e2e": "playwright test",
     "test:visual": "playwright test e2e/visual-regression.spec.ts --project=chromium",
     "smoke": "playwright test e2e/smoke.spec.ts --project=chromium",
+    "test:webgpu-hardware": "playwright test e2e/webgpu-hardware-reductions.spec.ts --project=chromium",
+    "validate:webgpu-hardware": "tsx scripts/webgpu-hardware-validation.ts",
     "benchmark": "tsx scripts/benchmark.ts",
     "benchmark:memory": "tsx scripts/memory-regression.ts",
     "benchmark:energy": "tsx scripts/energy-benchmark.ts",
@@ -96,6 +98,9 @@
     "export:repro": "tsx scripts/export-repro.ts",
     "reproduce": "tsx scripts/reproduce-all.ts",
     "reviewer:kit": "tsx scripts/reviewer-kit.ts",
+    "release:package": "tsx scripts/release-package.ts",
+    "flagship:certify": "tsx scripts/flagship-certify.ts",
+    "flagship:external": "python scripts/flagship_independent.py",
     "research": "tsx scripts/research-cli.ts",
     "paper:study": "tsx scripts/paper-study.ts",
     "paper:build": "tsx scripts/build-paper.ts",

@@ -18,8 +18,9 @@ import { drivenPeriodicOrbit, type FloquetMultiplier } from './floquet';
  *   complex pair, |ρ| → 1 Neimark–Sacker (torus birth)
  *
  * Natural-parameter continuation traces branches that are graphs over the
- * parameter; it cannot turn a fold (where pseudo-arclength continuation is
- * required). That, and following the bifurcated branches, remain future work.
+ * parameter; turning a fold requires pseudo-arclength continuation, and
+ * switching onto detected PD/pitchfork/transcritical/NS branches is handled by
+ * the dedicated branch-switching/torus modules rather than this scanner.
  */
 
 export type BifurcationType = 'period-doubling' | 'neimark-sacker' | 'tangent';

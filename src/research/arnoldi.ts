@@ -24,8 +24,10 @@
  * non-symmetric matrices (real and complex spectra), and the returned Ritz
  * vectors satisfy ‖A x − θ x‖ ≈ 0. Scope: the *dominant* part of the spectrum
  * (largest modulus); interior eigenvalues need a shift-and-invert operator (the
- * caller supplies it as `apply`). A thick-restart Arnoldi–Schur form (bounded
- * memory, locking) is the documented next step.
+ * caller supplies it as `apply`). Sparse unitary Floquet scale-up is provided by
+ * `complexUnitaryFloquetArnoldiSchurSpectrum`; a fully locked thick-restart
+ * Schur implementation for crowded non-unitary/interior spectra remains the
+ * next numerical frontier.
  */
 import { complexAbs, type Complex } from './complexEig';
 import { eigenvaluesGeneral } from './eigenGeneral';

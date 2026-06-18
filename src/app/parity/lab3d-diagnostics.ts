@@ -37,7 +37,16 @@ export async function analyzeDoubleStringDiagnostics(): Promise<void> {
   const validityLine = `taut ${(validity.tautFraction * 100).toFixed(1)}% of 30 s, ${validity.slackEvents} slack / ${validity.captureEvents} capture events, E lost ${validity.energyLost.toFixed(4)} J`;
   if (validity.tautFraction < 0.99) {
     setText('ds3Analysis', `${validityLine} | ${validity.caveat} | Smooth-chart λ/RQA/FTLE skipped: the hybrid events dominate, so a single-chart estimate would be misleading.`);
-    attachBadge('ds3Analysis', 'caveat', validity.caveat);
+    attachBadge('ds3Analysis', 'caveat', validity.caveat, {
+      title: 'Double-String Validity Trust',
+      source: '3D Lab -> doubleStringTautFraction',
+      parameters: { horizon: 30, tautFraction: validity.tautFraction, slackEvents: validity.slackEvents, captureEvents: validity.captureEvents },
+      uncertainty: 'Hybrid taut/slack event probe, not a smooth single-chart chaos estimate.',
+      externalValidation: 'Double-string taut and energy behavior are pinned by double-string tests.',
+      reproduce: 'npm test -- tests/double-string.test.ts',
+      caveat: validity.caveat,
+      artifact: '3D Lab diagnostics readout'
+    });
     logResearchRun('probe', 'Double-string validity probe', validityLine);
     return;
   }
@@ -57,7 +66,16 @@ export async function analyzeDoubleStringDiagnostics(): Promise<void> {
       `FTLE(T=${result.ftleHorizon}s)=${result.ftle.toFixed(3)}`,
       'valid on the taut branch (strings stayed taut over the probe horizon)'
     ].join(' | '));
-    attachBadge('ds3Analysis', 'finite-time-estimate', 'Taut-branch diagnostics; validity confirmed by the hybrid taut-fraction probe.');
+    attachBadge('ds3Analysis', 'finite-time-estimate', 'Taut-branch diagnostics; validity confirmed by the hybrid taut-fraction probe.', {
+      title: 'Double-String Taut-Branch Trust',
+      source: '3D Lab -> ChaosClient.studyPoint on doubleStringSpec',
+      parameters: { lyapunovSteps: 8000, rqaSamples: 360, ftleHorizon: 5, tautFraction: validity.tautFraction },
+      uncertainty: `lambda block SE ${result.lambdaBlockStdError.toPrecision(4)}; RQA/FTLE are finite-window diagnostics.`,
+      externalValidation: 'Same studyPoint handler is used by Research batch tests and worker protocol diagnostics.',
+      reproduce: 'npm test -- tests/double-string.test.ts tests/chaos-protocol-diagnostics.test.ts',
+      caveat: 'Valid only while the string remains on the taut branch over the probe horizon.',
+      artifact: '3D Lab diagnostics readout'
+    });
     logResearchRun('probe', 'Double-string taut-branch diagnostics', `λ=${result.lambdaMax.toFixed(4)}±${result.lambdaBlockStdError.toFixed(4)}, DET=${result.rqaDeterminism.toFixed(3)}, ${validityLine}`);
   } catch (error) {
     setText('ds3Analysis', `Double-string analysis failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -102,7 +120,16 @@ export async function analyzeChainDiagnostics(): Promise<void> {
       verdict,
       'method: studyPoint worker job (dt=0.002, RK4 fiducial; same pipeline as the Research batch runner)'
     ].join(' | '));
-    attachBadge('d3Analysis', 'finite-time-estimate', 'Worker studyPoint job: finite-time Lyapunov/RQA/FTLE with block uncertainties.');
+    attachBadge('d3Analysis', 'finite-time-estimate', 'Worker studyPoint job: finite-time Lyapunov/RQA/FTLE with block uncertainties.', {
+      title: '3D Chain StudyPoint Trust',
+      source: '3D Lab -> ChaosClient.studyPoint',
+      parameters: { chainLinks: spec.masses.length, lyapunovSteps: 6000, dt: 0.002, rqaSamples: 240, ftleHorizon: 3 },
+      uncertainty: `lambda block SE ${result.lambdaBlockStdError.toPrecision(4)}; RQA/FTLE are finite-window estimates.`,
+      externalValidation: 'Spherical-chain dynamics and studyPoint protocol are pinned by unit and worker tests.',
+      reproduce: 'npm test -- tests/spherical-chain.test.ts tests/chaos-protocol-diagnostics.test.ts',
+      caveat: 'Finite-time chaos verdict; refine dt/steps for energetic near-pole trajectories.',
+      artifact: '3D Lab diagnostics readout'
+    });
     logResearchRun('probe', `3D chain diagnostics (N=${spec.masses.length})`, `λ=${result.lambdaMax.toFixed(4)}±${result.lambdaBlockStdError.toFixed(4)}, DET=${result.rqaDeterminism.toFixed(3)}, FTLE=${result.ftle.toFixed(3)}`);
   } catch (error) {
     setText('d3Analysis', `Chain analysis failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -136,7 +163,16 @@ export async function analyzeChainSpectrum(): Promise<void> {
     const healthy = spec.damping > 0 || consistency.symplectic;
     attachBadge('d3Analysis', healthy ? 'validated' : 'caveat', healthy
       ? 'Full spectrum with uncertainty and a passed self-consistency gate (Σλ, symplectic pairing).'
-      : 'Self-consistency gate failed — treat the spectrum as unconverged and refine dt/steps.');
+      : 'Self-consistency gate failed — treat the spectrum as unconverged and refine dt/steps.', {
+        title: '3D Chain Spectrum Trust',
+        source: '3D Lab -> ChaosClient.lyapunovSpectrum',
+        parameters: { chainLinks: spec.masses.length, dimensions: dim, dt: 0.002, steps: 6000, damping: spec.damping },
+        uncertainty: 'Block standard errors per exponent plus Hamiltonian self-consistency gate when damping is zero.',
+        externalValidation: `sum=${result.sum.toPrecision(4)}, symplectic=${consistency.symplectic}, pairingError=${consistency.pairingError.toPrecision(4)}.`,
+        reproduce: 'npm test -- tests/spherical-chain.test.ts tests/spectrum-consistency.test.ts',
+        caveat: healthy ? 'Passed current self-consistency gate.' : 'Refine dt/steps before using this spectrum as evidence.',
+        artifact: '3D Lab diagnostics readout'
+      });
     logResearchRun('probe', `3D chain full spectrum (N=${spec.masses.length})`, `[${result.spectrum.map((value) => value.toFixed(3)).join(', ')}], Σλ=${result.sum.toFixed(4)}, KY=${result.kaplanYorkeDimension.toFixed(3)}`);
   } catch (error) {
     setText('d3Analysis', `Spectrum analysis failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -165,7 +201,16 @@ export function analyzeChainConserved(): void {
       ].join(' | '));
       attachBadge('d3Analysis', allConsistent ? 'validated' : 'caveat', allConsistent
         ? 'Symmetry and drift verdicts agree for every candidate — the numerical Noether cross-check passes.'
-        : 'A symmetry/drift disagreement indicates an unconverged trajectory or a derivation problem — inspect before trusting.');
+        : 'A symmetry/drift disagreement indicates an unconverged trajectory or a derivation problem — inspect before trusting.', {
+          title: 'Noether Scan Trust',
+          source: '3D Lab -> detectSphericalChainConservedQuantities',
+          parameters: { chainLinks: params.masses.length, horizon: report.horizon, dt: report.dt, candidates: report.candidates.length },
+          uncertainty: 'Momentum drift is measured along a finite integrated trajectory.',
+          externalValidation: 'Symmetry and drift verdicts must agree for each candidate.',
+          reproduce: 'npm test -- tests/conserved-quantities.test.ts tests/spherical-chain.test.ts',
+          caveat: report.caveat,
+          artifact: '3D Lab diagnostics readout'
+        });
       logResearchRun('probe', `Noether scan (N=${params.masses.length})`, `conserved: ${report.conserved.join(', ') || 'none'}; consistent: ${allConsistent}`);
     } catch (error) {
       setText('d3Analysis', `Conserved-quantity scan failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -228,7 +273,16 @@ export function runChainEnergyShell(): void {
         ? (tight
           ? 'Shell confinement at integrator precision over the full horizon.'
           : 'Shell drift above 1e-5 — energetic orbit or too-long horizon; halve dt to confirm 4th-order shrinkage.')
-        : 'Dissipative run: shell contraction is physics, not error.');
+        : 'Dissipative run: shell contraction is physics, not error.', {
+          title: '3D Chain Shell Drift Trust',
+          source: '3D Lab -> sphericalChainEnergy / sphericalChainLz monitor',
+          parameters: { chainLinks: n, horizon, dt, damping: params.damping },
+          uncertainty: `max relative energy drift ${maxE.toExponential(3)}, max relative Lz drift ${maxL.toExponential(3)}.`,
+          externalValidation: 'Energy/Lz conservation and dt-halving behavior are pinned by spherical-chain tests.',
+          reproduce: 'npm test -- tests/spherical-chain.test.ts tests/chain-validation-hardening.test.ts',
+          caveat: conservative ? 'Conservative shell drift is numerical truncation and should shrink under dt halving.' : 'Dissipative runs leave the shell by design.',
+          artifact: '3D Lab shell-drift canvas'
+        });
       logResearchRun('probe', `Energy-shell monitor (N=${n})`, `|ΔE|≤${maxE.toExponential(2)}, |ΔL|≤${maxL.toExponential(2)} over ${horizon}s`);
     } catch (error) {
       setText('d3ShellInfo', `Energy-shell monitor failed: ${error instanceof Error ? error.message : String(error)}`);

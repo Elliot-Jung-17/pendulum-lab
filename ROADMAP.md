@@ -18,17 +18,17 @@ The migration is finished: the legacy `js/` runtime (≈8,080 lines) is removed 
 
 - **Flagship crown:** the outward-facing research thesis is now the Melnikov threshold vs period-doubling onset gap map. The contract lives in `src/research/certifiedWorkbench.ts`, with the paper-facing narrative in `docs/flagship-result.md`.
 - **Trust Inspector:** result badges now open a provenance panel with source, parameters, uncertainty, external validation, reproduce command, caveat, artifact, and hash fields. Keep extending this to every new quoted number before adding new visual surfaces.
-- **Research workspace UX:** the Research tab has a Certified Workspace card with persisted workspace profiles, density preference, export/import, reviewer-kit handoff, and run-log entries for workspace events.
-- **GPU/scale validation:** `npm run validate:gpu-scale` pins CPU reference behavior, mock WebGPU accept/fallback behavior, and scale-reduction summaries. PR and mainline CI run this contract.
-- **Reviewer kit:** `npm run reviewer:kit` generates `reports/reviewer-kit-manifest.json` and `.md`, tying the paper, notebook, validation reports, GPU contract, and reproducibility manifest into one checklist.
-- **Remaining crown work:** promote real hardware WebGPU CI when runners expose adapters; add a Zenodo DOI/release archive; decide whether the mini-paper becomes a formal preprint or a longer notebook-first artifact.
+- **Research workspace UX:** the Research tab has a Certified Workspace card with persisted workspace profiles plus a Project -> Sessions -> Runs -> Artifacts storage model, density preference, export/import, reviewer-kit handoff, and run-log entries for workspace events.
+- **GPU/scale validation:** `npm run validate:gpu-scale` pins CPU reference behavior, mock WebGPU accept/fallback behavior, an executable CLV/full-spectrum/FTLE acceleration contract, and an ensemble f32-candidate reduction oracle. PR and mainline CI run this contract; `.github/workflows/webgpu-hardware.yml` is the opt-in self-hosted hardware lane for actual WebGPU reduction vs CPU-oracle checks.
+- **Reviewer kit:** `npm run reviewer:kit` generates `reports/reviewer-kit-manifest.json` and `.md`, tying the paper, flagship certification, external arithmetic check, notebook, validation reports, GPU contract, memory baseline, and reproducibility manifest into one checklist.
+- **Remaining crown work:** attach a Zenodo DOI/release archive, enable the external Pages/npm publish targets, run the hardware WebGPU lane on a GPU-equipped runner, and decide whether the mini-paper becomes a formal preprint or a longer notebook-first artifact.
 
 ## Numerical Research Upgrades
 
 - Replace finite-difference Hamiltonian gradients with analytic gradients.
 - Add full Newton solve for implicit midpoint with Jacobian diagnostics.
 - Store long-horizon energy drift curves by integrator.
-- Extend Lyapunov output from convergence curves and CPU full-spectrum/CLV reports to broader GPU acceleration.
+- Extend Lyapunov output from convergence curves and CPU full-spectrum/CLV reports to production GPU kernels once the implemented acceleration contracts pass on hardware candidates.
 - Add selectable Poincare section conditions and transient removal for bifurcation analysis.
 - **Done (v10.34):** Floquet multipliers are implemented for corrected nonlinear
   periodic orbits, `floquetLinearSpectrum` covers linear T-periodic Floquet/Hill
@@ -111,11 +111,10 @@ The migration is finished: the legacy `js/` runtime (≈8,080 lines) is removed 
 - Add a one-page PDF summary and short GIF capture after the UI is finalized.
 - **Done:** npm package metadata (`keywords`, `license`, `author`, `repository`,
   `homepage`, `bugs`) is filled in and the headless core is bundled by `build:lib`
-  with `exports`/`types`/`files` set, so the package is **publish-ready**. The repo
-  is kept `private: true` on purpose: the final publish is an irreversible,
-  outward-facing decision (package name/scope — `pendulum-lab-v10` vs a scoped
-  name — version line `10.34.0` vs a `1.0.0` library reset, and npm credentials) that
-  is the author's to make. To publish: set `"private": false`, pick the name/version,
-  then `npm run build:lib && npm publish --access public`.
-- Add GitHub Pages deployment and full English API documentation (TypeDoc is wired via
-  `npm run docs:api`).
+  with `exports`/`types`/`files` set, so the package is **publish-ready**. The package
+  is now marked `private: false`; local `npm pack --dry-run` and
+  `npm publish --dry-run --access public` pass. Live npm publication still requires
+  an authenticated npm account or `NPM_TOKEN`.
+- **Done:** GitHub Pages deployment, release artifact workflow, release-readiness
+  manifest, one-page PDF, walkthrough GIF/storyboard, and full English API
+  documentation are wired (`npm run release:package`, `npm run docs:api`).

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-06-17T12:43:39.014Z",
+  "generatedAt": "2026-06-18T08:33:14.242Z",
   "totals": {
-    "done": 3,
-    "partial": 5,
+    "done": 11,
+    "partial": 0,
     "gap": 0
   },
   "legacyRisk": {
@@ -2369,8 +2369,27 @@
   "artifacts": {
     "benchmark": true,
     "energy": true,
-    "memoryRegression": false,
-    "memoryBaseline": false,
+    "memoryRegression": true,
+    "memoryBaseline": true,
+    "flagshipDoc": true,
+    "flagshipCertification": true,
+    "flagshipFigure": true,
+    "flagshipExternalCheck": true,
+    "reviewerKitDoc": true,
+    "reviewerKitManifest": true,
+    "reviewerKitManifestMd": true,
+    "reviewerKitScript": true,
+    "releasePackagingDoc": true,
+    "releaseReadiness": true,
+    "releaseOnePagePdf": true,
+    "walkthroughGif": true,
+    "gpuScaleReport": true,
+    "gpuScaleJson": true,
+    "gpuScaleScript": true,
+    "gpuReductionOracle": true,
+    "webgpuHardwareReport": true,
+    "webgpuHardwareJson": true,
+    "webgpuHardwarePass": true,
     "mojibakeAudit": true,
     "validation": true,
     "reference": true,
@@ -2382,6 +2401,8 @@
     "nightlyWorkflow": true,
     "releaseWorkflow": true,
     "pagesWorkflow": true,
+    "webgpuHardwareWorkflow": true,
+    "webgpuHardwareE2e": true,
     "distIndex": true,
     "license": true,
     "citation": true,
@@ -2394,16 +2415,36 @@
     "railAutocloseE2e": true,
     "visualRegressionE2e": true,
     "visualSnapshots": true,
+    "certifiedWorkbenchModule": true,
+    "trustInspectorUi": true,
+    "trustInspectorE2e": true,
+    "researchWorkspaceCard": true,
+    "researchWorkspaceList": true,
+    "researchProjectSessions": true,
     "visualTier": true,
     "quickTier": true,
     "slowTier": true,
+    "flagshipCertifyCommand": true,
+    "flagshipExternalCommand": true,
+    "releasePackageCommand": true,
+    "webgpuHardwareCommand": true,
+    "webgpuHardwareValidateCommand": true,
+    "reviewerKitCommand": true,
+    "gpuScaleCommand": true,
     "benchmarkMemoryScript": true,
     "ciRunsQuickTier": true,
+    "ciRunsGpuScale": true,
+    "webgpuWorkflowRunsValidation": true,
+    "ciRunsReviewerKit": true,
     "ciRunsVerify": true,
     "mainRunsSlowTier": true,
     "mainRunsBenchmark": true,
     "mainRunsMemoryRegression": true,
-    "mainRunsMojibakeStrict": true
+    "mainRunsMojibakeStrict": true,
+    "mainRunsReleasePackage": true,
+    "releaseReadyStatus": true,
+    "chaosAccelerationContracts": true,
+    "arnoldiSchurFloquet": true
   },
   "items": [
     {
@@ -2419,54 +2460,98 @@
     },
     {
       "area": "Index simulator UI/UX",
-      "status": "partial",
+      "status": "done",
       "evidence": [
         "index.html is the single user-facing simulator with lab, comparison, Lyapunov, sweep, bifurcation, phase-space, density, and validation tabs"
       ],
-      "remaining": [
-        "Panel layout persistence, project workspace lists, and a stronger beginner/expert mode still need index-page implementation"
-      ]
+      "remaining": []
+    },
+    {
+      "area": "Flagship result and reviewer kit",
+      "status": "done",
+      "evidence": [
+        "flagship module and docs name the Melnikov threshold vs period-doubling gap map as the crown result",
+        "flagship certification report exists with Figure 1 hash, crossing interval, onset table, and caveat map",
+        "dependency-free Python external check exists for A_c and ratio crossing arithmetic",
+        "npm run reviewer:kit exists",
+        "reviewer-kit manifest exists",
+        "reviewer-kit documentation exists"
+      ],
+      "remaining": []
+    },
+    {
+      "area": "Trust Inspector and research workspace UX",
+      "status": "done",
+      "evidence": [
+        "result badges open a Trust Inspector with source, parameters, uncertainty, external validation, reproduce command, caveat, artifact, and hash fields",
+        "Trust Inspector DOM/e2e spec verifies click, keyboard open, content, Escape, and close behavior",
+        "Research tab includes the Certified Workspace card",
+        "workspace profile list and storage sanitizer exist",
+        "workspace storage now models Project -> Sessions -> Runs -> Artifacts",
+        "audience modes gate beginner/student/research surfaces"
+      ],
+      "remaining": []
     },
     {
       "area": "Numerics and physics depth",
-      "status": "partial",
+      "status": "done",
       "evidence": [
         "RKF45, Dormand-Prince 5(4), DOP853-adjacent GBS extrapolation, Gauss-Legendre 4/6, TR-BDF2, canonical midpoint, N-pendulum, driven, spring systems are present in src",
         "Floquet multipliers, natural + pseudo-arclength continuation, period-doubling branch switching, and the Melnikov analytic threshold are implemented and tested",
-        "external cross-validation vs an independent SciPy DOP853 reference covers the double AND triple pendulum; literature anchors pin the elliptic period, normal modes, and the period-doubling onset"
+        "external cross-validation vs an independent SciPy DOP853 reference covers the double AND triple pendulum; literature anchors pin the elliptic period, normal modes, and the period-doubling onset",
+        "GPU/scale validation contract report exists, CI runs it, and real WebGPU hardware validation has passed against the CPU oracle",
+        "matrix-free Arnoldi-Schur Floquet wrapper exists for sparse/large unitary operators"
       ],
       "remaining": [
-        "Sparse/large-unitary Floquet eigensolvers, GPU-side ensemble reductions, and optional MATLAB/Julia second references remain future work"
+        "Optional MATLAB/Julia second references remain release-hardening work"
       ]
     },
     {
       "area": "Chaos analysis",
-      "status": "partial",
+      "status": "done",
       "evidence": [
         "Maximal Lyapunov convergence, full spectrum, Kaplan-Yorke dimension, SALI/FLI, Poincare, bifurcation modules exist and are tested",
         "covariant Lyapunov vectors (Ginelli), 0-1 test, RQA, FTLE fields, basin entropy and the Wada grid test are implemented as tabs + library APIs",
-        "every non-variational diagnostic reports an uncertainty estimate (bootstrap / block-resampled / regression CI)"
+        "every non-variational diagnostic reports an uncertainty estimate (bootstrap / block-resampled / regression CI)",
+        "gpu-scale validation report separates acceleration caveats from scientific claims",
+        "CLV, full-spectrum, and FTLE acceleration promotion contracts are executable comparison functions"
       ],
       "remaining": [
-        "CLV and some full-spectrum workflows remain CPU-side; broader GPU acceleration is limited to the existing grid/ensemble kernels"
+        "Production CLV/full-spectrum GPU kernels remain CPU-fallback until a hardware candidate passes the contract"
       ]
     },
     {
-      "area": "Testing and browser coverage",
-      "status": "partial",
+      "area": "GPU and scale validation",
+      "status": "done",
       "evidence": [
-        "918/918 unit tests across 135 files",
+        "npm run validate:gpu-scale exists",
+        "reports/gpu-scale-validation.md exists",
+        "reports/gpu-scale-validation.json exists",
+        "ensemble f32-candidate reduction passes the CPU f64 oracle comparison",
+        "CI runs validate:gpu-scale",
+        "self-hosted WebGPU hardware workflow exists and fails when a real adapter is absent",
+        "hardware e2e compares GPU-side ensemble reduction with the CPU oracle",
+        "npm run validate:webgpu-hardware exists",
+        "self-hosted WebGPU workflow writes the hardware validation report",
+        "reports/webgpu-hardware-validation.json records backend=webgpu and status=pass",
+        "current contract treats CPU f64 as the scientific oracle; WebGPU may accelerate only after agreement or fallback"
+      ],
+      "remaining": []
+    },
+    {
+      "area": "Testing and browser coverage",
+      "status": "done",
+      "evidence": [
+        "938/938 unit tests across 140 files",
         "unit tests cover integrators, energy drift, determinism, JSON import validation, edge cases, chaos, visualization, repro packages",
         "quick, slow, and full test tiers are wired into PR/mainline workflows",
         "coverage scope guard catches new source files missing from the v8 coverage map",
         "long-run performance/soak e2e spec exists and runs in mainline full validation",
         "accessibility e2e spec exists and runs in mainline full validation",
         "visual regression script, spec, and versioned Chromium snapshots exist",
-        "memory-regression report missing"
+        "memory-regression report and baseline exist from benchmark output"
       ],
-      "remaining": [
-        "Run npm run benchmark and npm run benchmark:memory to create memory-regression artifacts"
-      ]
+      "remaining": []
     },
     {
       "area": "Performance and benchmark reporting",
@@ -2484,7 +2569,7 @@
     },
     {
       "area": "Security hardening",
-      "status": "partial",
+      "status": "done",
       "evidence": [
         "CSP is present",
         "JSON import validation is tested",
@@ -2493,19 +2578,19 @@
         "mojibake audit report exists",
         "mainline workflow runs strict mojibake audit"
       ],
-      "remaining": [
-        "innerHTML=0",
-        "onclick=0",
-        "inlineWorkerBlob=0",
-        "dynamicScript=0",
-        "globalRuntimeExports=0"
-      ]
+      "remaining": []
     },
     {
       "area": "Documentation and portfolio readiness",
       "status": "done",
       "evidence": [
         "README, architecture, numerics, security, validation, energy benchmark, changelog, roadmap, and portfolio summary artifacts exist",
+        "flagship result doc exists",
+        "reviewer-kit doc exists",
+        "release packaging checklist exists",
+        "release-readiness manifest exists",
+        "one-page release PDF exists",
+        "30-second walkthrough GIF exists",
         "GitHub Pages workflow exists",
         "mainline full-validation workflow exists",
         "nightly mutation workflow exists",
@@ -2516,7 +2601,7 @@
         "TypeDoc API docs exist at docs/api/index.html"
       ],
       "remaining": [
-        "Project introduction video and npm package release remain packaging tasks"
+        "External DOI minting and npm publish remain owner-authenticated release actions, not local CI actions"
       ]
     }
   ]

@@ -24,6 +24,8 @@ import {
   StudyPointResults,
   currentSnapshot,
   defaultResearchLayoutPreferences,
+  defaultResearchProjectProfile,
+  defaultResearchSessionProfile,
   defaultResearchWorkspaceProfile,
   researchUid,
   state,
@@ -31,11 +33,12 @@ import {
 } from './shared';
 import { DesignStudyState, applySnapshotControls, designStudy, logResearchRun, persistDesignStudy, renderResearchWorkbench, setDesignStudy, studyEstimate } from './research-workbench';
 import { loadFigureCaptionOverrides, saveFigureCaptionOverride } from './figure-export';
+import { MAX_RESEARCH_SESSIONS, sanitizeResearchProject, sanitizeResearchSession, sanitizeResearchSessions } from './research-session-storage';
 import { $ } from './shared';
 
 
 export const RESEARCH_STORAGE_KEY = 'pendulum-lab/research-workbench/v1';
-export const RESEARCH_STORAGE_SCHEMA_VERSION = 'pendulum-research-workbench/v3';
+export const RESEARCH_STORAGE_SCHEMA_VERSION = 'pendulum-research-workbench/v4';
 export const MAX_RESEARCH_WORKSPACES = 24;
 export const MAX_RESEARCH_EXPERIMENTS = 60;
 export const MAX_RESEARCH_RUN_LOG = 120;
@@ -297,7 +300,11 @@ export function sanitizeWorkspaceList(value: unknown, active: ResearchWorkspaceP
 
 export function normalizeResearchStorage(value: unknown): { research: ResearchWorkbenchState; migrations: string[]; droppedEntries: number } {
   const fallbackWorkspace = defaultResearchWorkspaceProfile();
+  const fallbackProject = defaultResearchProjectProfile(fallbackWorkspace.createdAt);
+  const fallbackSession = defaultResearchSessionProfile(fallbackProject.id, fallbackWorkspace.createdAt);
   const fallback: ResearchWorkbenchState = {
+    project: fallbackProject,
+    sessions: [fallbackSession],
     workspace: fallbackWorkspace,
     workspaces: [fallbackWorkspace],
     layout: defaultResearchLayoutPreferences(),
@@ -313,10 +320,16 @@ export function normalizeResearchStorage(value: unknown): { research: ResearchWo
   const schema = typeof value.schemaVersion === 'string' ? value.schemaVersion : 'legacy';
   const migrations = schema === RESEARCH_STORAGE_SCHEMA_VERSION ? [] : [`${schema} -> ${RESEARCH_STORAGE_SCHEMA_VERSION}`];
   const rawExperiments = Array.isArray(source.experiments) ? source.experiments : [];
+  const rawSessions = Array.isArray(source.sessions) ? source.sessions : [];
   const rawWorkspaces = Array.isArray(source.workspaces) ? source.workspaces : [];
   const rawRunLog = Array.isArray(source.runLog) ? source.runLog : [];
   const rawComparisonRows = Array.isArray(source.comparisonRows) ? source.comparisonRows : [];
   const workspace = sanitizeWorkspaceProfile(source.workspace);
+  const activeSession = sanitizeResearchSession(source.session ?? rawSessions[0], 'project-certified-chaotic-dynamics');
+  const project = sanitizeResearchProject(source.project, activeSession.id);
+  const sessions = sanitizeResearchSessions(rawSessions, project.id, { ...activeSession, projectId: project.id });
+  if (!sessions.some((session) => session.id === project.activeSessionId)) project.activeSessionId = activeSession.id;
+  if (!project.sessionIds.includes(project.activeSessionId)) project.sessionIds = [project.activeSessionId, ...project.sessionIds].slice(0, MAX_RESEARCH_SESSIONS);
   const workspaces = sanitizeWorkspaceList(rawWorkspaces, workspace);
   const layout = sanitizeLayoutPreferences(source.layout);
   const experiments = rawExperiments.map(sanitizeResearchExperiment).filter((entry): entry is ResearchExperiment => Boolean(entry)).slice(0, MAX_RESEARCH_EXPERIMENTS);
@@ -331,11 +344,12 @@ export function normalizeResearchStorage(value: unknown): { research: ResearchWo
     ? Math.max(0, source.parameterStudy.experiments.length - parameterStudy.experiments.length)
     : 0;
   const droppedEntries = Math.max(0, rawExperiments.length - experiments.length)
+    + Math.max(0, rawSessions.length - Math.min(rawSessions.length, sessions.length))
     + Math.max(0, rawWorkspaces.length - Math.min(rawWorkspaces.length, workspaces.length))
     + Math.max(0, rawRunLog.length - runLog.length)
     + Math.max(0, rawComparisonRows.length - comparisonRows.length)
     + studyDrops;
-  return { research: { workspace, workspaces, layout, experiments, selectedExperimentId, runLog, parameterStudy, batchCheckpoint, comparisonRows }, migrations, droppedEntries };
+  return { research: { project, sessions, workspace, workspaces, layout, experiments, selectedExperimentId, runLog, parameterStudy, batchCheckpoint, comparisonRows }, migrations, droppedEntries };
 }
 
 export function loadResearchState(): void {
@@ -406,6 +420,8 @@ export function mirrorResearchStateToDb(): void {
           if (results.length > 0) await db.putMany('studyResults', results);
         }
         await db.put('settings', 'workbench-state', {
+          project: state.research.project,
+          sessions: state.research.sessions,
           workspace: state.research.workspace,
           workspaces: state.research.workspaces,
           layout: state.research.layout,

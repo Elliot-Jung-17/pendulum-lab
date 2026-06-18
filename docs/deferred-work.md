@@ -12,16 +12,14 @@ phonon analysis, correlation/multifractal dimensions, UPO/OGY control, the
 Newton-instrumented implicit midpoint) is documented in the CHANGELOG and is
 fully covered by the headless test suite.
 
-## Needs real GPU hardware
+## Needs production GPU kernels
 
-- **WebGPU CI / Dawn runner.** The GPU field-scan kernels (`src/lib/experimental.ts`,
-  `gpuEnsemble.ts`) already carry a CPU cross-validation contract and are unit-tested
-  against it. Running the *actual* WebGPU path in CI needs a GPU-backed runner
-  (e.g. a Dawn/SwiftShader software adapter or a real GPU agent); there is no GPU
-  to bind to here, so the GPU path cannot be exercised or pinned in this session.
-- **GPU ensemble reduction / CLV acceleration.** Same constraint: porting the
-  ensemble-mean/covariance reduction and the covariant-Lyapunov sweep to the GPU
-  is only meaningful if it can be validated on-device against the CPU reference.
+- **Production GPU CLV/full-spectrum/FTLE kernels.** The CPU f64 oracle,
+  GPU-side ensemble reduction gate, and executable CLV/full-spectrum/FTLE
+  acceleration contracts are implemented and reported by
+  `npm run validate:gpu-scale`. What remains is a hardware candidate kernel for
+  each high-dimensional diagnostic that passes those contracts before it can
+  become a publication path.
 
 ## Needs an external toolchain or license
 
@@ -57,10 +55,10 @@ fully covered by the headless test suite.
 ## Needs an external account or a release decision
 
 - **npm publish**, **GitHub Pages activation**, **Binder/Colab launch configs**, and
-  the **one-page PDF / GIF walkthrough**. These require credentials and a "cut a
-  release" decision that is the maintainer's to make. The publish workflow
-  (`.github/workflows/publish-npm.yml`) and Pages deploy are already scripted; what
-  remains is pulling the trigger.
+  **Zenodo DOI minting**. These require credentials and a "cut a release"
+  decision that is the maintainer's to make. The publish workflow, Pages deploy,
+  one-page PDF, walkthrough GIF/storyboard, and release-readiness manifest are
+  generated or wired; what remains is pulling the external release trigger.
 
 ## Deferred on correctness-risk grounds
 

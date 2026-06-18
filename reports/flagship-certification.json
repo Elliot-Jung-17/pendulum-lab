@@ -1,0 +1,585 @@
+{
+  "schemaVersion": "pendulum-flagship-certification/v1",
+  "generatedAt": "2026-06-18T00:57:53.534Z",
+  "sourceStudy": "reports/paper-study.json",
+  "driveFrequency": 0.6666666666666666,
+  "dt": 0.005,
+  "crossing": {
+    "gamma": 0.6929733364008408,
+    "lower": 0.6929696269004608,
+    "upper": 0.6929770459012208,
+    "between": [
+      0.65,
+      0.7
+    ],
+    "ratioBefore": 1.0070707212110417,
+    "ratioAfter": 0.99884385101287
+  },
+  "rows": [
+    {
+      "gamma": 0.1,
+      "Ac": 0.203754851014665,
+      "Apd": 0.48398370482612857,
+      "ratio": 2.3753235931118737,
+      "onsetUncertainty": 1.2436209168020795e-7,
+      "ratioUncertainty": 6.103515624825891e-7,
+      "rhoBelow": -0.9461982516354429,
+      "rhoAbove": -1.0518096771820191,
+      "kBelow": 0.019684601675205846,
+      "kAbove": 0.9977465001598798,
+      "caveat": "none"
+    },
+    {
+      "gamma": 0.15,
+      "Ac": 0.3056322765219975,
+      "Apd": 0.5308024359900502,
+      "ratio": 1.736735537327473,
+      "onsetUncertainty": 1.8654313749255635e-7,
+      "ratioUncertainty": 6.103515623917756e-7,
+      "rhoBelow": -0.9437424962778215,
+      "rhoAbove": -1.0561849990606968,
+      "kBelow": 0.018238971609064118,
+      "kAbove": 0.9970653573143884,
+      "caveat": "none"
+    },
+    {
+      "gamma": 0.2,
+      "Ac": 0.40750970202933,
+      "Apd": 0.5900445805328122,
+      "ratio": 1.4479276875973481,
+      "onsetUncertainty": 2.4872418341592706e-7,
+      "ratioUncertainty": 6.103515626188096e-7,
+      "rhoBelow": -0.9402758895884822,
+      "rhoAbove": -1.0605241943119845,
+      "kBelow": 0.020609578798376084,
+      "kAbove": -0.012688165202143338,
+      "caveat": "post-onset 0-1 sample is not cleanly chaotic at 1.08*A_PD"
+    },
+    {
+      "gamma": 0.25,
+      "Ac": 0.5093871275366626,
+      "Apd": 0.6582878857524449,
+      "ratio": 1.2923135473325547,
+      "onsetUncertainty": 3.1090522922827546e-7,
+      "ratioUncertainty": 6.103515625370772e-7,
+      "rhoBelow": -0.9367512103924329,
+      "rhoAbove": -1.0645868259521143,
+      "kBelow": -0.02023362928312824,
+      "kAbove": 0.9987114630391399,
+      "caveat": "none"
+    },
+    {
+      "gamma": 0.3,
+      "Ac": 0.611264553043995,
+      "Apd": 0.7329443914125663,
+      "ratio": 1.1990624808237713,
+      "onsetUncertainty": 3.7308627504062386e-7,
+      "ratioUncertainty": 6.103515624825893e-7,
+      "rhoBelow": -0.9329848653401629,
+      "rhoAbove": -1.0674119744612205,
+      "kBelow": 0.017088653525990143,
+      "kAbove": 0.056782241889283644,
+      "caveat": "post-onset 0-1 sample is not cleanly chaotic at 1.08*A_PD"
+    },
+    {
+      "gamma": 0.35,
+      "Ac": 0.7131419785513275,
+      "Apd": 0.8121742784692163,
+      "ratio": 1.1388675788221896,
+      "onsetUncertainty": 4.352673209084834e-7,
+      "ratioUncertainty": 6.103515625215092e-7,
+      "rhoBelow": -0.9312172037505664,
+      "rhoAbove": -1.0707706127245356,
+      "kBelow": -0.019015991680324248,
+      "kAbove": 0.9983546190401451,
+      "caveat": "none"
+    },
+    {
+      "gamma": 0.4,
+      "Ac": 0.81501940405866,
+      "Apd": 0.8946995045057311,
+      "ratio": 1.0977646667677818,
+      "onsetUncertainty": 4.974483667208318e-7,
+      "ratioUncertainty": 6.103515624825891e-7,
+      "rhoBelow": -0.9299033812655084,
+      "rhoAbove": -1.0729488435312184,
+      "kBelow": 0.01930454684528069,
+      "kAbove": -0.01301078992511118,
+      "caveat": "post-onset 0-1 sample is not cleanly chaotic at 1.08*A_PD"
+    },
+    {
+      "gamma": 0.45,
+      "Ac": 0.9168968295659926,
+      "Apd": 0.9796363914533388,
+      "ratio": 1.0684259775628666,
+      "onsetUncertainty": 5.596294125886914e-7,
+      "ratioUncertainty": 6.103515625128603e-7,
+      "rhoBelow": -0.928440655200242,
+      "rhoAbove": -1.073335581440022,
+      "kBelow": -0.019558565627288978,
+      "kAbove": -0.012721240094902345,
+      "caveat": "post-onset 0-1 sample is not cleanly chaotic at 1.08*A_PD"
+    },
+    {
+      "gamma": 0.5,
+      "Ac": 1.0187742550733252,
+      "Apd": 1.0663728624580568,
+      "ratio": 1.0467214470209651,
+      "onsetUncertainty": 6.218104584565509e-7,
+      "ratioUncertainty": 6.103515625370772e-7,
+      "rhoBelow": -0.9289414894563308,
+      "rhoAbove": -1.074173276455772,
+      "kBelow": -0.019350952661265783,
+      "kAbove": 0.9976797344936164,
+      "caveat": "none"
+    },
+    {
+      "gamma": 0.55,
+      "Ac": 1.1206516805806577,
+      "Apd": 1.1544849848318328,
+      "ratio": 1.0301907406533712,
+      "onsetUncertainty": 6.839915043244105e-7,
+      "ratioUncertainty": 6.103515625568912e-7,
+      "rhoBelow": -0.9297981423357896,
+      "rhoAbove": -1.074029095867868,
+      "kBelow": -0.01967198225457302,
+      "kAbove": 0.9975629749201951,
+      "caveat": "none"
+    },
+    {
+      "gamma": 0.6,
+      "Ac": 1.22252910608799,
+      "Apd": 1.2436820234655486,
+      "ratio": 1.0173025879483937,
+      "onsetUncertainty": 7.461725500812477e-7,
+      "ratioUncertainty": 6.103515624825893e-7,
+      "rhoBelow": -0.93127775672549,
+      "rhoAbove": -1.0733701351275569,
+      "kBelow": -0.013707886198722,
+      "kAbove": 0.9981307239330107,
+      "caveat": "none"
+    },
+    {
+      "gamma": 0.65,
+      "Ac": 1.3244065315953228,
+      "Apd": 1.333771040950316,
+      "ratio": 1.0070707212110417,
+      "onsetUncertainty": 8.083535959491073e-7,
+      "ratioUncertainty": 6.10351562503546e-7,
+      "rhoBelow": -0.9333626978803253,
+      "rhoAbove": -1.0723623980383425,
+      "kBelow": 0.022304088899991834,
+      "kAbove": -0.012618604166166482,
+      "caveat": "post-onset 0-1 sample is not cleanly chaotic at 1.08*A_PD"
+    },
+    {
+      "gamma": 0.7,
+      "Ac": 1.426283957102655,
+      "Apd": 1.424634960350291,
+      "ratio": 0.99884385101287,
+      "onsetUncertainty": 8.705346418169668e-7,
+      "ratioUncertainty": 6.103515625215092e-7,
+      "rhoBelow": -0.9360238581425832,
+      "rhoAbove": -1.0711248953776127,
+      "kBelow": 0.020211047409602688,
+      "kAbove": -0.5663621803906845,
+      "caveat": "post-onset 0-1 sample is not cleanly chaotic at 1.08*A_PD"
+    },
+    {
+      "gamma": 0.75,
+      "Ac": 1.5281613826099876,
+      "Apd": 1.5162203984506668,
+      "ratio": 0.9921860450766486,
+      "onsetUncertainty": 9.327156876848264e-7,
+      "ratioUncertainty": 6.103515625370773e-7,
+      "rhoBelow": -0.9400188105245023,
+      "rhoAbove": -1.0705212503920434,
+      "kBelow": 0.019804867315215996,
+      "kAbove": 0.13096572567524634,
+      "caveat": "post-onset 0-1 sample is not cleanly chaotic at 1.08*A_PD"
+    },
+    {
+      "gamma": 0.8,
+      "Ac": 1.63003880811732,
+      "Apd": 1.6085334200553094,
+      "ratio": 0.9868068245032465,
+      "onsetUncertainty": 9.948967334416636e-7,
+      "ratioUncertainty": 6.103515624825891e-7,
+      "rhoBelow": -0.9396979425896834,
+      "rhoAbove": -1.0649174577985998,
+      "kBelow": 0.019755301326561087,
+      "kAbove": 0.9985205481579662,
+      "caveat": "none"
+    }
+  ],
+  "refinedGrid": [
+    {
+      "gamma": 0.1,
+      "ratio": 2.3753235931118737,
+      "ratioUncertainty": 6.103515624825891e-7
+    },
+    {
+      "gamma": 0.11,
+      "ratio": 2.2476059819549934,
+      "ratioUncertainty": 6.103515624644264e-7
+    },
+    {
+      "gamma": 0.12,
+      "ratio": 2.1198883707981135,
+      "ratioUncertainty": 6.103515624462637e-7
+    },
+    {
+      "gamma": 0.13,
+      "ratio": 1.9921707596412332,
+      "ratioUncertainty": 6.10351562428101e-7
+    },
+    {
+      "gamma": 0.14,
+      "ratio": 1.864453148484353,
+      "ratioUncertainty": 6.103515624099383e-7
+    },
+    {
+      "gamma": 0.15,
+      "ratio": 1.7367355373274729,
+      "ratioUncertainty": 6.103515623917756e-7
+    },
+    {
+      "gamma": 0.16,
+      "ratio": 1.6789739673814479,
+      "ratioUncertainty": 6.103515624371824e-7
+    },
+    {
+      "gamma": 0.17,
+      "ratio": 1.621212397435423,
+      "ratioUncertainty": 6.103515624825891e-7
+    },
+    {
+      "gamma": 0.18,
+      "ratio": 1.563450827489398,
+      "ratioUncertainty": 6.10351562527996e-7
+    },
+    {
+      "gamma": 0.19,
+      "ratio": 1.505689257543373,
+      "ratioUncertainty": 6.103515625734028e-7
+    },
+    {
+      "gamma": 0.2,
+      "ratio": 1.447927687597348,
+      "ratioUncertainty": 6.103515626188096e-7
+    },
+    {
+      "gamma": 0.21,
+      "ratio": 1.4168048595443892,
+      "ratioUncertainty": 6.103515626024632e-7
+    },
+    {
+      "gamma": 0.22,
+      "ratio": 1.3856820314914304,
+      "ratioUncertainty": 6.103515625861167e-7
+    },
+    {
+      "gamma": 0.23,
+      "ratio": 1.3545592034384717,
+      "ratioUncertainty": 6.103515625697701e-7
+    },
+    {
+      "gamma": 0.24,
+      "ratio": 1.323436375385513,
+      "ratioUncertainty": 6.103515625534237e-7
+    },
+    {
+      "gamma": 0.25,
+      "ratio": 1.2923135473325544,
+      "ratioUncertainty": 6.103515625370772e-7
+    },
+    {
+      "gamma": 0.26,
+      "ratio": 1.2736633340307977,
+      "ratioUncertainty": 6.103515625261796e-7
+    },
+    {
+      "gamma": 0.27,
+      "ratio": 1.2550131207290411,
+      "ratioUncertainty": 6.10351562515282e-7
+    },
+    {
+      "gamma": 0.28,
+      "ratio": 1.2363629074272844,
+      "ratioUncertainty": 6.103515625043845e-7
+    },
+    {
+      "gamma": 0.29,
+      "ratio": 1.2177126941255276,
+      "ratioUncertainty": 6.103515624934869e-7
+    },
+    {
+      "gamma": 0.3,
+      "ratio": 1.199062480823771,
+      "ratioUncertainty": 6.103515624825893e-7
+    },
+    {
+      "gamma": 0.31,
+      "ratio": 1.1870235004234548,
+      "ratioUncertainty": 6.103515624903733e-7
+    },
+    {
+      "gamma": 0.32,
+      "ratio": 1.1749845200231384,
+      "ratioUncertainty": 6.103515624981573e-7
+    },
+    {
+      "gamma": 0.33,
+      "ratio": 1.162945539622822,
+      "ratioUncertainty": 6.103515625059412e-7
+    },
+    {
+      "gamma": 0.34,
+      "ratio": 1.1509065592225056,
+      "ratioUncertainty": 6.103515625137252e-7
+    },
+    {
+      "gamma": 0.35,
+      "ratio": 1.1388675788221894,
+      "ratioUncertainty": 6.103515625215092e-7
+    },
+    {
+      "gamma": 0.36,
+      "ratio": 1.130646996411308,
+      "ratioUncertainty": 6.103515625137252e-7
+    },
+    {
+      "gamma": 0.37,
+      "ratio": 1.1224264140004263,
+      "ratioUncertainty": 6.103515625059412e-7
+    },
+    {
+      "gamma": 0.38,
+      "ratio": 1.1142058315895447,
+      "ratioUncertainty": 6.103515624981572e-7
+    },
+    {
+      "gamma": 0.39,
+      "ratio": 1.1059852491786633,
+      "ratioUncertainty": 6.103515624903732e-7
+    },
+    {
+      "gamma": 0.4,
+      "ratio": 1.0977646667677816,
+      "ratioUncertainty": 6.103515624825891e-7
+    },
+    {
+      "gamma": 0.41,
+      "ratio": 1.0918969289267986,
+      "ratioUncertainty": 6.103515624886434e-7
+    },
+    {
+      "gamma": 0.42,
+      "ratio": 1.0860291910858155,
+      "ratioUncertainty": 6.103515624946976e-7
+    },
+    {
+      "gamma": 0.43,
+      "ratio": 1.0801614532448325,
+      "ratioUncertainty": 6.103515625007519e-7
+    },
+    {
+      "gamma": 0.44,
+      "ratio": 1.0742937154038494,
+      "ratioUncertainty": 6.10351562506806e-7
+    },
+    {
+      "gamma": 0.45,
+      "ratio": 1.0684259775628664,
+      "ratioUncertainty": 6.103515625128603e-7
+    },
+    {
+      "gamma": 0.46,
+      "ratio": 1.0640850714544863,
+      "ratioUncertainty": 6.103515625177036e-7
+    },
+    {
+      "gamma": 0.47,
+      "ratio": 1.059744165346106,
+      "ratioUncertainty": 6.103515625225471e-7
+    },
+    {
+      "gamma": 0.48,
+      "ratio": 1.0554032592377256,
+      "ratioUncertainty": 6.103515625273904e-7
+    },
+    {
+      "gamma": 0.49,
+      "ratio": 1.0510623531293453,
+      "ratioUncertainty": 6.103515625322339e-7
+    },
+    {
+      "gamma": 0.5,
+      "ratio": 1.0467214470209651,
+      "ratioUncertainty": 6.103515625370772e-7
+    },
+    {
+      "gamma": 0.51,
+      "ratio": 1.0434153057474462,
+      "ratioUncertainty": 6.1035156254104e-7
+    },
+    {
+      "gamma": 0.52,
+      "ratio": 1.0401091644739275,
+      "ratioUncertainty": 6.103515625450028e-7
+    },
+    {
+      "gamma": 0.53,
+      "ratio": 1.0368030232004086,
+      "ratioUncertainty": 6.103515625489656e-7
+    },
+    {
+      "gamma": 0.54,
+      "ratio": 1.03349688192689,
+      "ratioUncertainty": 6.103515625529283e-7
+    },
+    {
+      "gamma": 0.55,
+      "ratio": 1.0301907406533712,
+      "ratioUncertainty": 6.103515625568912e-7
+    },
+    {
+      "gamma": 0.56,
+      "ratio": 1.0276131101123755,
+      "ratioUncertainty": 6.103515625420308e-7
+    },
+    {
+      "gamma": 0.57,
+      "ratio": 1.02503547957138,
+      "ratioUncertainty": 6.103515625271704e-7
+    },
+    {
+      "gamma": 0.58,
+      "ratio": 1.0224578490303846,
+      "ratioUncertainty": 6.1035156251231e-7
+    },
+    {
+      "gamma": 0.59,
+      "ratio": 1.0198802184893891,
+      "ratioUncertainty": 6.103515624974496e-7
+    },
+    {
+      "gamma": 0.6,
+      "ratio": 1.0173025879483937,
+      "ratioUncertainty": 6.103515624825893e-7
+    },
+    {
+      "gamma": 0.61,
+      "ratio": 1.0152562146009232,
+      "ratioUncertainty": 6.103515624867806e-7
+    },
+    {
+      "gamma": 0.62,
+      "ratio": 1.0132098412534527,
+      "ratioUncertainty": 6.103515624909719e-7
+    },
+    {
+      "gamma": 0.63,
+      "ratio": 1.0111634679059824,
+      "ratioUncertainty": 6.103515624951633e-7
+    },
+    {
+      "gamma": 0.64,
+      "ratio": 1.009117094558512,
+      "ratioUncertainty": 6.103515624993547e-7
+    },
+    {
+      "gamma": 0.65,
+      "ratio": 1.0070707212110417,
+      "ratioUncertainty": 6.10351562503546e-7
+    },
+    {
+      "gamma": 0.66,
+      "ratio": 1.0054253471714072,
+      "ratioUncertainty": 6.103515625071387e-7
+    },
+    {
+      "gamma": 0.67,
+      "ratio": 1.003779973131773,
+      "ratioUncertainty": 6.103515625107313e-7
+    },
+    {
+      "gamma": 0.68,
+      "ratio": 1.0021345990921386,
+      "ratioUncertainty": 6.10351562514324e-7
+    },
+    {
+      "gamma": 0.69,
+      "ratio": 1.0004892250525041,
+      "ratioUncertainty": 6.103515625179166e-7
+    },
+    {
+      "gamma": 0.7,
+      "ratio": 0.9988438510128699,
+      "ratioUncertainty": 6.103515625215092e-7
+    },
+    {
+      "gamma": 0.71,
+      "ratio": 0.9975122898256257,
+      "ratioUncertainty": 6.103515625246228e-7
+    },
+    {
+      "gamma": 0.72,
+      "ratio": 0.9961807286383814,
+      "ratioUncertainty": 6.103515625277364e-7
+    },
+    {
+      "gamma": 0.73,
+      "ratio": 0.9948491674511372,
+      "ratioUncertainty": 6.103515625308501e-7
+    },
+    {
+      "gamma": 0.74,
+      "ratio": 0.9935176062638928,
+      "ratioUncertainty": 6.103515625339637e-7
+    },
+    {
+      "gamma": 0.75,
+      "ratio": 0.9921860450766485,
+      "ratioUncertainty": 6.103515625370773e-7
+    },
+    {
+      "gamma": 0.76,
+      "ratio": 0.9911102009619681,
+      "ratioUncertainty": 6.103515625261797e-7
+    },
+    {
+      "gamma": 0.77,
+      "ratio": 0.9900343568472877,
+      "ratioUncertainty": 6.103515625152821e-7
+    },
+    {
+      "gamma": 0.78,
+      "ratio": 0.9889585127326073,
+      "ratioUncertainty": 6.103515625043844e-7
+    },
+    {
+      "gamma": 0.79,
+      "ratio": 0.9878826686179268,
+      "ratioUncertainty": 6.103515624934868e-7
+    },
+    {
+      "gamma": 0.8,
+      "ratio": 0.9868068245032465,
+      "ratioUncertainty": 6.103515624825891e-7
+    }
+  ],
+  "figureHash": "07f877d6fdb816",
+  "status": "certified-with-caveats",
+  "caveats": [
+    "gamma=0.20: post-onset 0-1 sample is not cleanly chaotic at 1.08*A_PD",
+    "gamma=0.30: post-onset 0-1 sample is not cleanly chaotic at 1.08*A_PD",
+    "gamma=0.40: post-onset 0-1 sample is not cleanly chaotic at 1.08*A_PD",
+    "gamma=0.45: post-onset 0-1 sample is not cleanly chaotic at 1.08*A_PD",
+    "gamma=0.65: post-onset 0-1 sample is not cleanly chaotic at 1.08*A_PD",
+    "gamma=0.70: post-onset 0-1 sample is not cleanly chaotic at 1.08*A_PD",
+    "gamma=0.75: post-onset 0-1 sample is not cleanly chaotic at 1.08*A_PD",
+    "Error bars combine attractor-bracket width with the available dt-sensitivity probe; they are a localization contract, not a full Bayesian posterior.",
+    "Basin caveats are inferred from the exported 0-1 strobe probes; they flag multistability/transient-chaos risk but do not replace a full basin scan."
+  ]
+}

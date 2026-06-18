@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-06-18T00:15:29.991Z",
+  "sourceReport": "reports/benchmark-report.json",
+  "label": "candidate",
+  "url": "http://127.0.0.1:5173/",
+  "memoryBytes": 11200000,
+  "maxGrowthBytes": 50000000
+}

@@ -1,0 +1,159 @@
+{
+  "schemaVersion": "pendulum-flagship-external-check/v2",
+  "generatedAt": "2026-06-18T06:08:10.858282+00:00",
+  "sourceStudy": "reports\\paper-study.json",
+  "method": "Python stdlib recomputation of A_c, crossing arithmetic, and selected A_PD values via RK4 strobe-map Newton/Floquet search.",
+  "maxAcAbsError": 0.0,
+  "crossing": {
+    "gamma": 0.6929733364008408,
+    "betweenLow": 0.65,
+    "betweenHigh": 0.7
+  },
+  "apdChecks": [
+    {
+      "gamma": 0.5,
+      "reportedApd": 1.0663728624580568,
+      "remeasuredApd": 1.066372921622893,
+      "absError": 5.916483614143431e-08,
+      "passed": true,
+      "rhoLow": -0.999999557799421,
+      "rhoHigh": -1.0000003807815332,
+      "residualLow": 3.839129470535888e-12,
+      "residualHigh": 9.58459166694655e-10,
+      "caveat": "Stdlib RK4 + finite-difference monodromy; tolerance is intentionally looser than the TypeScript variational refinement."
+    },
+    {
+      "gamma": 0.65,
+      "reportedApd": 1.333771040950316,
+      "remeasuredApd": 1.3337710898137667,
+      "absError": 4.8863450619052173e-08,
+      "passed": true,
+      "rhoLow": -0.9999995011813608,
+      "rhoHigh": -1.0000003163114768,
+      "residualLow": 8.657471137788718e-12,
+      "residualHigh": 6.113833660059007e-10,
+      "caveat": "Stdlib RK4 + finite-difference monodromy; tolerance is intentionally looser than the TypeScript variational refinement."
+    },
+    {
+      "gamma": 0.7,
+      "reportedApd": 1.424634960350291,
+      "remeasuredApd": 1.424635008792352,
+      "absError": 4.8442061029163597e-08,
+      "passed": true,
+      "rhoLow": -0.9999996277563654,
+      "rhoHigh": -1.0000003970101878,
+      "residualLow": 1.99431691581965e-11,
+      "residualHigh": 4.962441678229059e-10,
+      "caveat": "Stdlib RK4 + finite-difference monodromy; tolerance is intentionally looser than the TypeScript variational refinement."
+    }
+  ],
+  "apdChecksPassed": true,
+  "rows": [
+    {
+      "gamma": 0.1,
+      "AcExternal": 0.203754851014665,
+      "AcReported": 0.203754851014665,
+      "ApdReported": 0.48398370482612857,
+      "ratio": 2.3753235931118737
+    },
+    {
+      "gamma": 0.15,
+      "AcExternal": 0.3056322765219975,
+      "AcReported": 0.3056322765219975,
+      "ApdReported": 0.5308024359900502,
+      "ratio": 1.736735537327473
+    },
+    {
+      "gamma": 0.2,
+      "AcExternal": 0.40750970202933,
+      "AcReported": 0.40750970202933,
+      "ApdReported": 0.5900445805328122,
+      "ratio": 1.4479276875973481
+    },
+    {
+      "gamma": 0.25,
+      "AcExternal": 0.5093871275366626,
+      "AcReported": 0.5093871275366626,
+      "ApdReported": 0.6582878857524449,
+      "ratio": 1.2923135473325547
+    },
+    {
+      "gamma": 0.3,
+      "AcExternal": 0.611264553043995,
+      "AcReported": 0.611264553043995,
+      "ApdReported": 0.7329443914125663,
+      "ratio": 1.1990624808237713
+    },
+    {
+      "gamma": 0.35,
+      "AcExternal": 0.7131419785513275,
+      "AcReported": 0.7131419785513275,
+      "ApdReported": 0.8121742784692163,
+      "ratio": 1.1388675788221896
+    },
+    {
+      "gamma": 0.4,
+      "AcExternal": 0.81501940405866,
+      "AcReported": 0.81501940405866,
+      "ApdReported": 0.8946995045057311,
+      "ratio": 1.0977646667677818
+    },
+    {
+      "gamma": 0.45,
+      "AcExternal": 0.9168968295659926,
+      "AcReported": 0.9168968295659926,
+      "ApdReported": 0.9796363914533388,
+      "ratio": 1.0684259775628666
+    },
+    {
+      "gamma": 0.5,
+      "AcExternal": 1.0187742550733252,
+      "AcReported": 1.0187742550733252,
+      "ApdReported": 1.0663728624580568,
+      "ratio": 1.0467214470209651
+    },
+    {
+      "gamma": 0.55,
+      "AcExternal": 1.1206516805806577,
+      "AcReported": 1.1206516805806577,
+      "ApdReported": 1.1544849848318328,
+      "ratio": 1.0301907406533712
+    },
+    {
+      "gamma": 0.6,
+      "AcExternal": 1.22252910608799,
+      "AcReported": 1.22252910608799,
+      "ApdReported": 1.2436820234655486,
+      "ratio": 1.0173025879483937
+    },
+    {
+      "gamma": 0.65,
+      "AcExternal": 1.3244065315953228,
+      "AcReported": 1.3244065315953228,
+      "ApdReported": 1.333771040950316,
+      "ratio": 1.0070707212110417
+    },
+    {
+      "gamma": 0.7,
+      "AcExternal": 1.426283957102655,
+      "AcReported": 1.426283957102655,
+      "ApdReported": 1.424634960350291,
+      "ratio": 0.99884385101287
+    },
+    {
+      "gamma": 0.75,
+      "AcExternal": 1.5281613826099876,
+      "AcReported": 1.5281613826099876,
+      "ApdReported": 1.5162203984506668,
+      "ratio": 0.9921860450766486
+    },
+    {
+      "gamma": 0.8,
+      "AcExternal": 1.63003880811732,
+      "AcReported": 1.63003880811732,
+      "ApdReported": 1.6085334200553094,
+      "ratio": 0.9868068245032465
+    }
+  ],
+  "caveat": "A_PD checks use finite-difference monodromy and a coarser dt than the TypeScript flagship run, so they certify independent reproducibility at reviewer-kit tolerance, not bitwise equality."
+}

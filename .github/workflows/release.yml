@@ -24,6 +24,7 @@ jobs:
       - run: npm run build:lib
       - run: npm run budget
       - run: npm run docs:api
+      - run: npm run release:package
       - run: npm run audit:worldclass
       - uses: actions/upload-artifact@v4
         with:
@@ -34,3 +35,7 @@ jobs:
             dist-lib/
             docs/api/
             reports/worldclass-scorecard.md
+            reports/release-readiness.*
+            reports/release-one-page.pdf
+            reports/walkthrough-30s.gif
+            reports/walkthrough-storyboard.svg

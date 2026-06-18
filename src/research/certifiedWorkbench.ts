@@ -86,6 +86,27 @@ export const REVIEWER_KIT_ARTIFACTS: readonly ReviewerKitArtifact[] = [
     description: 'Numerical source of truth for the flagship Melnikov gap map.'
   },
   {
+    id: 'flagship-certification',
+    path: 'reports/flagship-certification.json',
+    command: 'npm run flagship:certify',
+    priority: 'required',
+    description: 'Figure 1 hash, crossing interval, onset localization table, and caveat map.'
+  },
+  {
+    id: 'flagship-figure-1',
+    path: 'reports/flagship-figure1.svg',
+    command: 'npm run flagship:certify',
+    priority: 'recommended',
+    description: 'Reviewer-facing Figure 1 SVG for the Melnikov gap map.'
+  },
+  {
+    id: 'flagship-external-check',
+    path: 'reports/flagship-external-check.json',
+    command: 'npm run flagship:external',
+    priority: 'recommended',
+    description: 'Dependency-free Python recomputation of A_c and the ratio crossing from exported A_PD values.'
+  },
+  {
     id: 'flagship-paper-html',
     path: 'paper/index.html',
     command: 'npm run paper:build',
@@ -135,6 +156,48 @@ export const REVIEWER_KIT_ARTIFACTS: readonly ReviewerKitArtifact[] = [
     description: 'CPU reference plus mocked-WebGPU contract for accelerated field/ensemble paths.'
   },
   {
+    id: 'webgpu-hardware-validation',
+    path: 'reports/webgpu-hardware-validation.md',
+    command: 'npm run validate:webgpu-hardware',
+    priority: 'recommended',
+    description: 'Real-adapter WebGPU reduction comparison against the CPU f64 oracle.'
+  },
+  {
+    id: 'release-readiness',
+    path: 'reports/release-readiness.json',
+    command: 'npm run release:package',
+    priority: 'required',
+    description: 'Machine-readable DOI/Pages/npm/PDF/GIF release readiness manifest.'
+  },
+  {
+    id: 'release-one-page-pdf',
+    path: 'reports/release-one-page.pdf',
+    command: 'npm run release:package',
+    priority: 'recommended',
+    description: 'One-page reviewer handout for release notes and external review.'
+  },
+  {
+    id: 'walkthrough-gif',
+    path: 'reports/walkthrough-30s.gif',
+    command: 'npm run release:package',
+    priority: 'recommended',
+    description: 'Thirty-second walkthrough artifact for the GitHub release and project page.'
+  },
+  {
+    id: 'memory-regression-report',
+    path: 'reports/memory-regression-report.md',
+    command: 'npm run benchmark:memory',
+    priority: 'required',
+    description: 'Browser memory regression report for the current build.'
+  },
+  {
+    id: 'memory-baseline',
+    path: 'reports/memory-baseline.json',
+    command: 'npm run benchmark:memory',
+    priority: 'required',
+    description: 'Machine-readable browser memory baseline consumed by the world-class audit.'
+  },
+  {
     id: 'reviewer-kit-manifest',
     path: 'reports/reviewer-kit-manifest.json',
     command: 'npm run reviewer:kit',
@@ -148,9 +211,17 @@ export const GPU_SCALE_VALIDATION_CONTRACTS: readonly GpuScaleValidationContract
     id: 'ensemble-rk4',
     cpuReference: 'src/runtime/gpuEnsemble.ts CPU f64 RK4 path',
     acceleratedPath: 'WGSL RK4 ensemble kernel in src/runtime/gpuEnsemble.ts',
-    acceptanceRule: 'Final ensemble statistics must be consumed with the f32 caveat; CPU force path remains the oracle.',
+    acceptanceRule: 'GPU integration may feed research outputs only through validated statistics; CPU force path remains the trajectory oracle.',
     ciEvidence: ['tests/gpu-ensemble.test.ts', 'tests/ensemble-statistics.test.ts'],
     caveat: 'Node CI has no real adapter; hardware WebGPU runs must still report backend=webgpu and caveat=f32.'
+  },
+  {
+    id: 'ensemble-reduction-oracle',
+    cpuReference: 'ensembleStatistics CPU f64 mean/covariance/rms/flip reduction',
+    acceleratedPath: 'webgpuEnsembleStatistics GPU reduction or f32 candidate reduction',
+    acceptanceRule: 'compareEnsembleStatistics(candidate, cpuOracle) must pass declared tolerances before a reduction can be used as a publication result.',
+    ciEvidence: ['tests/ensemble-statistics.test.ts', 'scripts/gpu-scale-validation.ts'],
+    caveat: 'The local CI candidate is f32-rounded CPU output; the self-hosted hardware workflow runs the on-device reduction when a WebGPU adapter is present.'
   },
   {
     id: 'field-scans',
@@ -161,12 +232,12 @@ export const GPU_SCALE_VALIDATION_CONTRACTS: readonly GpuScaleValidationContract
     caveat: 'Fractal basin boundaries allow isolated probe disagreements; the gate is on disagreement fraction.'
   },
   {
-    id: 'future-clv-ftle-scale',
+    id: 'chaos-acceleration-contract',
     cpuReference: 'existing CPU CLV/full-spectrum/variational FTLE implementations',
-    acceleratedPath: 'not promoted until GPU and CPU agree under the same public result schema',
-    acceptanceRule: 'No GPU-only scientific claim may be publication-ready without CPU reference agreement and a Trust Inspector caveat.',
-    ciEvidence: ['tests/clv.test.ts', 'tests/ftle.test.ts', 'tests/lyapunov-spectrum-job.test.ts'],
-    caveat: 'This is an explicit promotion rule, not an implemented accelerator.'
+    acceleratedPath: 'GPU or parallel candidate that emits the same public result schema',
+    acceptanceRule: 'GPU candidates must pass compareClvAcceleration / compareFtleFieldAcceleration / compareLyapunovSpectrumAcceleration against the CPU oracle before promotion.',
+    ciEvidence: ['tests/clv.test.ts', 'tests/ftle.test.ts', 'tests/lyapunov-spectrum-job.test.ts', 'tests/acceleration-contract.test.ts'],
+    caveat: 'The acceleration contract is implemented; the default production CLV/full-spectrum kernels remain CPU until a hardware candidate passes it.'
   }
 ] as const;
 

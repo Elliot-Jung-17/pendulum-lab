@@ -14,8 +14,8 @@
 
 | ID | 작업 | 검증 | 상태 |
 |---|---|---|---|
-| CP0 | 실행 기록 및 activeStage | redesign:check, redesign:preflight -- 3 | 통과, commit 준비 |
-| CP1 | canonical 상태/단위와 안전한 직렬화·공유·route, adapter 계약 | 관련 unit/property/round-trip/unsafe tests, typecheck | 대기 |
+| CP0 | 실행 기록 및 activeStage | redesign:check, redesign:preflight -- 3 | 원격 보존 완료 |
+| CP1 | canonical 상태/단위와 안전한 직렬화·공유·route, adapter 계약 | 관련 unit/property/round-trip/unsafe tests, typecheck | 검증 통과, 원격 보존 준비 |
 | CP2 | 계약 문서·전체 회귀·보존 증거 | D, 전체 Vitest, baseline/catalog 검증 | 대기 |
 | STATUS | 구현 원격 확인 후 완료 상태 | 별도 status commit/push, 원격 HEAD 확인 | 대기 |
 
@@ -31,11 +31,21 @@
 - 기존 보안 기준선 High 2/Moderate 2 패키지와 CodeQL 32건은 미해결이며 이번 단계에서 위험 수용하지 않는다.
 - unknown field/version은 조용히 버리지 않고 원본 유지·복구 안내가 있는 오류로 반환한다.
 - 공유에는 실험 의미만 담고 UI/로컬 경로/자유 서술 개인정보를 넣지 않는다. 큰 배열은 명시적으로 거부하여 향후 파일 저장 경로로 안내한다.
+- CP1: 17개 신규 source와 9개 fixture/test 파일을 추가했다. [상태 계약](../state-contract-ko.md)에 API·버전·단위·주소·오류·한도와 남은 adapter 책임을 명시했다.
+- `npx vitest run tests/product/contracts tests/product/catalog tests/characterization`: 16개 파일, 327개 통과(신규 계약 239개 + S01/S02 88개), 실패/보류 0. 마지막 JSON 출력 byte 제한 보강 뒤 신규 계약 8개 test 파일 239개 재검사 통과.
+- 고정 seed property 검사로 scalar/vector/complex, signed seed, deterministic JSON/공유, route 왕복을 확인했다. 34개 시스템·86개 단원 주소는 카탈로그/공식 curriculum과 전수 대조한다.
+- 교차 검토에서 enum의 배열/객체 문자열 강제변환과 array length 접근을 보강했고, 공유 credential 이름 필터를 확장했다. 테스트 fixture의 잘못된 catalog ID/검색 가정도 수정 후 통과했다. 기존 golden 값은 바꾸지 않았다.
+- `typecheck`, 대상 ESLint/Prettier, `audit:modules`(481개 source, 예외 0), `git diff --check` 통과. 계약 문서 상대 링크 14개와 code fence 2개 확인.
+- `redesign:catalog:check`: S02 134개 정의 유지. `redesign:inventory:check`: S01 883개 파일·118개 의미 기능 일치, orphan/broken import 0.
+- 기존 app/엔진/API/storage/worker/검증/lockfile과 baseline fixture를 수정하지 않았다. master roadmap 및 실행 계획 사본은 각각 SHA-256 `1d46e04691d4119ced60dacb41945c75d9d1a20f66cbaed2b3664909f47f8995`, `803b191496edd95ebf2199a8983b920058109bb159d55f8bafeb0737fa735fc5`로 원본/바탕화면 일치.
+- 공유 CRC32는 손상 탐지이며 인증/암호화가 아니다. 선언형 model field·단위·generator 실행 적합성, solver/RNG/delay 내부 상태와 전체 legacy migration은 후속 adapter 단계 책임이다.
+- CP0 push 응답에서 GitHub default branch Dependabot 4 high 경고도 관찰했다. S01 npm audit의 2 high/2 moderate 패키지와는 다른 집계이며 별도로 기록한다. 재감사나 해결/수용은 수행하지 않았다.
 
 ## Commit / 원격 증거
 
 - checkpoint는 검증 후 명시적 경로만 stage하고 push한다. 구현 원격 확인 전 nextStage=3 유지.
 - 각 hash와 원격 확인 결과는 후속 checkpoint에 기록한다. STATUS는 최종 사용자 보고에도 남긴다.
+- CP0: `c66f435693dceb83c53aefd47818379d1c2d582d`, push 성공 및 ls-remote 일치 확인.
 
 ## 후속
 

@@ -15,8 +15,8 @@
 | ID | 작업 | 검증 | 상태 |
 |---|---|---|---|
 | CP0 | 실행 기록과 activeStage | redesign:check, redesign:preflight -- 4 | 원격 보존 완료 |
-| CP1 | 병렬 진입점·공통 셸·라우터·오류 복구·테스트 | 관련 Vitest, typecheck, build, route/keyboard/axe smoke | 검증 완료, push 준비 |
-| CP2 | 전체 회귀·운영 설명·보존 증거 | C + 핵심 Playwright, 전체 Vitest, inventory/catalog | 예정 |
+| CP1 | 병렬 진입점·공통 셸·라우터·오류 복구·테스트 | 관련 Vitest, typecheck, build, route/keyboard/axe smoke | 원격 보존 완료 |
+| CP2 | 전체 회귀·운영 설명·보존 증거 | C + 핵심 Playwright, 전체 Vitest, inventory/catalog | candidate-complete, 전체 검증 완료 |
 | STATUS | 구현 원격 확인 후 완료 상태 | 별도 status commit/push와 원격 HEAD | 예정 |
 
 ## 변경 예정 경로
@@ -43,12 +43,19 @@
 - 최종 Playwright: dev 34/34, production 34/34, 실패/보류/재시도 0. 각 실행은 Chromium desktop/mobile 17개 시나리오를 포함하고 axe contrast/keyboard/320px, 실제 style, 오류·취소·storage 보존·기존 앱 병행을 검사했다.
 - styled desktop Learn과 mobile Lab 캡처를 직접 확인했다. 잘림/겹침은 발견하지 않았다. S05의 정식 시각 baseline/전체 접근성 감사는 수행하지 않았다.
 - `redesign:inventory:check`: 883개 파일 legacy 투영, orphan/broken import 0. 실제 기존 파일 변경은 `vite.config.ts`의 두 추가뿐이며 엔진/app/기존 test/fixture source는 그대로다. catalog 134개 유지, audit:modules 491개 source·예외 0.
+- CP2 전체 Vitest: 248개 파일·2,030개 테스트 통과, 실패/보류/todo 0. S03 원시 보고서와 test 이름을 대조해 기존 245개 파일·1,974개 테스트 보존과 신규 3개 파일·56개를 확인했다.
+- [shell-ko.md](../shell-ko.md)의 상대 링크 15개와 code fence 균형을 확인했다. [S04-verification.json](S04-verification.json)에 테스트 집계, 원시 보고서 SHA-256, build 자산 hash와 보존/제한을 기록했다.
+- 보존 경로 Git diff는 0: app.html, physics/chaos/research/runtime/worker/validation, lib 공개 API, package/lockfile, S01 baseline와 characterization tests. build 설정은 기록한 두 줄 추가만 있다.
+- CP1 secret scan: 1,192 tracked / 1,162 text / 30 binary, 알려진 패턴 0. 정상 UI 흐름은 console/pageerror=0이다. 보안 기준선 경고는 해결/수용하지 않았다.
+- 최종 바탕화면/원본 해시 일치: roadmap `1d46e04691d4119ced60dacb41945c75d9d1a20f66cbaed2b3664909f47f8995`, 실행 계획 `803b191496edd95ebf2199a8983b920058109bb159d55f8bafeb0737fa735fc5`. 원본 두 계획 문서를 수정하지 않아 사본을 다시 쓰지 않았다.
 
 ## Commit / 원격 증거
 
 - 명시적 경로만 stage하고 검증된 checkpoint를 push한다. 구현의 원격 존재 확인 전 `nextStage=4`를 유지한다.
 - 각 commit과 push 증거는 후속 checkpoint에 기록하고 최종 status hash는 사용자 보고에 남긴다.
 - CP0: `3c626180bf0cee9cf6b61b91b1db7fa15931f7c6`, push 성공 및 ls-remote 일치.
+- CP1: `7642e5258008e7f7bfbcd48dfdef56354f37b145`, 구현 push 성공 및 ls-remote 일치. 원격 nextStage=4 유지 후 전체 검증을 시작한다.
+- CP1 명시적 staging 뒤 secret scan의 알려진 패턴 탐지 0. Git history/ignored/binary 내용/임의 비밀값은 검사 범위 밖이다.
 
 ## 후속
 

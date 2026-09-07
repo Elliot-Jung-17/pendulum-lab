@@ -1,0 +1,186 @@
+{
+  "schemaVersion": "pendulum-shell-verification/v1",
+  "stage": 4,
+  "capturedAt": "2026-09-07T05:45:26.486Z",
+  "baselineCommit": "543bfc8add9e51949bc4b58bcf45db74666dfb40",
+  "implementationCommit": "7642e5258008e7f7bfbcd48dfdef56354f37b145",
+  "verifiedOriginImplementation": "7642e5258008e7f7bfbcd48dfdef56354f37b145",
+  "environment": {
+    "node": "v26.3.0",
+    "platform": "win32",
+    "browsers": ["Playwright Chromium desktop", "Playwright Chromium Pixel 5 emulation"]
+  },
+  "targetedTests": {
+    "command": "npx vitest run tests/product/app tests/product/contracts tests/product/catalog tests/characterization",
+    "files": 19,
+    "total": 383,
+    "passed": 383,
+    "failed": 0,
+    "pending": 0,
+    "todo": 0,
+    "success": true,
+    "rawLocalReportSha256": "2268d4554de6ce339767fac4996f688adef285b9f9567f58057325cdc3af6bc1"
+  },
+  "fullTests": {
+    "command": "npm test -- --reporter=json --outputFile=tmp/s04-vitest-results.json",
+    "files": 248,
+    "total": 2030,
+    "passed": 2030,
+    "failed": 0,
+    "pending": 0,
+    "todo": 0,
+    "success": true,
+    "previousFiles": 245,
+    "previousTests": 1974,
+    "newFiles": 3,
+    "newTests": 56,
+    "previousTestNamesPreserved": true,
+    "rawLocalReportSha256": "17d6e75a16cd44b858f3bce1bb7eb551d7c75d357060148655809db17b2a79f7"
+  },
+  "browserTests": {
+    "command": "npx playwright test e2e/redesign/shell.spec.ts --project=chromium --project=mobile-chrome",
+    "scenariosPerProject": 17,
+    "development": {
+      "startTime": "2026-09-07T05:35:39.474Z",
+      "duration": 42465.119000000006,
+      "expected": 34,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "rawLocalReportSha256": "91de337145fdd29e5683df296266700e207b29ccfefbd0cc8668623e65c6027d"
+    },
+    "production": {
+      "startTime": "2026-09-07T05:39:10.338Z",
+      "duration": 30429.841,
+      "expected": 34,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "rawLocalReportSha256": "6e6f9b9179f48b8229a13f82b6bb660b70853185c84e87d775c8f54ff36e45bc"
+    },
+    "coverage": [
+      "direct URL/reload/back/forward",
+      "all route families and validated shares",
+      "unknown/malformed/cross-system route recovery",
+      "initial entry/bootstrap/init/chunk/render/global error recovery",
+      "pending load cancellation and stale load suppression",
+      "keyboard/skip/nav/focus",
+      "WCAG axe including contrast and 320px layout",
+      "applied CSS and zero normal console/page errors",
+      "local/session storage preservation",
+      "no legacy engine network requests",
+      "parallel app.html execution"
+    ],
+    "visualInspection": ["styled desktop Learn", "styled mobile Lab"],
+    "formalVisualBaseline": false
+  },
+  "checks": [
+    "redesign:check",
+    "redesign:preflight -- 4 before changes",
+    "redesign:catalog:check",
+    "redesign:inventory:check",
+    "typecheck",
+    "targeted ESLint --max-warnings 0",
+    "targeted Prettier",
+    "lint:policy",
+    "audit:modules (491 source files; zero exceptions)",
+    "production build plus emitted public-artifact audit",
+    "git diff --check"
+  ],
+  "preservation": {
+    "frozenInventoryFiles": 883,
+    "unchangedLegacyFiles": 882,
+    "legacyBuildConfigAdditions": ["next.html input", "isolated Vite preload helper"],
+    "baselineRegenerated": false,
+    "semanticCapabilities": 118,
+    "catalogDefinitions": 134,
+    "orphanCapabilities": 0,
+    "brokenImports": 0,
+    "existingEngineApiDataFixtureLockfileAndAppSourceDiffs": 0,
+    "productionMigrationApplied": false,
+    "desktopTransport": [
+      {
+        "source": "documents/redesign/master-roadmap-ko.md",
+        "sha256": "1d46e04691d4119ced60dacb41945c75d9d1a20f66cbaed2b3664909f47f8995",
+        "desktopHashMatches": true
+      },
+      {
+        "source": "documents/redesign/execution-plan-ko.md",
+        "sha256": "803b191496edd95ebf2199a8983b920058109bb159d55f8bafeb0737fa735fc5",
+        "desktopHashMatches": true
+      }
+    ]
+  },
+  "build": {
+    "entries": ["app.html", "reviewer.html", "next.html"],
+    "assets": [
+      {
+        "file": "assets/application-C9PwKt9c.js",
+        "bytes": 22235,
+        "sha256": "9f0dad06b7906e492161d72cec20f9e48a2e6d1abac0b5100d575b21bf8a540a"
+      },
+      {
+        "file": "assets/catalog-DrQlIZm9.js",
+        "bytes": 128634,
+        "sha256": "fbb198ac3eb7116ddf9a0bbb5821c326e775a770755f05e6eeb9f200644f0cdb"
+      },
+      {
+        "file": "assets/dom-CuEJMCJS.js",
+        "bytes": 407,
+        "sha256": "02f5def3fad390e257d4cb01512edf79cc491c1f43bbadf49656667da753e09a"
+      },
+      {
+        "file": "assets/lab-D60GWz29.js",
+        "bytes": 3057,
+        "sha256": "eed14927e22939e57d990268808bcbbd3a38a932a0376fedc55c5bf6dd3da5c4"
+      },
+      {
+        "file": "assets/learn-B4F3xw18.js",
+        "bytes": 2362,
+        "sha256": "675bb2d95f2c5864f21ade769e12aea64dccbf8f06c40b332af71569392835b6"
+      },
+      {
+        "file": "assets/next-BByGTzpM.css",
+        "bytes": 4716,
+        "sha256": "dbf12aa53c871686a3f2da378220684371572b01aa3adfe1d1d54150dd1047af"
+      },
+      {
+        "file": "assets/next-DIUDVe_g.js",
+        "bytes": 2687,
+        "sha256": "91b566b7b26e11f719c4ea13bb8212c37cae702dd4e3c1a6b435ccf7d50019cb"
+      },
+      {
+        "file": "assets/preload-helper-HclGiUj8.js",
+        "bytes": 1211,
+        "sha256": "bba5840eec0028b00854bcd58fba80694d02d41e98417656424c05b26db7120c"
+      }
+    ]
+  },
+  "secretScan": {
+    "trackedFiles": 1192,
+    "textFiles": 1162,
+    "binaryFiles": 30,
+    "knownPatternFindings": 0,
+    "scope": "All Git-tracked working-tree text files; binary files listed separately; no history or ignored files."
+  },
+  "review": {
+    "independentCodeReview": "Static fallback URL loss was fixed and tested; no remaining actionable findings reported.",
+    "userGateRequired": false,
+    "humanScientificReviewPerformed": false,
+    "newScientificContent": false,
+    "security": "S01 npm audit 2 high/2 moderate packages and CodeQL 32 alerts remain unresolved. GitHub push also reports 4 high default-branch Dependabot vulnerabilities; no new audit, upgrades or risk acceptance."
+  },
+  "resolvedFailures": [
+    "Development CSP blocked injected CSS: use external stylesheet and assert applied CSS.",
+    "One initial cancellation test was interrupted by source-format HMR; trace proved reload, isolated 3/3 and final suites passed.",
+    "Production fetched legacy engines through Vite preload helper assigned to research tab: isolate exact virtual helper; unchanged network assertion now passes.",
+    "Inventory detected authorized Vite additions: retain original snapshot and project only exact additions, with mutation tests.",
+    "Static fallback retry discarded deep URL: replaced with browser refresh guidance and entry failure test."
+  ],
+  "limitations": [
+    "S04 provides shell/navigation/recovery; new course content and laboratory execution remain future stages.",
+    "Cancellation suppresses a pending view; it does not abort browser module downloads.",
+    "No full cross-browser, formal visual regression baseline, PWA/standalone migration, performance or human/scientific audit is claimed.",
+    "Stage completion requires a separate status commit verified on origin/codex/redesign."
+  ]
+}

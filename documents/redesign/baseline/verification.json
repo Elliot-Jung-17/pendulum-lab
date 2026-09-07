@@ -1,0 +1,1325 @@
+{
+  "schemaVersion": "pendulum-redesign-verification/v1",
+  "capturedAt": "2026-09-07T03:50:51.333Z",
+  "implementationCommit": "1d6191ac8faf5b2b5240c4eed588af88943741ac",
+  "implementationRemoteVerified": "1d6191ac8faf5b2b5240c4eed588af88943741ac",
+  "baseline": {
+    "command": "npm test -- --reporter=json --outputFile=tmp/S01-initial-vitest.json",
+    "files": 229,
+    "tests": 1647,
+    "passed": 1647,
+    "failed": 0,
+    "pending": 0,
+    "success": true,
+    "startedAt": "2026-09-07T03:30:40.405Z",
+    "reportSha256": "6875a0e9c17a84a5b627ba0e8f42271de88acb855fdd083b9e706a43ad991497"
+  },
+  "final": {
+    "command": "npm test -- --reporter=json --outputFile=tmp/S01-final-vitest.json",
+    "exitCode": 0,
+    "files": 232,
+    "tests": 1670,
+    "passed": 1670,
+    "failed": 0,
+    "pending": 0,
+    "success": true,
+    "startedAt": "2026-09-07T03:49:15.325Z",
+    "reportSha256": "15c65010a69baaa4e3fd79f72b3f4b29eaf0b28d0585cb6db02fafb3c1464a9e"
+  },
+  "existingTestsRetained": true,
+  "existingTestFilesUnchanged": 229,
+  "addedTests": 23,
+  "addedFiles": 3,
+  "preservation": [
+    {
+      "ownerFile": "src",
+      "originalObject": "df4b29a69d82c03e9fd4dcca4c1394a96f8706b0",
+      "currentObject": "df4b29a69d82c03e9fd4dcca4c1394a96f8706b0",
+      "unchanged": true
+    },
+    {
+      "ownerFile": "app.html",
+      "originalObject": "965d6af9428cd6f00e5abce963a8641c23943a6e",
+      "currentObject": "965d6af9428cd6f00e5abce963a8641c23943a6e",
+      "unchanged": true
+    },
+    {
+      "ownerFile": "css",
+      "originalObject": "fa303d6a4822b75a63c9a4f5f97c014b64f2f380",
+      "currentObject": "fa303d6a4822b75a63c9a4f5f97c014b64f2f380",
+      "unchanged": true
+    },
+    {
+      "ownerFile": "public",
+      "originalObject": "93c9320932b8a8c24f851ae9eee620d76b72a153",
+      "currentObject": "93c9320932b8a8c24f851ae9eee620d76b72a153",
+      "unchanged": true
+    },
+    {
+      "ownerFile": "package-lock.json",
+      "originalObject": "bda42f4c4cfee91c476a0e97d7cb4426f9815ba9",
+      "currentObject": "bda42f4c4cfee91c476a0e97d7cb4426f9815ba9",
+      "unchanged": true
+    },
+    {
+      "ownerFile": "requirements.lock",
+      "originalObject": "5227f8fc1889e5a5534e151c41efdc2ca8f8feb4",
+      "currentObject": "5227f8fc1889e5a5534e151c41efdc2ca8f8feb4",
+      "unchanged": true
+    }
+  ],
+  "inventory": {
+    "files": 883,
+    "filesWithSemanticOwner": 112,
+    "filesWithModuleFamilyAssignment": 771,
+    "semanticCapabilities": 118,
+    "facts": 6825,
+    "relativeImports": 2548,
+    "brokenImports": 0,
+    "orphans": 0,
+    "unresolvedDynamicImports": 12,
+    "capability:system": 34,
+    "capability:analysis": 51,
+    "capability:integrator": 5,
+    "capability:control": 7,
+    "capability:importer": 5,
+    "capability:exporter": 5,
+    "capability:storage-schema": 4,
+    "capability:route": 3,
+    "capability:runtime": 4,
+    "fact:test-module": 282,
+    "fact:source-module": 531,
+    "fact:worker": 7,
+    "fact:exported-declaration": 2529,
+    "fact:control": 433,
+    "fact:public-global": 8,
+    "fact:storage-schema": 78,
+    "fact:worker-message": 62,
+    "fact:route-parameter": 27,
+    "fact:preset": 19,
+    "fact:system-registration": 22,
+    "fact:integrator": 16,
+    "fact:asset": 70,
+    "fact:route": 25,
+    "fact:fixture": 29,
+    "fact:cli-command": 104,
+    "fact:public-entrypoint": 8,
+    "fact:public-api": 2575
+  },
+  "checks": [
+    {
+      "command": "npm run redesign:check",
+      "result": "pass"
+    },
+    {
+      "command": "npm run redesign:inventory:check",
+      "result": "pass"
+    },
+    {
+      "command": "npm run typecheck",
+      "result": "pass"
+    },
+    {
+      "command": "npm test -- tests/characterization",
+      "result": "pass",
+      "files": 3,
+      "tests": 23
+    },
+    {
+      "command": "ESLint on added TypeScript scripts/tests",
+      "result": "pass",
+      "warnings": 0
+    },
+    {
+      "command": "Markdown fences, JSON parse, local links",
+      "result": "pass",
+      "markdownFiles": 7,
+      "jsonFiles": 4,
+      "localLinks": 131,
+      "phase": "before verification.json and its README link"
+    },
+    {
+      "command": "git diff --check",
+      "result": "pass"
+    },
+    {
+      "command": "production build and headless performance script",
+      "result": "pass",
+      "details": "performance-baseline.json"
+    }
+  ],
+  "stagedSecretScan": {
+    "sourceCommit": "ccfd9ef0a57b8a6ac93ca83bf8db494b21dbcc5d",
+    "trackedFiles": 1114,
+    "textFiles": 1084,
+    "binaryFiles": 30,
+    "findings": 0
+  },
+  "limitations": [
+    "Local validation only; this is not a new remote CI or CodeQL run.",
+    "Known security findings remain unresolved as documented in security.md.",
+    "No human/expert review claimed; S01 has no user review gate."
+  ],
+  "suites": [
+    {
+      "file": "tests/acceleration-contract.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/analysis-superpack.test.ts",
+      "status": "passed",
+      "tests": 11
+    },
+    {
+      "file": "tests/analytic-derivatives.test.ts",
+      "status": "passed",
+      "tests": 15
+    },
+    {
+      "file": "tests/arclength.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "tests/arnoldi.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/audio-sonifier.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/auto-batched-se.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "tests/autodiff-jacobians.test.ts",
+      "status": "passed",
+      "tests": 17
+    },
+    {
+      "file": "tests/basin.test.ts",
+      "status": "passed",
+      "tests": 14
+    },
+    {
+      "file": "tests/branch-switching.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "tests/canvas-worker-clients.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "tests/certified-workbench.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/chain-validation-hardening.test.ts",
+      "status": "passed",
+      "tests": 12
+    },
+    {
+      "file": "tests/chaos-client.test.ts",
+      "status": "passed",
+      "tests": 12
+    },
+    {
+      "file": "tests/chaos-control.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "tests/chaos-protocol-diagnostics.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "tests/chaos-protocol.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "tests/chaos-request-validation.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "tests/chaos.test.ts",
+      "status": "passed",
+      "tests": 14
+    },
+    {
+      "file": "tests/characterization/inventory.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "tests/characterization/numerical-golden.test.ts",
+      "status": "passed",
+      "tests": 13
+    },
+    {
+      "file": "tests/characterization/secret-scan.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/claim-evidence-surfaces.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "tests/claim-registry.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "tests/cli-batch-spec.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/clv.test.ts",
+      "status": "passed",
+      "tests": 16
+    },
+    {
+      "file": "tests/commutativity-defect.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/complex-eig.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "tests/compound-double.test.ts",
+      "status": "passed",
+      "tests": 12
+    },
+    {
+      "file": "tests/conserved-quantities.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "tests/continuation.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/convergence-order.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/correlation-dimension.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "tests/css-coverage-audit.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/current-snapshot.test.ts",
+      "status": "passed",
+      "tests": 1
+    },
+    {
+      "file": "tests/deep-link-controls.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "tests/demo-systems.test.ts",
+      "status": "passed",
+      "tests": 22
+    },
+    {
+      "file": "tests/dense-output-events.test.ts",
+      "status": "passed",
+      "tests": 14
+    },
+    {
+      "file": "tests/deployment-security.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/dmd.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "tests/dockerignore.test.ts",
+      "status": "passed",
+      "tests": 1
+    },
+    {
+      "file": "tests/double-double-pendulum.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/double-double.test.ts",
+      "status": "passed",
+      "tests": 11
+    },
+    {
+      "file": "tests/double-string.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/duffing.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "tests/education-cards.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "tests/eigen-general.test.ts",
+      "status": "passed",
+      "tests": 12
+    },
+    {
+      "file": "tests/energy-drift.test.ts",
+      "status": "passed",
+      "tests": 1
+    },
+    {
+      "file": "tests/ensemble-interpretation-contract.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "tests/ensemble-perturbation.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "tests/ensemble-statistics.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "tests/event-bus-isolation.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "tests/events.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "tests/evidence-bindings.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/evidence-command-boundaries.test.ts",
+      "status": "passed",
+      "tests": 1
+    },
+    {
+      "file": "tests/evidence-summary.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/expanded-models.test.ts",
+      "status": "passed",
+      "tests": 18
+    },
+    {
+      "file": "tests/expansion-job-protocol.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/expansion-lyapunov-injection.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/expansion-lyapunov.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "tests/experiment-design.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "tests/experiment-share.test.ts",
+      "status": "passed",
+      "tests": 16
+    },
+    {
+      "file": "tests/experiment-workflow-presentation.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "tests/experimental-data-import.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/figure-pipeline.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "tests/flagship-certification.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/floquet-linear.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "tests/floquet.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "tests/formulation-equivalence.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "tests/fput.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "tests/friction.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "tests/frontend-quality-evidence.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "tests/ftle.test.ts",
+      "status": "passed",
+      "tests": 12
+    },
+    {
+      "file": "tests/gpu-chaos-promotion.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/gpu-ensemble.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/gpu-fields-validation.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/gpu-fields.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/gpu-lyapunov.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "tests/gpu-nchain-variational.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "tests/hamiltonian-learning.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "tests/hardware-comparison.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "tests/havok.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "tests/implicit-diagnostics.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "tests/import-export-roundtrip.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "tests/imu-motion-capture.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/independent-validation-scope.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "tests/integrators.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/job-protocol.test.ts",
+      "status": "passed",
+      "tests": 33
+    },
+    {
+      "file": "tests/json-import-validation.test.ts",
+      "status": "passed",
+      "tests": 12
+    },
+    {
+      "file": "tests/kapitza.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "tests/kramers-escape.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "tests/kuramoto-chimera.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "tests/lab-analysis.test.ts",
+      "status": "passed",
+      "tests": 16
+    },
+    {
+      "file": "tests/lab-export.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "tests/lab-history.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/lab-plots.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "tests/lab-renderer.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "tests/lab-runtime-budget.test.ts",
+      "status": "passed",
+      "tests": 14
+    },
+    {
+      "file": "tests/lab-schedulers.test.ts",
+      "status": "passed",
+      "tests": 11
+    },
+    {
+      "file": "tests/lab-side-plot-shared-transport.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/lab-simulation.test.ts",
+      "status": "passed",
+      "tests": 19
+    },
+    {
+      "file": "tests/lab3d-chain-config.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/lab3d-timing.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/lab3d-utils.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/lanczos.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/landing-demo-kernel.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/lattice-dispersion.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "tests/library-ux.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "tests/linear-solve-cholesky.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "tests/linear-solve.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/literature-anchors.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "tests/lyapunov-spectrum-job.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/magnetic-pendulum.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "tests/main-canvas-worker-protocol.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/mathieu-stability.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "tests/melnikov.test.ts",
+      "status": "passed",
+      "tests": 12
+    },
+    {
+      "file": "tests/multifractal.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "tests/mutation-quality-policy.test.ts",
+      "status": "passed",
+      "tests": 1
+    },
+    {
+      "file": "tests/n-pendulum.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "tests/naff.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "tests/nav-guide.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "tests/neimark-sacker-branch.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/neimark-sacker-torus.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "tests/normal-modes.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/notebook-builder.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "tests/ns-winding-fallback.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "tests/numerical-budget-guards.test.ts",
+      "status": "passed",
+      "tests": 21
+    },
+    {
+      "file": "tests/numerical-correctness-hardening.test.ts",
+      "status": "passed",
+      "tests": 14
+    },
+    {
+      "file": "tests/numerics.test.ts",
+      "status": "passed",
+      "tests": 12
+    },
+    {
+      "file": "tests/onboarding-tour.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/orbit3d-projection.test.ts",
+      "status": "passed",
+      "tests": 11
+    },
+    {
+      "file": "tests/paper-figure-capture.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "tests/parameter-estimation.test.ts",
+      "status": "passed",
+      "tests": 15
+    },
+    {
+      "file": "tests/parity-lifecycle.test.ts",
+      "status": "passed",
+      "tests": 1
+    },
+    {
+      "file": "tests/pendulum-network.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "tests/periodic-orbit-database.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "tests/phase3d.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "tests/physics-edge-cases.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "tests/poincare-event-refinement.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/precision-controls.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "tests/product-release-manifest.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/progressive-render.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "tests/property-invariants.test.ts",
+      "status": "passed",
+      "tests": 12
+    },
+    {
+      "file": "tests/provenance.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "tests/public-api-snapshot.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/public-artifact-audit.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "tests/public-physics-fuzz.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "tests/public-vitest-report.test.ts",
+      "status": "passed",
+      "tests": 1
+    },
+    {
+      "file": "tests/publication-freshness.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/publication-status-contract.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "tests/pwa-assets.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "tests/pwa-update-recovery.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "tests/pyragas-dde.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "tests/qkr-view-model.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "tests/quality-hardening-core.test.ts",
+      "status": "passed",
+      "tests": 26
+    },
+    {
+      "file": "tests/quality-policy-contracts.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/quantum-kicked-rotor.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "tests/reference-validation.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "tests/referral-attribution.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "tests/release-mutation-gate.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/render-interpolation.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/replay-determinism.test.ts",
+      "status": "passed",
+      "tests": 1
+    },
+    {
+      "file": "tests/report-source-path.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "tests/repro-package.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "file": "tests/research-controllers.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/research-db.test.ts",
+      "status": "passed",
+      "tests": 12
+    },
+    {
+      "file": "tests/research-design-renderers.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/research-experiment-library-renderer.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/research-export-utils.test.ts",
+      "status": "passed",
+      "tests": 11
+    },
+    {
+      "file": "tests/research-plus-models.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/research-sampling.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/research-workspace-storage.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "tests/reservoir.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "tests/result-badges-audience.test.ts",
+      "status": "passed",
+      "tests": 11
+    },
+    {
+      "file": "tests/retryable-lazy.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "tests/rope-pendulum.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "tests/rqa.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "tests/saved-run-import.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/sbom-diff.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "tests/service-container.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "tests/service-worker-behavior.test.ts",
+      "status": "passed",
+      "tests": 26
+    },
+    {
+      "file": "tests/session-contracts.test.ts",
+      "status": "passed",
+      "tests": 14
+    },
+    {
+      "file": "tests/shadowing.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/shared-ring-buffer.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "tests/shell-shortcuts.test.ts",
+      "status": "passed",
+      "tests": 11
+    },
+    {
+      "file": "tests/sindy.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "tests/sine-gordon.test.ts",
+      "status": "passed",
+      "tests": 13
+    },
+    {
+      "file": "tests/sobol-sensitivity.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/spectrum-consistency.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "tests/spherical-chain.test.ts",
+      "status": "passed",
+      "tests": 12
+    },
+    {
+      "file": "tests/spherical-embedded-chain.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "tests/spherical-embedded.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "tests/spherical-pendulum.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "tests/standalone-byte-attribution.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "tests/standalone-html-minify.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "tests/standard-map.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/state-store-hostile-input.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/stiff-highorder.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "tests/stochastic-resonance.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "tests/stochastic-statistical-anchors.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "tests/stochastic.test.ts",
+      "status": "passed",
+      "tests": 15
+    },
+    {
+      "file": "tests/storage-import-hardening.test.ts",
+      "status": "passed",
+      "tests": 17
+    },
+    {
+      "file": "tests/structure-preservation.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/surrogate.test.ts",
+      "status": "passed",
+      "tests": 7
+    },
+    {
+      "file": "tests/svd.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/sweep-and-plots.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "tests/system-spec-extended.test.ts",
+      "status": "passed",
+      "tests": 11
+    },
+    {
+      "file": "tests/theory-content.test.ts",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "file": "tests/topological-entropy.test.ts",
+      "status": "passed",
+      "tests": 13
+    },
+    {
+      "file": "tests/torus-analysis.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "tests/training-protocol.test.ts",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "file": "tests/transfer-operator-spectrum.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/transfer-operator.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "tests/ui-hardening-contracts-2026-07.test.ts",
+      "status": "passed",
+      "tests": 17
+    },
+    {
+      "file": "tests/uncertainty.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "tests/unitary-floquet.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/ux-accessibility-contracts.test.ts",
+      "status": "passed",
+      "tests": 5
+    },
+    {
+      "file": "tests/van-der-pol.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/video-marker-capture.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/video-tracking.test.ts",
+      "status": "passed",
+      "tests": 4
+    },
+    {
+      "file": "tests/viz.test.ts",
+      "status": "passed",
+      "tests": 15
+    },
+    {
+      "file": "tests/wada-convergence.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "tests/wasm-ensemble.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "tests/wasm-nchain-benchmark.test.ts",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "file": "tests/wasm-nchain.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "tests/webgl-trail-renderer.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "tests/worker-fallback-notice.test.ts",
+      "status": "passed",
+      "tests": 17
+    },
+    {
+      "file": "tests/workflow-and-pwa-hardening.test.ts",
+      "status": "passed",
+      "tests": 36
+    },
+    {
+      "file": "tests/workspace-import-transaction.test.ts",
+      "status": "passed",
+      "tests": 9
+    },
+    {
+      "file": "tests/zero-one-test.test.ts",
+      "status": "passed",
+      "tests": 6
+    },
+    {
+      "file": "tests/zip-bundle.test.ts",
+      "status": "passed",
+      "tests": 16
+    },
+    {
+      "file": "tests/zip-sha256.test.ts",
+      "status": "passed",
+      "tests": 4
+    }
+  ]
+}

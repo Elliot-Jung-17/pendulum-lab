@@ -8,6 +8,7 @@
 - [수치 설명](numerical-golden.md), [fixture](../../../tests/characterization/numerical-golden.fixture.json), [재실행 검사](../../../tests/characterization/numerical-golden.test.ts): double/compound, seeded Langevin, standard map, FFT/RQA/Poincaré의 현재 공개 엔진 결과를 고정했다. 고정 입력과 수치 오차를 fixture에 명시한다.
 - [성능 보고서](performance-baseline.md)와 [원자료](performance-baseline.json): production 앱의 시작/FPS/JS heap/RQA 경로를 같은 장치에서 3회 측정했다.
 - [보안 보고서](security.md)와 [snapshot](security-snapshot.json): lockfile hash, 공식 npm audit, GitHub Dependabot/CodeQL/secret scanning, redacted 로컬 패턴 검사를 기록했다.
+- [최종 검증 결과](verification.json): 전체 232개 파일·1,670개 통과, 기존 테스트 보존, 원본 Git 객체 비교와 실행 명령을 기록했다.
 - [진행 및 원격 기록](../stage-runs/S01-progress.md): checkpoint 검증·커밋·push 증거와 최종 상태.
 
 ## 테스트 기준과 해석
@@ -17,6 +18,8 @@
 변경 전 `npm test -- --reporter=json --outputFile=tmp/S01-initial-vitest.json`은 **229개 파일, 1,647개 테스트, 실패 0**이었다. 실행 계획의 출발점과 차이가 없다. 이후 추가된 S01 검사는 기존 테스트 개수를 대체하지 않고 합산한다. `numTotalTestSuites`는 Vitest의 중첩 suite 집계이므로 파일 개수로 쓰지 않고 `testResults.length`를 사용한다.
 
 구현 checkpoint의 관련 검사는 `npm test -- tests/characterization` **3개 파일·23개 통과**(inventory 7, golden 13, secret scan 3), typecheck 통과다. 문서 fence/JSON/local link 검사와 대상 TS ESLint도 통과했다.
+
+구현 `1d6191a`의 원격 push 확인 후 전체 `npm test`를 다시 실행해 **232개 파일·1,670개 테스트, 실패/보류 0**을 확인했다. 기존 229개 테스트 파일은 변경되지 않았고 기존 테스트 식별자 전부가 최종 결과에 유지된다. 계획 검사·inventory 재현 검사·typecheck도 통과했다.
 
 수치 fixture는 현재 구현을 보존하는 characterization이다. 새로운 독립 물리 증명이나 전문가 검토가 아니다. 기존 수치 테스트와 함께 실행하며, 실패를 통과시키기 위한 golden 자동 갱신 모드는 제공하지 않는다.
 

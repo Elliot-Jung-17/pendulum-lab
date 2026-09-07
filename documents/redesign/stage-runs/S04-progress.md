@@ -14,16 +14,17 @@
 
 | ID | 작업 | 검증 | 상태 |
 |---|---|---|---|
-| CP0 | 실행 기록과 activeStage | redesign:check, redesign:preflight -- 4 | 기록 작성 |
-| CP1 | 병렬 진입점·공통 셸·라우터·오류 복구·테스트 | 관련 Vitest, typecheck, build, route/keyboard/axe smoke | 예정 |
+| CP0 | 실행 기록과 activeStage | redesign:check, redesign:preflight -- 4 | 원격 보존 완료 |
+| CP1 | 병렬 진입점·공통 셸·라우터·오류 복구·테스트 | 관련 Vitest, typecheck, build, route/keyboard/axe smoke | 검증 완료, push 준비 |
 | CP2 | 전체 회귀·운영 설명·보존 증거 | C + 핵심 Playwright, 전체 Vitest, inventory/catalog | 예정 |
 | STATUS | 구현 원격 확인 후 완료 상태 | 별도 status commit/push와 원격 HEAD | 예정 |
 
 ## 변경 예정 경로
 
-- `next.html`, `vite.config.ts`의 추가 build entry.
+- `next.html`, `vite.config.ts`의 추가 build entry와 Vite preload helper 분리.
 - `src/product/app/`, `tests/product/app/`, `e2e/redesign/shell*`.
 - `documents/redesign/shell-ko.md`, 본 기록, `S04-verification.json`, `status.json`.
+- `scripts/redesign/inventory.ts`: 위 두 가지 정확한 build 추가만 legacy 비교에서 제외하는 투영. 기존 S01 baseline 파일은 변경하지 않는다.
 
 ## 검증·판단과 위험
 
@@ -32,11 +33,22 @@
 - S04는 두 공간의 동작하는 진입·이동 경로를 제공한다. 아직 없는 단원/시뮬레이터에는 정직한 미제공 상태와 기존 앱으로 가는 실제 링크를 제공한다.
 - 기존 보안 기준선 npm audit high 2/moderate 2 패키지, CodeQL 32건, GitHub default-branch Dependabot high 4건은 미해결이다. 이번 단계에서 재감사·업그레이드·위험 수용하지 않는다.
 - 바탕화면 roadmap/실행 계획 사본은 원본과 SHA-256이 각각 일치한다. 원본 두 문서를 수정하지 않으면 복사는 필요하지 않다.
+- CP1 구현: bootstrap/application/Learn/Lab의 코드 분할, hash navigation, 주소/공유 검증, loading/cancel/invalid/chunk/render 오류, 같은 URL 새로고침과 기존 앱 복구, 제목/nav/focus/skip link와 기본 320px 배치를 제공했다.
+- 교차 검토에서 정적 초기 복구 링크가 상세 hash를 잃게 하는 문제를 찾아 브라우저 새로고침 안내로 수정하고 entry script 차단 E2E를 추가했다.
+- 개발 CSP가 Vite CSS runtime 주입을 차단함을 발견하여 HTML 외부 stylesheet link로 수정했다. 스타일 적용 computed CSS와 정상 진입 console/pageerror=0을 확인한다.
+- 최초 취소 E2E 1건은 테스트 중 Prettier 변경에 의한 Vite HMR reload가 trace에 확인되었다. 고정 source에서 isolated 3/3 및 전체 dev 재검사 통과했다.
+- 최초 production 검사 2건은 새 셸이 기존 엔진 bundle을 요청하는 실제 결함이었다. Vite preload helper가 legacy 연구 탭에 묶인 것이 원인으로, 정확한 가상 helper 모듈만 별도 chunk로 분리했다. 실패를 무시하거나 network 검사를 완화하지 않았다.
+- 인벤토리 검사의 최초 stale은 승인된 build 추가를 그대로 비교한 결과다. 기존 S01 snapshot은 유지하고 정확한 추가만 투영하며, 다른 build 변경을 탐지하는 mutation fixture로 보강했다.
+- CP1 최종 검증: 관련 Vitest 19개 파일·383개 통과(기존 S01~S03 327개 + 신규 S04 56개), typecheck/대상 ESLint/Prettier/소스 정책/module audit/build 통과.
+- 최종 Playwright: dev 34/34, production 34/34, 실패/보류/재시도 0. 각 실행은 Chromium desktop/mobile 17개 시나리오를 포함하고 axe contrast/keyboard/320px, 실제 style, 오류·취소·storage 보존·기존 앱 병행을 검사했다.
+- styled desktop Learn과 mobile Lab 캡처를 직접 확인했다. 잘림/겹침은 발견하지 않았다. S05의 정식 시각 baseline/전체 접근성 감사는 수행하지 않았다.
+- `redesign:inventory:check`: 883개 파일 legacy 투영, orphan/broken import 0. 실제 기존 파일 변경은 `vite.config.ts`의 두 추가뿐이며 엔진/app/기존 test/fixture source는 그대로다. catalog 134개 유지, audit:modules 491개 source·예외 0.
 
 ## Commit / 원격 증거
 
 - 명시적 경로만 stage하고 검증된 checkpoint를 push한다. 구현의 원격 존재 확인 전 `nextStage=4`를 유지한다.
 - 각 commit과 push 증거는 후속 checkpoint에 기록하고 최종 status hash는 사용자 보고에 남긴다.
+- CP0: `3c626180bf0cee9cf6b61b91b1db7fa15931f7c6`, push 성공 및 ls-remote 일치.
 
 ## 후속
 

@@ -82,6 +82,25 @@ function isRedesignHarnessCommand(name: string, command: unknown): boolean {
   );
 }
 
+/**
+ * S04 adds one HTML input and isolates Vite's preload helper from legacy engines.
+ * Compare that legacy projection, retaining every other build byte and AST fact.
+ * The exact additions are narrow: different targets or build behavior still fail.
+ */
+function legacySourceText(file: string, text: string): string {
+  const normalized = text.replaceAll('\r\n', '\n');
+  if (file !== 'vite.config.ts') return normalized;
+  return normalized
+    .replace(
+      "      input: {\n        app: 'app.html',\n        next: 'next.html',\n        reviewer: 'reviewer.html'\n      },",
+      "      input: {\n        app: 'app.html',\n        reviewer: 'reviewer.html'\n      },"
+    )
+    .replace(
+      "        manualChunks(id: string) {\n          if (id === '\\0vite/preload-helper.js') return 'preload-helper';\n",
+      '        manualChunks(id: string) {\n'
+    );
+}
+
 export function inventoryFiles(root: string): string[] {
   const files: string[] = [];
   function visit(relative: string): void {
@@ -147,7 +166,7 @@ export function resolveRelativeImport(root: string, ownerFile: string, specifier
 function parse(root: string, file: string): ts.SourceFile {
   return ts.createSourceFile(
     path.join(root, file),
-    readFileSync(path.join(root, file), 'utf8'),
+    legacySourceText(file, readFileSync(path.join(root, file), 'utf8')),
     ts.ScriptTarget.Latest,
     true,
     file.endsWith('.js') ? ts.ScriptKind.JS : ts.ScriptKind.TS
@@ -200,7 +219,7 @@ export function buildInventory(root: string, seeds: readonly CapabilitySeed[] = 
     const textLike =
       /\.(?:[cm]?[jt]sx?|json|html|css|csv|svg|xml|txt|webmanifest)$/.test(ownerFile) ||
       ownerFile.endsWith('/_headers');
-    let normalized = textLike ? Buffer.from(data.toString('utf8').replaceAll('\r\n', '\n')) : data;
+    let normalized = textLike ? Buffer.from(legacySourceText(ownerFile, data.toString('utf8'))) : data;
     if (ownerFile === 'package.json') {
       const manifest = JSON.parse(normalized.toString('utf8')) as Record<string, unknown>;
       const commands = manifest.scripts as Record<string, unknown> | undefined;
@@ -407,7 +426,7 @@ export function buildInventory(root: string, seeds: readonly CapabilitySeed[] = 
       add('fixture', file, file, 1, 'Fixture/example/observation asset');
     if (!sourcePattern.test(file)) add('asset', path.basename(file), file, 1, 'Complete asset scan');
     if (!/\.(?:html|ts)$/.test(file) || /^(tests|e2e)\//.test(file)) continue;
-    const text = readFileSync(path.join(root, file), 'utf8');
+    const text = legacySourceText(file, readFileSync(path.join(root, file), 'utf8'));
     for (const match of text.matchAll(/<(input|select|textarea|button)\b[^>]*\bid\s*=\s*["']([^"']+)["'][^>]*>/g)) {
       if (match[2]!.includes('${')) continue;
       add('control', match[2]!, file, text.slice(0, match.index).split('\n').length, `Literal HTML ${match[1]} id`);

@@ -93,6 +93,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         app: 'app.html',
+        next: 'next.html',
         reviewer: 'reviewer.html'
       },
       output: {
@@ -105,6 +106,7 @@ export default defineConfig({
         // imports. The standalone single-file build (vite.config.standalone.ts)
         // inlines everything and is unaffected.
         manualChunks(id: string) {
+          if (id === '\0vite/preload-helper.js') return 'preload-helper';
           const path = id.replace(/\\/g, '/');
           if (!path.includes('/src/')) return undefined;
           if (path.includes('/src/app/parity/') || path.endsWith('/src/app/FeatureParityLayer.ts'))

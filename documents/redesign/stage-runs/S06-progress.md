@@ -16,8 +16,8 @@
 |---|---|---|---|
 | CP0 | 실행 기록과 activeStage | redesign:check, redesign:preflight -- 6 | 원격 보존 완료 |
 | CP1 | capability selector·mock 상태·실험실 화면·여정 | 관련 Vitest, typecheck, build, Playwright/axe/keyboard/mobile | 원격 보존 완료 |
-| CP2 | 전체 회귀·시각 검증·운영 문서·보존 증거 | 전체 Vitest, dev/production E2E, catalog/inventory | candidate-complete, 전체 검증 완료 |
-| STATUS | 별도 완료 상태 | 구현 원격 확인, status push 및 원격 HEAD | 진행 예정 |
+| CP2 | 전체 회귀·시각 검증·운영 문서·보존 증거 | 전체 Vitest, dev/production E2E, catalog/inventory | candidate-complete, 검증·원격 보존 완료 |
+| STATUS | 별도 완료 상태 | 구현 원격 확인, status push 및 원격 HEAD | 별도 status commit; 원격 존재 시 S06 완료 |
 
 ## 변경 예정 경로
 
@@ -57,6 +57,8 @@
 - 각 checkpoint commit/push 증거는 후속 checkpoint에 기록한다. 최종 status hash는 사용자 완료 보고에 기록한다.
 - CP0: `22bc16e90d61866894bdc46dcd109bba1a8ed027`, push 성공 및 ls-remote 일치.
 - CP1: `18cfd9aa501136748990677ced1eb4c510ada11b`, 구현 push 성공 및 ls-remote 일치. 원격 nextStage=6 상태에서 전체 회귀를 시작한다.
+- CP2: `9f20427e60bda3b37bbba27dab1b94b31821b94b`, 검증 문서 push 성공 및 ls-remote 일치. 구현과 전체 검증 증거가 원격에 존재함을 확인했다.
+- STATUS: CP2 원격 확인 후 본 기록과 status.json만 별도 commit한다. 최종 hash와 원격 확인은 사용자 완료 보고에 기록한다. 원격 존재 전에는 로컬 완료 표시가 효력을 갖지 않는다.
 
 ## 후속
 

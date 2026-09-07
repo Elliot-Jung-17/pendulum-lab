@@ -8,23 +8,36 @@
     "selectedByUser": true
   },
   "totalStages": 30,
-  "lastCompletedStage": 5,
-  "nextStage": 6,
-  "completedStages": [1, 2, 3, 4, 5],
+  "lastCompletedStage": 6,
+  "nextStage": 7,
+  "completedStages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
   "blockedStage": null,
-  "activeStage": 6,
-  "activeStageCheckpoint": "CP2",
-  "reviewGates": [7, 9, 17, 24, 28],
+  "activeStage": null,
+  "activeStageCheckpoint": null,
+  "reviewGates": [
+    7,
+    9,
+    17,
+    24,
+    28
+  ],
   "approvedReviewGates": [],
   "notes": [
-    "S05 design system is validated: light/dark/system tokens, ten accessible component types, interactive gallery at next.html?gallery=components, and themed S04 shell. All 251 files and 2101 tests passed, preserving all previous 2030 tests and adding 71. Chromium desktop/mobile dev 70/70 and production 58/58 E2E passed, with zero specified axe violations and 12 stable visual baselines. See design-system-ko.md and stage-runs/S05-verification.json.",
-    "Existing security findings remain unresolved: official npm audit has 2 high and 2 moderate vulnerable packages; GitHub CodeQL has 32 open baseline alerts. See documents/redesign/baseline/security.md before the S30 security gate.",
-    "GitHub push on 2026-09-07 also reported 4 high default-branch Dependabot vulnerabilities; this service aggregate is distinct from the S01 npm audit and has not been newly audited, resolved, or accepted.",
-    "S02 catalog remains at 134 definitions. S01 baseline stays frozen at 883 files; the two exact S04 Vite build additions are projected from legacy comparison and additive css/product is excluded, with mutation tests preserving legacy change detection. Existing app.html, engines, public APIs, storage, S03 contracts and lockfile remain unchanged. Next valid stage is S06; no S06 Lab workspace, S07 engine integration or S08 content pipeline was implemented.",
-    "S05 200% coverage uses Chromium CSS zoom plus 640px reflow; raster baselines cover Windows Chromium only. Screen-reader audio and human/expert reviews were not performed. Quantity inputs accept canonical scalar units; display conversion and system-specific validation remain integration-stage work. Theme is document-local, resets to light on reload, and never writes user storage.",
-    "S03 remains a restart-configuration transport contract, not a production migration or an exact solver/RNG/delay continuation snapshot. Model-specific validation and execution adapters remain later-stage work. S04 reserved detail routes disclose unavailable content/execution; validated shares are summarized without running or transferring them. Cancellation prevents late view presentation, not browser module download.",
-    "S01 inventory retains module-family ownership and 12 computed GPU imports; numerical and headless performance baselines have documented limits.",
-    "Repository documents are authoritative; desktop documents are transport copies.",
+    "S06 laboratory mock shell is validated: 34 systems across 8 families, search/recent/favorites, schema-driven Inspector, compatible Analysis Dock, Run Bar, per-system drafts, a 12-entry tray and explicit mock JSON export. Full Vitest 252 files/2124 tests passed, preserving all previous 2101 tests. Dev Chromium desktop/mobile 84/84 and production 72/72 journeys passed with unchanged visual baselines. See lab-shell-ko.md and stage-runs/S06-verification.json.",
+    "S06 is a timer-only state-flow rehearsal. No physics, trajectory or scientific results are produced. Double/compound fields are UI fixtures; other physical editors belong to their integration stages. Planned mock inputs must be replaced by validated actual inputs before real analyses execute. Next valid stage is S07; no actual S07 engine adapter or S08 content pipeline was implemented.",
+    "S06 drafts, recent/favorite choices and per-system trays are Document-local and reset on reload. No local/session/IndexedDB writes or old-data migration occur. Shared canonical sources remain separate from editable mock defaults. Mock JSON is explicitly not a canonical import file. Theme remains document-local and resets to light on reload.",
+    "S02 catalog remains at 134 definitions and S01 legacy inventory at 883 files with zero broken imports/orphans. Existing app.html, engines, runtime, workers, public APIs, S03 contracts/persistence, package/lockfile, baseline and numerical fixtures remain unchanged. Lab CSS uses an external stylesheet with the existing CSP.",
+    "Existing security findings remain unresolved: S01 official npm audit has 2 high and 2 moderate vulnerable packages; GitHub CodeQL has 32 open baseline alerts. GitHub push also reports 4 high default-branch Dependabot vulnerabilities, a distinct service aggregate. No new audit, remediation or risk acceptance occurred in S06; see baseline/security.md before S30.",
+    "Automated browser coverage is Windows Chromium desktop/mobile emulation. S06 adds 6 visual baselines and preserves S05 gallery baselines. 200% uses CSS zoom 2 plus 640px reflow. Screen-reader audio, other browser/OS matrices and human/expert reviews were not performed. S06 is not a user review gate; the first review checklist is S07.",
+    "S03 remains a restart-configuration transport contract, not production migration or an exact solver/RNG/delay continuation snapshot. S01 inventory retains module-family ownership and 12 computed GPU imports; numerical and headless performance baselines retain documented limits.",
+    "Repository documents are authoritative; both desktop roadmap transport copies match their repository originals by SHA-256.",
     "A stage is complete only when its final status commit is verified on origin/codex/redesign."
   ]
 }

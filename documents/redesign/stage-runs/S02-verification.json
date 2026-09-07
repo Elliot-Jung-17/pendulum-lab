@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "pendulum-catalog-verification/v1",
+  "stage": 2,
+  "capturedAt": "2026-09-07T04:50:20.9739926Z",
+  "implementationCommit": "1421d1a55ea3280af034c9c0734e9a06782f20a5",
+  "verifiedOriginImplementation": "1421d1a55ea3280af034c9c0734e9a06782f20a5",
+  "environment": {
+    "node": "v26.3.0",
+    "npm": "11.16.0",
+    "platform": "win32"
+  },
+  "catalog": {
+    "total": 134,
+    "systems": 34,
+    "analyses": 51,
+    "integrators": 21,
+    "auxiliary": 28,
+    "semanticBaselineReferences": 118,
+    "observedIntegratorReferences": 16,
+    "missing": 0,
+    "duplicates": 0,
+    "brokenSourceBindings": 0
+  },
+  "targetedTests": {
+    "command": "npx vitest run tests/product/catalog tests/characterization",
+    "files": 8,
+    "passed": 88,
+    "failed": 0
+  },
+  "fullTests": {
+    "command": "npm test -- --reporter=json --outputFile=tmp/s02-vitest-results.json",
+    "files": 237,
+    "total": 1735,
+    "passed": 1735,
+    "failed": 0,
+    "pending": 0,
+    "todo": 0,
+    "success": true,
+    "newCatalogFiles": 5,
+    "newCatalogTests": 65.0,
+    "rawLocalReportSha256": "f4117951faa0858316ff0f96b20664e9977051d9e604690e2ab873ccc5dcab59"
+  },
+  "checks": [
+    "redesign:check",
+    "redesign:preflight -- 2 (before changes)",
+    "redesign:catalog:check",
+    "redesign:inventory:check",
+    "typecheck",
+    "targeted ESLint",
+    "targeted Prettier",
+    "audit:modules",
+    "build with prebuild guard and public artifact audit",
+    "git diff --check"
+  ],
+  "preservation": {
+    "frozenInventoryFiles": 883,
+    "frozenInventorySourceDigest": "0cd34a3cd01aa7453fc534d75d1f684a580b70de01286b9a8199b6e912f5de08",
+    "legacyEngineApiFixtureAndLockfileDiffs": 0,
+    "legacyTestsPreserved": 1670,
+    "existingAppRetained": true,
+    "existingBuildBodiesRetained": true,
+    "desktopRoadmapHashMatches": true,
+    "desktopExecutionPlanHashMatches": true
+  },
+  "secretScan": {
+    "trackedFiles": 1145,
+    "textFiles": 1115,
+    "binaryFiles": 30,
+    "knownPatternFindings": 0
+  },
+  "review": {
+    "userGateRequired": false,
+    "humanScientificReviewPerformed": false,
+    "newScientificContent": false,
+    "security": "S01 known dependency and CodeQL findings remain unresolved; no dependency upgrades or acceptance."
+  },
+  "limitations": [
+    "Catalog discovery is additive; product runtime adapters and canonical state are later stages.",
+    "Legacy API shape references remain unversioned.",
+    "Source-scope checks enforce documented API domains, not general scientific correctness.",
+    "npm lifecycle guards run through supported npm build commands; direct vite invocation bypasses them.",
+    "No UI changes; browser/E2E and performance measurements are outside the S02 D profile.",
+    "Stage completion requires a separate status commit verified on origin/codex/redesign."
+  ]
+}

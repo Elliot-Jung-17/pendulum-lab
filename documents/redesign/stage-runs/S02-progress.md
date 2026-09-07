@@ -15,8 +15,8 @@
 | ID | 작업 | 검증 | 상태 |
 |---|---|---|---|
 | CP0 | 실행 기록, activeStage 설정 | redesign:check, redesign:preflight -- 2 | 원격 보존 완료 |
-| CP1 | 타입 계약, 전체 기능 정의, predicate, build guard 및 tests | 카탈로그 정상/경계/실패 test, typecheck, baseline coverage, build | 검증 통과, commit 준비 |
-| CP2 | 전체 검증, 문서와 보존 증거 | D, 전체 기존 test 회귀 검사 | 대기 |
+| CP1 | 타입 계약, 전체 기능 정의, predicate, build guard 및 tests | 카탈로그 정상/경계/실패 test, typecheck, baseline coverage, build | 원격 보존 완료 |
+| CP2 | 전체 검증, 문서와 보존 증거 | D, 전체 기존 test 회귀 검사 | candidate-complete, 검증 통과 |
 | STATUS | 구현 원격 확인 후 완료 상태 | status 일관성, 별도 push/원격 HEAD 확인 | 대기 |
 
 ## 변경 예정 경로
@@ -41,13 +41,22 @@
 - CP1 `npm run typecheck`, 대상 ESLint, Prettier, module-size(464개 source, 예외 0), `git diff --check` 통과.
 - CP1 `npm run build`: prebuild 카탈로그 검사부터 production build, public artifact audit까지 통과. 기존 앱 404개 module build; legacy 실행 진입점에 새 catalog를 import하지 않는다.
 - `src/physics`, `src/chaos`, `src/research`, `src/runtime`, `src/workers`, `src/validation`, 공개 library, app.html/CSS/public/lockfile, S01 baseline와 characterization fixture의 Git diff 없음.
+- CP2 원격 구현 확인 후 `npm test -- --reporter=json --outputFile=tmp/s02-vitest-results.json`: 237개 파일·1,735개 전부 통과, 실패/보류/todo 0. 기존 1,670개 테스트와 신규 카탈로그 65개를 포함한다.
+- CP2 `redesign:check`, `redesign:catalog:check`, `redesign:inventory:check` 재확인 통과. 결과는 [S02-verification.json](S02-verification.json)에 집계와 로컬 원시 결과 SHA-256으로 보존한다.
+- 두 바탕화면 사본과 원본 hash 최종 일치. master roadmap/실행 계획 본문은 변경하지 않아 사본을 다시 쓰지 않았다.
+- S02 D 프로필에 UI/E2E/성능 재측정은 포함하지 않는다. 기존 UI와 계산 경로의 Git 객체 및 수치 golden/전체 unit test를 보존 근거로 사용했다.
 
 ## Commit / 원격 증거
 
 - 각 checkpoint는 검증 후 명시적 파일만 stage/commit하고 `origin/codex/redesign`에 push한다.
 - CP0: `2abd467a521b6ee2dd3837cf49fac8cbca4809a9`; push 성공, ls-remote에서 같은 hash 확인.
+- CP1: `1421d1a55ea3280af034c9c0734e9a06782f20a5`; 구현 push 성공, ls-remote와 로컬 HEAD 일치 확인. stage 후 secret scan: 1,145 tracked / 1,115 text / 30 binary / 탐지 0.
 - 구현 push 완료 전 nextStage=2를 유지한다. 최종 status commit의 원격 존재 확인 전에는 S02 완료가 아니다.
 
-## 남은 작업
+## 최종 판정과 후속
 
-- CP1, CP2 및 STATUS. 사용자 review gate 해당 없음. 기존 앱을 복구 경로로 유지한다.
+- S02 구현과 필수 검증 완료. CP2 증거 commit과 별도 STATUS commit의 원격 확인이 남아 있으며, 그 전에는 완료 상태를 효력 있게 표시하지 않는다.
+- 사용자 review gate 해당 없음. AI 코드 대조와 자동 계약 검사를 사람/전문가의 과학 검토로 표시하지 않았다.
+- 새 상태 serializer, migration, UI 또는 실행 adapter는 이번 단계 범위 밖이다. 기존 보안 문제는 S01의 미해결 상태 그대로이며 새 위험 수용은 없다.
+- 롤백 기준: `c82382d`의 S01 완료 상태와 그대로 유지한 기존 `app.html`. 기본 앱 전환은 수행하지 않았다.
+- 원격 STATUS 확인 후 다음 유효 입력은 **“3단계 실행해줘.”**이며 S03을 미리 시작하지 않는다.

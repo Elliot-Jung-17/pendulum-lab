@@ -17,14 +17,14 @@
 | CP0 | 사전 점검·실행 기록 | redesign:check, redesign:preflight -- 7 | 원격 보존 완료 |
 | CP1 | 실제 physics/analysis adapter와 worker | S01 golden·직접 엔진 동등성·단위/실패/취소, typecheck | 원격 보존 완료 |
 | CP2 | Lab 화면·저장·내보내기 수직 절편 | 관련 Vitest, typecheck, build, desktop/mobile/axe/keyboard/visual | 원격 보존 완료 |
-| CP2B | 시스템별 지연 로딩 경계 수정 | router 36 tests, 원래 shell 보존 검사, 실제 core 라우트, typecheck/build | 통과, 원격 보존 준비 |
-| CP3 | 전체 회귀·보존 증거·review 문서 | 전체 Vitest, dev/production 여정, catalog/inventory | CP2B 후 candidate-complete 재검증 |
+| CP2B | 시스템별 지연 로딩 경계 수정 | router 36 tests, 원래 shell 보존 검사, 실제 core 라우트, typecheck/build | 원격 보존 완료 |
+| CP3 | 전체 회귀·보존 증거·review 문서 | 전체 Vitest, dev/production 여정, catalog/inventory | candidate-complete, 최종 검증 통과 |
 | STATUS | 완료 상태 별도 commit/push | 구현 원격 확인 후 status 원격 HEAD 확인 | 예정 |
 
-## 변경 예정 경로
+## 변경 경로
 
-- src/product/adapters/physics/, src/product/adapters/analysis/, src/product/lab/views/, src/product/app/views/lab.ts.
-- tests/product/adapters/, tests/product/lab/, e2e/redesign/, css/product/lab.css.
+- src/product/adapters/physics/, src/product/adapters/analysis/, src/product/lab/views/, src/product/app/application.ts, router.ts, views/core-lab.ts, views/lab.ts.
+- tests/product/adapters/, tests/product/lab/, tests/product/app/router.test.ts, e2e/redesign/, css/product/lab.css.
 - documents/redesign/core-lab-ko.md, stage-runs/S07-*, status.json.
 
 ## 검증·판단과 위험
@@ -46,6 +46,10 @@
 - CP2 시각 결과: 기본 화면 캡처 6/6, 실제 Lyapunov 분석 화면 비교 4/4 통과. 새 분석 이미지 최초 생성에서는 없는 기준 이미지 4건이 실패로 기록되었고, 생성 이미지를 확인한 뒤 기준 갱신 없이 같은 4개 비교를 재실행해 통과했다. 제품 오류나 수치 golden 변경은 없었다.
 - CP3 최초 전체 browser 회귀에서 dev 110/112, production 98/100이었다. 두 프로젝트의 S04 동일 검사에서 시스템 목록 진입 시 계산 코드가 로드되는 문제가 발견되어 완료 표시를 보류했다. 실패 보고서는 tmp/S07-initial-dev-playwright.json 및 tmp/S07-initial-production-playwright.json에 보존했다.
 - CP2B: router가 검증된 route를 loader에 전달하고, double/compound는 별도 core-lab lazy chunk로 선택하도록 수정했다. 원래 S04 shell E2E는 완화하거나 변경하지 않았다. 기존 지연 로딩·저장 보존 검사 dev 2/2 및 production 2/2 통과, production core 실행·내보내기 4/4와 router 36개 테스트·typecheck·build 통과. 빠른 같은 공간 이동의 늦은 chunk 결과/실패 무시 및 오류 복구를 검증했다.
+- CP3 최종: CP2B 구현본에서 전체 Vitest 256개 파일 2,233/2,233 통과, 실패·보류 0. S06의 2,124개 기존 테스트를 대조해 누락 0, 신규 109개다. 기존 router의 5개 매개변수 사례는 loader의 route 전달까지 확인하도록 강화하면서 이름을 바꾸었고, 검증 JSON에 이전/현재 이름 대응을 기록했다.
+- CP3 최종: 전체 dev Chromium desktop/mobile 112/112, production 100/100 통과. 실패·건너뜀·flaky 0이며 시각 기준을 추가 갱신하지 않았다. 18개 변경/신규 시각 자료를 검토했으며 겹침·잘림을 발견하지 않았다. 실제 screen-reader 음성이나 별도 기기·브라우저·사람 검토는 수행하지 않았다.
+- CP3 최종: typecheck/build, 변경 소스 ESLint/Prettier, source policy/module-size, catalog/inventory 및 secret scan 통과. 원본 app.html·계산 엔진·공개 API·S03 계약/저장·package/lock·baseline/golden 경로의 Git 변경 0과 두 바탕화면 사본 SHA-256 일치를 확인했다. 전체 결과·원시 보고서 hash·초기 실패와 수정 증거는 [검증 보고서](S07-verification.json)에 기록했다.
+- CP3 최종: [사용자 확인 목록과 미리보기](../core-lab-ko.md)를 제공한다. 사용자 review gate 7은 아직 미승인이고, 다음 단계 요청 전까지 S08 작업을 시작하지 않는다.
 
 ## Commit / 원격 증거
 
@@ -56,6 +60,7 @@
 - CP1 수치 범위: 두 시스템 S01 상태/RHS/에너지 golden, RK4/RK2/Euler 직접 엔진 parity, 단위·모델 버전·자원 한도·실패 rollback, Poincaré 교차/근 인증, 최대 Lyapunov 결정론과 실제 RHS progress, worker 종료/오류/늦은 메시지 무시.
 - CP1: `cbd4efefe9255747d0a43ce44468884edac0adf4`, push 성공, ls-remote 일치. 해당 checkpoint의 85/85 검증은 새 어댑터 72개와 기존 S01 golden 13개다.
 - CP2: `18540b850d91d13a127341d4ab9876951b365195`, push 성공, ls-remote 일치. nextStage=7을 유지한 채 모든 구현이 원격에 존재함을 확인하고 전체 최종 검증을 시작한다.
+- CP2B: `302f2374fbe57aa1e77f6ac1acde1ad46389f69e`, 지연 로딩 수정 push 성공, ls-remote 일치. 이 구현본에서 모든 최종 검사를 다시 수행한다.
 
 ## 후속
 

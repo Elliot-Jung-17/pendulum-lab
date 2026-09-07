@@ -1,0 +1,413 @@
+{
+  "schemaVersion": "pendulum-redesign-verification/v1",
+  "stage": 7,
+  "state": "candidate-complete",
+  "baselineCommit": "1cd55d14dfe8f837b7eef747307242c383116287",
+  "implementationCommit": "302f2374fbe57aa1e77f6ac1acde1ad46389f69e",
+  "environment": {
+    "platform": "win32",
+    "node": "v26.3.0",
+    "dateUtc": "2026-09-07T08:06:37.783Z",
+    "browserProjects": [
+      "chromium",
+      "mobile-chrome"
+    ]
+  },
+  "checks": {
+    "plan": "redesign:check and redesign:preflight -- 7 passed after fetch",
+    "adapters": {
+      "report": "tmp/S07-adapters-vitest.json",
+      "sha256": "4d5e18c8126e56f1d3585129dba05da4ba641e7a1383e368638365f9e59bfac3",
+      "files": 4,
+      "total": 85,
+      "passed": 85,
+      "failed": 0,
+      "pending": 0
+    },
+    "full": {
+      "report": "tmp/S07-full-vitest.json",
+      "sha256": "a7ab5a6e286fe31aeefa4b37f2bed85455e29d9ba08276b4855dc9708601c4c9",
+      "files": 256,
+      "total": 2233,
+      "passed": 2233,
+      "failed": 0,
+      "pending": 0
+    },
+    "regression": {
+      "previousFiles": 252,
+      "previousTests": 2124,
+      "previousReportSha256": "fc1b57686560eb18d7f8899237f74fa281536574f46c37d1960e836e5226ea5c",
+      "missingPreviousTests": [],
+      "newTests": 109,
+      "renamedPreviousTests": [
+        {
+          "previous": "C:/Users/junge/Desktop/pendulum_lab_modular/tests/product/app/router.test.ts::product router loads only the selected space for reserved route #/learn",
+          "current": "C:/Users/junge/Desktop/pendulum_lab_modular/tests/product/app/router.test.ts::product router passes the selected space and validated route to the loader for #/learn",
+          "reason": "Existing parametrized loader assertions strengthened to check the validated route as well as space; five existing cases retained."
+        },
+        {
+          "previous": "C:/Users/junge/Desktop/pendulum_lab_modular/tests/product/app/router.test.ts::product router loads only the selected space for reserved route #/learn/course-8",
+          "current": "C:/Users/junge/Desktop/pendulum_lab_modular/tests/product/app/router.test.ts::product router passes the selected space and validated route to the loader for #/learn/course-8",
+          "reason": "Existing parametrized loader assertions strengthened to check the validated route as well as space; five existing cases retained."
+        },
+        {
+          "previous": "C:/Users/junge/Desktop/pendulum_lab_modular/tests/product/app/router.test.ts::product router loads only the selected space for reserved route #/learn/course-8/8.12",
+          "current": "C:/Users/junge/Desktop/pendulum_lab_modular/tests/product/app/router.test.ts::product router passes the selected space and validated route to the loader for #/learn/course-8/8.12",
+          "reason": "Existing parametrized loader assertions strengthened to check the validated route as well as space; five existing cases retained."
+        },
+        {
+          "previous": "C:/Users/junge/Desktop/pendulum_lab_modular/tests/product/app/router.test.ts::product router loads only the selected space for reserved route #/lab",
+          "current": "C:/Users/junge/Desktop/pendulum_lab_modular/tests/product/app/router.test.ts::product router passes the selected space and validated route to the loader for #/lab",
+          "reason": "Existing parametrized loader assertions strengthened to check the validated route as well as space; five existing cases retained."
+        },
+        {
+          "previous": "C:/Users/junge/Desktop/pendulum_lab_modular/tests/product/app/router.test.ts::product router loads only the selected space for reserved route #/lab/double",
+          "current": "C:/Users/junge/Desktop/pendulum_lab_modular/tests/product/app/router.test.ts::product router passes the selected space and validated route to the loader for #/lab/double",
+          "reason": "Existing parametrized loader assertions strengthened to check the validated route as well as space; five existing cases retained."
+        }
+      ]
+    },
+    "dev": {
+      "report": "tmp/S07-dev-playwright.json",
+      "sha256": "0416716c24faf37ee800cf515db7de6f4212c11f5d8e9c271f77c9929233a1d5",
+      "startTime": "2026-09-07T07:57:07.864Z",
+      "duration": 280595.60099999997,
+      "expected": 112,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "production": {
+      "report": "tmp/S07-production-playwright.json",
+      "sha256": "e153fe472ab31928c5dbdc3999e02b02eb6c3a1b016e0acebfca67a22062c09c",
+      "startTime": "2026-09-07T07:57:12.046Z",
+      "duration": 226107.942,
+      "expected": 100,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "targetedDesktop": {
+      "report": "tmp/S07-desktop-behavior.json",
+      "sha256": "df61959b2d6449d07125ddf9eb7ed637455ca8d26b9ad5cb1c32b8a7c90ec403",
+      "startTime": "2026-09-07T07:39:49.219Z",
+      "duration": 55020.746,
+      "expected": 18,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "targetedMobile": {
+      "report": "tmp/S07-mobile-behavior.json",
+      "sha256": "25ab1ff314cf07f1775d2916ebdbe22d2423fb69f3b3b06aafb897eb439adcb4",
+      "startTime": "2026-09-07T07:38:10.426Z",
+      "duration": 65085.05,
+      "expected": 18,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "visualCapture": {
+      "report": "tmp/S07-visual-capture.json",
+      "sha256": "eeee5960feabef0aed86405669edc952daf4b200a68b23af1de9e49c882e7ed8",
+      "startTime": "2026-09-07T07:41:18.387Z",
+      "duration": 18148.864999999998,
+      "expected": 6,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "analysisVisual": {
+      "report": "tmp/S07-analysis-visual-verify.json",
+      "sha256": "29a922a11836a677f4606b7cff6874d9e6b7332e7c75f9116a8f3a9344a90ae7",
+      "startTime": "2026-09-07T07:44:59.076Z",
+      "duration": 14847.46,
+      "expected": 4,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "typecheck": "passed on implementation source",
+    "build": {
+      "result": "passed",
+      "log": "tmp/S07-build.log",
+      "sha256": "60cd2d27e8a21ea00b75a7e6a2d0e9f8c6571ab9ba84b704ba256a8ec8e9e17c"
+    },
+    "eslint": "all changed source/test paths passed, zero warnings",
+    "prettier": "all changed source/style/test paths passed",
+    "sourcePolicy": "passed",
+    "moduleSize": "passed",
+    "inventory": {
+      "files": 883,
+      "brokenImports": 0,
+      "orphans": 0,
+      "frozenBaselineUnchanged": true
+    },
+    "catalog": {
+      "definitions": 134,
+      "systems": 34,
+      "analyses": 51,
+      "integrators": 21,
+      "auxiliary": 28
+    },
+    "secretScan": {
+      "sourceCommit": "302f2374fbe57aa1e77f6ac1acde1ad46389f69e",
+      "report": "tmp/S07-secret-scan.json",
+      "sha256": "74edec5f4c158140f5f671656855e643a025e4e20f1094f0ec061f96922b3613",
+      "trackedFiles": 1280,
+      "textFiles": 1216,
+      "binaryFiles": 64,
+      "findings": 0,
+      "scope": "All Git-tracked working-tree text files; binary files listed separately; no history or ignored files.",
+      "limitations": [
+        "Known credential formats only; no entropy analysis, provider validation, or detection of arbitrary passwords.",
+        "Zero findings means no matches for these rules, not proof that all secrets are absent.",
+        "Git history, ignored files, binary contents, and external services are outside this local scan."
+      ]
+    },
+    "preservation": {
+      "paths": [
+        "app.html",
+        "src/physics",
+        "src/chaos",
+        "src/research",
+        "src/runtime",
+        "src/workers",
+        "src/validation",
+        "src/lib",
+        "src/product/contracts",
+        "src/product/persistence",
+        "package.json",
+        "package-lock.json",
+        "documents/redesign/baseline",
+        "tests/characterization"
+      ],
+      "changedPaths": []
+    },
+    "desktopTransport": [
+      {
+        "source": "documents/redesign/master-roadmap-ko.md",
+        "copy": "C:/Users/junge/Desktop/Pendulum_Lab_Complete_Redesign_Roadmap_KO.md",
+        "sourceSha256": "1d46e04691d4119ced60dacb41945c75d9d1a20f66cbaed2b3664909f47f8995",
+        "copySha256": "1d46e04691d4119ced60dacb41945c75d9d1a20f66cbaed2b3664909f47f8995",
+        "equal": true
+      },
+      {
+        "source": "documents/redesign/execution-plan-ko.md",
+        "copy": "C:/Users/junge/Desktop/Pendulum_Lab_Codex_Execution_Steps_KO.md",
+        "sourceSha256": "803b191496edd95ebf2199a8983b920058109bb159d55f8bafeb0737fa735fc5",
+        "copySha256": "803b191496edd95ebf2199a8983b920058109bb159d55f8bafeb0737fa735fc5",
+        "equal": true
+      }
+    ],
+    "router": {
+      "report": "tmp/S07-router-vitest.json",
+      "sha256": "2fc162a958ecb3559717d2a620c3603959ab8ebe0602d2e2f5598548cb6f09c8",
+      "files": 1,
+      "total": 36,
+      "passed": 36,
+      "failed": 0,
+      "pending": 0
+    },
+    "loadingDev": {
+      "report": "tmp/S07-loading-dev.json",
+      "sha256": "c67f7b1a101eaab2053b4e85d2824b5ceacc073cdcc966afdb80975fa1f954af",
+      "startTime": "2026-09-07T07:53:39.131Z",
+      "duration": 4474.355,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "loadingProduction": {
+      "report": "tmp/S07-loading-production.json",
+      "sha256": "461eee7c31228eff4097962b3032fb336945b7b577574bba74bc431b5bd81348",
+      "startTime": "2026-09-07T07:54:00.281Z",
+      "duration": 3680.684,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "coreRouteProduction": {
+      "report": "tmp/S07-core-route-production.json",
+      "sha256": "e13d293f16f1e121c5b67c0f68ef9381ce66b6ed9a36020cab0c85b7710e7a9a",
+      "startTime": "2026-09-07T07:54:49.467Z",
+      "duration": 12455.085,
+      "expected": 4,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "initialRegression": {
+      "sourceCommit": "18540b850d91d13a127341d4ab9876951b365195",
+      "dev": {
+        "report": "tmp/S07-initial-dev-playwright.json",
+        "startTime": "2026-09-07T07:46:32.558Z",
+        "duration": 289797.848,
+        "expected": 110,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      },
+      "production": {
+        "report": "tmp/S07-initial-production-playwright.json",
+        "startTime": "2026-09-07T07:47:53.958Z",
+        "duration": 201024.446,
+        "expected": 98,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      },
+      "cause": "Core workspace was statically imported by the library route, loading physics/chaos before system selection.",
+      "resolvedBy": "302f2374fbe57aa1e77f6ac1acde1ad46389f69e",
+      "originalShellPreservationTestUnchanged": true
+    },
+    "documentation": {
+      "links": 12,
+      "missing": [],
+      "codeFencesBalanced": true
+    }
+  },
+  "visual": {
+    "screenshots": [
+      {
+        "path": "e2e/redesign/core-pendulum.spec.ts-snapshots/compound-double-analysis-light-chromium-win32.png",
+        "sha256": "1fbcb1b99194d2057ce68ce4b4c942afdbbd02806c1f7fc9b7d5f47844327b6c"
+      },
+      {
+        "path": "e2e/redesign/core-pendulum.spec.ts-snapshots/compound-double-analysis-light-mobile-chrome-win32.png",
+        "sha256": "7d36d2bf250427feb78214874444f45dfbe57ef8d586782d78f377d67a7ebed7"
+      },
+      {
+        "path": "e2e/redesign/core-pendulum.spec.ts-snapshots/compound-double-inspector-dark-chromium-win32.png",
+        "sha256": "d362280ca6d37dbcd6670e1e673c85909d70bf291765de0c153b0b33fe4a6355"
+      },
+      {
+        "path": "e2e/redesign/core-pendulum.spec.ts-snapshots/compound-double-inspector-dark-mobile-chrome-win32.png",
+        "sha256": "ff4492edf32d5093c59841f5df74beb24580d91f2985624ed5b8a5e85fe78f9e"
+      },
+      {
+        "path": "e2e/redesign/core-pendulum.spec.ts-snapshots/compound-double-workspace-light-chromium-win32.png",
+        "sha256": "1f828fcba460bccb3a41f409545149af127ef6cda1924b5bb867567b87a8599f"
+      },
+      {
+        "path": "e2e/redesign/core-pendulum.spec.ts-snapshots/compound-double-workspace-light-mobile-chrome-win32.png",
+        "sha256": "2ac7f782ef0d536efb0572ebe3d9f2a779460ffc7060ac2066bd2bafe91c5621"
+      },
+      {
+        "path": "e2e/redesign/core-pendulum.spec.ts-snapshots/double-analysis-light-chromium-win32.png",
+        "sha256": "f17c33c1b2bf779cbc9d788f576fba2234fabd3c809565378eb4d691cfade099"
+      },
+      {
+        "path": "e2e/redesign/core-pendulum.spec.ts-snapshots/double-analysis-light-mobile-chrome-win32.png",
+        "sha256": "6e17b48ebff325c4cff7ddca35bc8b24f1ac1189d5c96271a1436ac2814f015a"
+      },
+      {
+        "path": "e2e/redesign/core-pendulum.spec.ts-snapshots/double-inspector-dark-chromium-win32.png",
+        "sha256": "2a4dd62e208898e6572eed0f456ad70a06120a3a98f2513dbc794515a1ad1592"
+      },
+      {
+        "path": "e2e/redesign/core-pendulum.spec.ts-snapshots/double-inspector-dark-mobile-chrome-win32.png",
+        "sha256": "ee6e777560dd6b2e93097cb46a81989d4d8e2ea48b614fd812deca1fd5ce688d"
+      },
+      {
+        "path": "e2e/redesign/core-pendulum.spec.ts-snapshots/double-workspace-light-chromium-win32.png",
+        "sha256": "c7fe10fb2e885ef5b493173654ee2d6df7c9ff82d86420ecddad3a69a58a10c2"
+      },
+      {
+        "path": "e2e/redesign/core-pendulum.spec.ts-snapshots/double-workspace-light-mobile-chrome-win32.png",
+        "sha256": "dae713d8e90f3e411fed1b6a04de165a9903e5e56fa9cd43f6cd91f31fbbabb9"
+      },
+      {
+        "path": "e2e/redesign/lab-shell.spec.ts-snapshots/lab-library-light-chromium-win32.png",
+        "sha256": "cb7414c4cbebd2e0db917c4f00b47852e5c10db6d1b886af4d09fc8b3655ce5a"
+      },
+      {
+        "path": "e2e/redesign/lab-shell.spec.ts-snapshots/lab-library-light-mobile-chrome-win32.png",
+        "sha256": "a1c86b7ecdfb3e1632c169d4718465dc7924e7a1896308aa61648f311d39e47f"
+      },
+      {
+        "path": "e2e/redesign/lab-shell.spec.ts-snapshots/lab-mock-inspector-dark-chromium-win32.png",
+        "sha256": "fbb05ba02a1c4cff147aa5cfa216436de6709970e9953fcc4d69c26b5e8f0751"
+      },
+      {
+        "path": "e2e/redesign/lab-shell.spec.ts-snapshots/lab-mock-inspector-dark-mobile-chrome-win32.png",
+        "sha256": "66436f7f165c4c9e66952b9166735a3266d2a44cc5ed0ebdc10223c6008268de"
+      },
+      {
+        "path": "e2e/redesign/lab-shell.spec.ts-snapshots/lab-mock-workspace-light-chromium-win32.png",
+        "sha256": "4bf6080591a772360037cdab63aa1ea7d457e36eedb525ad3f557c37d20da710"
+      },
+      {
+        "path": "e2e/redesign/lab-shell.spec.ts-snapshots/lab-mock-workspace-light-mobile-chrome-win32.png",
+        "sha256": "163b4fd09f57aa60c4f27d65b213d033f1a06ddc0baaa262cfffbff0510b04a4"
+      }
+    ],
+    "updatedExisting": 2,
+    "newImages": 16,
+    "previousGalleryBaselinesUnchanged": true,
+    "historicalS06DoubleImagesPreserved": true,
+    "reviewed": "All 18 by browser subagent; root inspected desktop double, mobile compound workspace/inspector, desktop/mobile analysis. No clipping or overlap observed.",
+    "initialCaptureFailure": "4 initial missing-analysis-baseline assertions created new expected images; raw tmp/S07-analysis-visual-capture.json preserved; all 4 passed comparison without updates, followed by full dev/production comparisons."
+  },
+  "stageBoundary": {
+    "realSystems": [
+      "system:double",
+      "system:compound-double"
+    ],
+    "integrators": [
+      "integrator:rk4",
+      "integrator:rk2",
+      "integrator:euler"
+    ],
+    "analyses": [
+      "state/time",
+      "energy",
+      "phase",
+      "poincare",
+      "maximal-lyapunov"
+    ],
+    "exports": [
+      "canonical JSON",
+      "trajectory CSV",
+      "state/time SVG"
+    ],
+    "remainingSystems": "S06 explicit mock only; no S08+ implementation",
+    "storage": "Explicit save in pendulum-product/planar/v1/{systemId}; legacy keys untouched",
+    "restartOnly": true,
+    "sampleEvery": "Recorded initial/requested interval/final samples; continuous live cursor kept separately",
+    "worker": "Separate worker per long job, termination cancellation, generation guard, genuine RHS progress"
+  },
+  "remoteEvidence": {
+    "cp0": "d00804e97e9848de86c236516b607f45afc5d13e",
+    "cp1": "cbd4efefe9255747d0a43ce44468884edac0adf4",
+    "cp2": "18540b850d91d13a127341d4ab9876951b365195",
+    "push": "Each checkpoint pushed to origin/codex/redesign and matched ls-remote before final checks; nextStage remained 7",
+    "cp2b": "302f2374fbe57aa1e77f6ac1acde1ad46389f69e"
+  },
+  "review": {
+    "userGate": 7,
+    "userApproved": false,
+    "humanOrExpertReview": false,
+    "numerical": "Automated S01 golden and exact legacy engine parity; not an independent scientific review",
+    "checklist": "documents/redesign/core-lab-ko.md"
+  },
+  "limitations": [
+    "Windows Chromium desktop/mobile emulation; CSS zoom2, not native menu zoom; no screen-reader audio or other browser/OS audit.",
+    "Only RK4/RK2/Euler exposed here. Poincare uses legacy RK4 regardless animation solver, with explicit warning.",
+    "Bounded animation scheduler caps 200 steps/frame and 0.25 seconds of catch-up; nominal playback slows under computation load.",
+    "State JSON restarts from initial conditions, not exact solver continuation or legacy migration.",
+    "S01 npm high2/moderate2, CodeQL32 and distinct default-branch Dependabot high4 unresolved; no new risk acceptance.",
+    "No S08 learning content or later system integration, legacy release/PWA full audit or master cutover."
+  ],
+  "commands": {
+    "full": "npx vitest run --maxWorkers=4 --reporter=json",
+    "typecheck": "npm run typecheck",
+    "build": "npm run build",
+    "dev": "npx playwright test e2e/redesign --project=chromium --project=mobile-chrome",
+    "production": "PLAYWRIGHT_USE_PREVIEW=1 npx playwright test e2e/redesign/shell.spec.ts e2e/redesign/a11y-design-system.spec.ts e2e/redesign/lab-shell.spec.ts e2e/redesign/core-pendulum.spec.ts --project=chromium --project=mobile-chrome",
+    "catalog": "npm run redesign:catalog:check",
+    "inventory": "npm run redesign:inventory:check"
+  }
+}

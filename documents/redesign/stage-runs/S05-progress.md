@@ -14,9 +14,9 @@
 
 | ID | 작업 | 검증 | 상태 |
 |---|---|---|---|
-| CP0 | 실행 기록과 activeStage | redesign:check, redesign:preflight -- 5 | 검증 통과 |
-| CP1 | token·컴포넌트·gallery·shell 적용 | 관련 Vitest, typecheck, build, axe/keyboard/반응형 | 진행 중 |
-| CP2 | 전체 회귀·시각 baseline·운영 문서·보존 증거 | 전체 Vitest, dev/production E2E, inventory/catalog | 예정 |
+| CP0 | 실행 기록과 activeStage | redesign:check, redesign:preflight -- 5 | 원격 보존 완료 |
+| CP1 | token·컴포넌트·gallery·shell 적용 | 관련 Vitest, typecheck, build, axe/keyboard/반응형 | 검증 통과, commit/push 대상 |
+| CP2 | 전체 회귀·시각 baseline·운영 문서·보존 증거 | 전체 Vitest, dev/production E2E, inventory/catalog | 진행 예정 |
 | STATUS | 별도 완료 상태 | 구현 원격 확인, status push 및 원격 HEAD | 예정 |
 
 ## 변경 예정 경로
@@ -24,6 +24,7 @@
 - src/product/design-system/, css/product/, tests/product/design-system/, e2e/redesign/a11y*.
 - next.html의 stylesheet, src/product/app/entry.ts의 독립 gallery lazy 진입, shell.ts의 gallery 링크, shell.css의 token 적용.
 - documents/redesign/design-system-ko.md, 본 기록, S05-verification.json, status.json.
+- scripts/redesign/inventory.ts: additive css/product만 기존 legacy inventory 수집에서 제외. 기존 CSS 변화를 계속 탐지하는 회귀 테스트 포함.
 
 ## 검증·판단과 위험
 
@@ -32,11 +33,21 @@
 - 스타일은 외부 stylesheet로 제공해 기존 CSP를 유지한다. 테마 설정은 이번 화면에만 적용하며 사용자 저장소는 변경하지 않는다.
 - 기존 npm audit high 2/moderate 2, CodeQL 32, GitHub default-branch Dependabot high 4 기준선은 미해결이며 S05에서 재감사·위험 수용하지 않는다.
 - 바탕화면 사본 두 개는 원본과 SHA-256이 일치한다. 원본 roadmap/실행 계획을 바꾸지 않으면 복사는 필요하지 않다.
+- CP1: 10종 UI primitive와 실제 gallery, 화면 내 light/dark/system 선택, 기존 shell의 semantic token 적용을 완료했다.
+- 관련 Vitest 457/457 통과(수량 38, token 32, CSS inventory 범위 1 포함). typecheck/대상 ESLint/Prettier/build 통과. catalog 134 유지, legacy inventory 883/broken import 0/orphan 0.
+- 첫 inventory/관련 테스트의 실패는 새 CSS 2개가 기존 baseline에 포함되었기 때문이다. product 경계만 제외하고 baseline 원본은 유지했으며 legacy CSS 변형 탐지 fixture로 보강했다.
+- 첫 browser 검사에서 progress native label이 accessible name으로 노출되지 않아 label ID와 aria-labelledby를 연결했다. 낮은 magnitude 입력이 0으로 underflow되는 경우를 거부하는 fixture를 추가했다.
+- 독립 browser 검토에서 radio 그룹 tab stop, showModal의 동기 focus에서 자식 modal 생성, 좁은 화면 전환 때 숨겨지는 separator focus 문제를 발견해 수정했다. lifecycle browser 회귀 12개가 이를 재현·검증한다.
+- 모바일 full-page screenshot의 유일한 불안정 영역은 화면 밖 fixed skip link였다. 비활성 링크를 clip-path로 감춰 캡처와 viewport 변경에서도 나타나지 않게 수정했으며 키보드 focus 시 표시/작동 검사를 유지했다.
+- 시각 baseline 12개 생성 후 갱신 없이 개발 Playwright 70/70 통과, 실패·skip·retry 0. S04 shell 34 + S05 gallery 24 + lifecycle 12; Chromium desktop/mobile 각각 실행.
+- 실제 axe에서 light/dark, 입력 오류, 대화상자, 알림, shell, 320px, zoom/reflow, forced colors에 지정 WCAG 위반 0. 200%는 CSS zoom 2와 독립 640px reflow이며 native 브라우저 메뉴 확대 또는 screen reader 음성 청취를 주장하지 않는다.
+- light desktop/dark mobile, desktop/mobile dialog, 320px/forced-colors 이미지를 직접 확인했다. 잘림/겹침은 발견하지 않았다. 이 결과는 Windows Chromium raster 기준이다.
 
 ## Commit / 원격 증거
 
 - 명시적 경로만 stage한다. 모든 구현 원격 확인 전 nextStage=5를 유지한다.
 - commit과 원격 증거는 후속 checkpoint에 기록한다. 최종 status hash는 사용자 보고에 남긴다.
+- CP0: `97df9e6fd84350f9bb4ae56c6add7479e6ba3b44`, push 성공 및 ls-remote 일치.
 
 ## 후속
 

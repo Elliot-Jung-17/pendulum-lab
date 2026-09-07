@@ -5,7 +5,10 @@ if (root) {
   void bootstrap({
     root,
     window,
-    load: () => import('./application'),
+    load: () =>
+      new URLSearchParams(window.location.search).get('gallery') === 'components'
+        ? import('../design-system/gallery')
+        : import('./application'),
     showError: () => showBootstrapError(root, window)
   });
 }

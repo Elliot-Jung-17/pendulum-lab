@@ -106,7 +106,9 @@ export function inventoryFiles(root: string): string[] {
   function visit(relative: string): void {
     // Keep the frozen legacy baseline separate from the additive product layer and its harnesses.
     if (
-      /^(?:src\/product|tests\/product|scripts\/redesign|tests\/characterization|e2e\/redesign)(?:\/|$)/.test(relative)
+      /^(?:src\/product|css\/product|tests\/product|scripts\/redesign|tests\/characterization|e2e\/redesign)(?:\/|$)/.test(
+        relative
+      )
     )
       return;
     const absolute = path.join(root, relative);

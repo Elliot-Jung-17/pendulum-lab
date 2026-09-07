@@ -1,0 +1,168 @@
+/* Product-only entry points load these tokens; the legacy app keeps its own CSS. */
+:root {
+  color-scheme: light;
+  --ds-font-body: 'Segoe UI', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+  --ds-font-mono: 'Cascadia Code', Consolas, monospace;
+  --ds-text-xs: 0.75rem;
+  --ds-text-sm: 0.875rem;
+  --ds-text-base: 1rem;
+  --ds-text-lg: 1.125rem;
+  --ds-text-xl: 1.25rem;
+  --ds-text-2xl: 1.5rem;
+  --ds-text-display: clamp(2rem, 4.2vw, 3.3rem);
+  --ds-leading-body: 1.7;
+  --ds-leading-heading: 1.25;
+  --ds-leading-control: 1.5;
+  --ds-weight-medium: 650;
+  --ds-weight-bold: 750;
+  --ds-tracking-heading: -0.035em;
+  --ds-space-0: 0;
+  --ds-space-1: 0.25rem;
+  --ds-space-2: 0.5rem;
+  --ds-space-3: 0.75rem;
+  --ds-space-4: 1rem;
+  --ds-space-5: 1.25rem;
+  --ds-space-6: 1.5rem;
+  --ds-space-7: 1.75rem;
+  --ds-space-8: 2rem;
+  --ds-space-10: 2.5rem;
+  --ds-space-12: 3rem;
+  --ds-space-14: 3.5rem;
+  --ds-space-16: 4rem;
+  --ds-radius-sm: 0.4rem;
+  --ds-radius-md: 0.8rem;
+  --ds-radius-lg: 1.1rem;
+  --ds-target-min: 2.75rem;
+  --ds-content-width: 72.5rem;
+  --ds-reading-width: 42rem;
+  --ds-focus-width: 3px;
+  --ds-focus-offset: 4px;
+  --ds-border-width: 1px;
+  --ds-motion-fast: 120ms;
+  --ds-motion-normal: 200ms;
+  --ds-motion-ease: cubic-bezier(0.2, 0, 0, 1);
+  --ds-color-page: #f6f7f2;
+  --ds-color-surface: #ffffff;
+  --ds-color-surface-subtle: #eff3eb;
+  --ds-color-surface-selected: #e6eee6;
+  --ds-color-text: #203f39;
+  --ds-color-text-secondary: #41584e;
+  --ds-color-text-muted: #53645b;
+  --ds-color-text-accent: #3f6557;
+  --ds-color-accent: #245744;
+  --ds-color-accent-hover: #193f32;
+  --ds-color-on-accent: #ffffff;
+  --ds-color-selection-indicator: #356953;
+  --ds-color-danger: #a12f24;
+  --ds-color-danger-hover: #7b2118;
+  --ds-color-on-danger: #ffffff;
+  --ds-color-danger-surface: #fff1ed;
+  --ds-color-success: #245744;
+  --ds-color-success-surface: #e9f0e5;
+  --ds-color-warning: #785027;
+  --ds-color-warning-surface: #fff6e8;
+  --ds-color-warning-border: #b37246;
+  --ds-color-border: #dce3d9;
+  --ds-color-border-control: #718579;
+  --ds-color-border-action: #a5b8a9;
+  --ds-color-focus: #a54b22;
+  --ds-color-learn-surface: #e9f0e5;
+  --ds-color-learn-border: #cfdbcd;
+  --ds-color-lab-surface: #e9eff1;
+  --ds-color-lab-border: #d3dcdf;
+  --ds-color-disabled-text: #53645b;
+  --ds-color-disabled-surface: #e7e9e2;
+  --ds-color-backdrop: rgba(14, 29, 24, 0.64);
+  --ds-shadow-dialog: 0 1.5rem 5rem rgba(14, 29, 24, 0.22);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --ds-color-page: #111c18;
+  --ds-color-surface: #1b2b24;
+  --ds-color-surface-subtle: #23362d;
+  --ds-color-surface-selected: #284536;
+  --ds-color-text: #e8f0e9;
+  --ds-color-text-secondary: #cad7cf;
+  --ds-color-text-muted: #afc1b6;
+  --ds-color-text-accent: #9dcbb0;
+  --ds-color-accent: #a3d9b6;
+  --ds-color-accent-hover: #beeacc;
+  --ds-color-on-accent: #132b20;
+  --ds-color-selection-indicator: #9dcbb0;
+  --ds-color-danger: #ffb4a6;
+  --ds-color-danger-hover: #ffcabf;
+  --ds-color-on-danger: #431b14;
+  --ds-color-danger-surface: #452a25;
+  --ds-color-success: #a3d9b6;
+  --ds-color-success-surface: #223b2c;
+  --ds-color-warning: #efc38d;
+  --ds-color-warning-surface: #3d3222;
+  --ds-color-warning-border: #dca66c;
+  --ds-color-border: #42584a;
+  --ds-color-border-control: #8b9f92;
+  --ds-color-border-action: #6d8576;
+  --ds-color-focus: #ffc28e;
+  --ds-color-learn-surface: #24372b;
+  --ds-color-learn-border: #445f4a;
+  --ds-color-lab-surface: #22373c;
+  --ds-color-lab-border: #425c65;
+  --ds-color-disabled-text: #9cada3;
+  --ds-color-disabled-surface: #2e3b33;
+  --ds-color-backdrop: rgba(0, 8, 4, 0.76);
+  --ds-shadow-dialog: 0 1.5rem 5rem rgba(0, 8, 4, 0.5);
+}
+
+/* Keep system dark values identical to explicit dark (tested as a contract). */
+@media (prefers-color-scheme: dark) {
+  :root[data-theme='system'] {
+    color-scheme: dark;
+    --ds-color-page: #111c18;
+    --ds-color-surface: #1b2b24;
+    --ds-color-surface-subtle: #23362d;
+    --ds-color-surface-selected: #284536;
+    --ds-color-text: #e8f0e9;
+    --ds-color-text-secondary: #cad7cf;
+    --ds-color-text-muted: #afc1b6;
+    --ds-color-text-accent: #9dcbb0;
+    --ds-color-accent: #a3d9b6;
+    --ds-color-accent-hover: #beeacc;
+    --ds-color-on-accent: #132b20;
+    --ds-color-selection-indicator: #9dcbb0;
+    --ds-color-danger: #ffb4a6;
+    --ds-color-danger-hover: #ffcabf;
+    --ds-color-on-danger: #431b14;
+    --ds-color-danger-surface: #452a25;
+    --ds-color-success: #a3d9b6;
+    --ds-color-success-surface: #223b2c;
+    --ds-color-warning: #efc38d;
+    --ds-color-warning-surface: #3d3222;
+    --ds-color-warning-border: #dca66c;
+    --ds-color-border: #42584a;
+    --ds-color-border-control: #8b9f92;
+    --ds-color-border-action: #6d8576;
+    --ds-color-focus: #ffc28e;
+    --ds-color-learn-surface: #24372b;
+    --ds-color-learn-border: #445f4a;
+    --ds-color-lab-surface: #22373c;
+    --ds-color-lab-border: #425c65;
+    --ds-color-disabled-text: #9cada3;
+    --ds-color-disabled-surface: #2e3b33;
+    --ds-color-backdrop: rgba(0, 8, 4, 0.76);
+    --ds-shadow-dialog: 0 1.5rem 5rem rgba(0, 8, 4, 0.5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ds-motion-fast: 0ms;
+    --ds-motion-normal: 0ms;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --ds-border-width: 2px;
+    --ds-focus-width: 4px;
+  }
+}

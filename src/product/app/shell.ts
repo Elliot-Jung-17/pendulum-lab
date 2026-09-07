@@ -1,4 +1,5 @@
 import { element, link } from './dom';
+import { createThemeControl } from '../design-system/theme';
 
 export interface ProductShell {
   readonly outlet: HTMLElement;
@@ -20,13 +21,20 @@ export function createShell(root: HTMLElement, document: Document): ProductShell
   const learnLink = link(document, '배우기', '#/learn', 'product-space-link');
   const labLink = link(document, '실험실', '#/lab', 'product-space-link');
   navigation.append(learnLink, labLink);
-  header.append(identity, navigation, link(document, '기존 앱 열기', './app.html', 'product-legacy-link'));
+  const theme = createThemeControl(document, 'product-theme');
+  header.append(
+    identity,
+    navigation,
+    theme.element,
+    link(document, '기존 앱 열기', './app.html', 'product-legacy-link')
+  );
 
   const outlet = element(document, 'main', 'product-main');
   outlet.id = 'product-main';
   outlet.tabIndex = -1;
   const footer = element(document, 'footer', 'product-footer');
   footer.append(element(document, 'p', '', 'Pendulum Lab · 움직임을 이해하고, 질문을 실험으로.'));
+  footer.append(link(document, '컴포넌트 갤러리', './next.html?gallery=components'));
 
   // Keep the route hash intact: the skip link moves focus within the current view.
   const skipToMain = (event: MouseEvent) => {
@@ -50,6 +58,7 @@ export function createShell(root: HTMLElement, document: Document): ProductShell
     },
     dispose() {
       skip.removeEventListener('click', skipToMain);
+      theme.dispose();
       root.replaceChildren();
       root.classList.remove('product-app');
     }

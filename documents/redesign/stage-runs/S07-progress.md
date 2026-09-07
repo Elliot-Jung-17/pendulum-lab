@@ -18,8 +18,8 @@
 | CP1 | 실제 physics/analysis adapter와 worker | S01 golden·직접 엔진 동등성·단위/실패/취소, typecheck | 원격 보존 완료 |
 | CP2 | Lab 화면·저장·내보내기 수직 절편 | 관련 Vitest, typecheck, build, desktop/mobile/axe/keyboard/visual | 원격 보존 완료 |
 | CP2B | 시스템별 지연 로딩 경계 수정 | router 36 tests, 원래 shell 보존 검사, 실제 core 라우트, typecheck/build | 원격 보존 완료 |
-| CP3 | 전체 회귀·보존 증거·review 문서 | 전체 Vitest, dev/production 여정, catalog/inventory | candidate-complete, 최종 검증 통과 |
-| STATUS | 완료 상태 별도 commit/push | 구현 원격 확인 후 status 원격 HEAD 확인 | 예정 |
+| CP3 | 전체 회귀·보존 증거·review 문서 | 전체 Vitest, dev/production 여정, catalog/inventory | 최종 검증 통과, 원격 보존 완료 |
+| STATUS | 완료 상태 별도 commit/push | 구현 원격 확인 후 status 원격 HEAD 확인 | 완료 상태 별도 commit; 최종 원격 hash는 종료 보고에 기록 |
 
 ## 변경 경로
 
@@ -61,6 +61,8 @@
 - CP1: `cbd4efefe9255747d0a43ce44468884edac0adf4`, push 성공, ls-remote 일치. 해당 checkpoint의 85/85 검증은 새 어댑터 72개와 기존 S01 golden 13개다.
 - CP2: `18540b850d91d13a127341d4ab9876951b365195`, push 성공, ls-remote 일치. nextStage=7을 유지한 채 모든 구현이 원격에 존재함을 확인하고 전체 최종 검증을 시작한다.
 - CP2B: `302f2374fbe57aa1e77f6ac1acde1ad46389f69e`, 지연 로딩 수정 push 성공, ls-remote 일치. 이 구현본에서 모든 최종 검사를 다시 수행한다.
+- CP3: `4492ba14a497f70073a432895b40a30c28eda6c6`, 전체 검증·사용자 review 문서 push 성공, ls-remote 일치. 원격의 nextStage=7 상태에서 구현과 증거가 모두 존재함을 확인했다.
+- STATUS: CP3 원격 확인 후 completedStages에 7을 추가하고 nextStage=8, activeStage/activeStageCheckpoint=null로 갱신한다. approvedReviewGates는 빈 배열로 유지한다. 이 별도 status commit의 push와 원격 HEAD 일치까지 확인해야 S07이 완료되며 그 hash는 사용자 종료 보고에 기록한다.
 
 ## 후속
 

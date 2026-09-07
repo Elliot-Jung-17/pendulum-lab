@@ -8,19 +8,20 @@
     "selectedByUser": true
   },
   "totalStages": 30,
-  "lastCompletedStage": 6,
-  "nextStage": 7,
+  "lastCompletedStage": 7,
+  "nextStage": 8,
   "completedStages": [
     1,
     2,
     3,
     4,
     5,
-    6
+    6,
+    7
   ],
   "blockedStage": null,
-  "activeStage": 7,
-  "activeStageCheckpoint": "CP3",
+  "activeStage": null,
+  "activeStageCheckpoint": null,
   "reviewGates": [
     7,
     9,
@@ -30,13 +31,13 @@
   ],
   "approvedReviewGates": [],
   "notes": [
-    "S06 laboratory mock shell is validated: 34 systems across 8 families, search/recent/favorites, schema-driven Inspector, compatible Analysis Dock, Run Bar, per-system drafts, a 12-entry tray and explicit mock JSON export. Full Vitest 252 files/2124 tests passed, preserving all previous 2101 tests. Dev Chromium desktop/mobile 84/84 and production 72/72 journeys passed with unchanged visual baselines. See lab-shell-ko.md and stage-runs/S06-verification.json.",
-    "S06 is a timer-only state-flow rehearsal. No physics, trajectory or scientific results are produced. Double/compound fields are UI fixtures; other physical editors belong to their integration stages. Planned mock inputs must be replaced by validated actual inputs before real analyses execute. Next valid stage is S07; no actual S07 engine adapter or S08 content pipeline was implemented.",
-    "S06 drafts, recent/favorite choices and per-system trays are Document-local and reset on reload. No local/session/IndexedDB writes or old-data migration occur. Shared canonical sources remain separate from editable mock defaults. Mock JSON is explicitly not a canonical import file. Theme remains document-local and resets to light on reload.",
-    "S02 catalog remains at 134 definitions and S01 legacy inventory at 883 files with zero broken imports/orphans. Existing app.html, engines, runtime, workers, public APIs, S03 contracts/persistence, package/lockfile, baseline and numerical fixtures remain unchanged. Lab CSS uses an external stylesheet with the existing CSP.",
-    "Existing security findings remain unresolved: S01 official npm audit has 2 high and 2 moderate vulnerable packages; GitHub CodeQL has 32 open baseline alerts. GitHub push also reports 4 high default-branch Dependabot vulnerabilities, a distinct service aggregate. No new audit, remediation or risk acceptance occurred in S06; see baseline/security.md before S30.",
-    "Automated browser coverage is Windows Chromium desktop/mobile emulation. S06 adds 6 visual baselines and preserves S05 gallery baselines. 200% uses CSS zoom 2 plus 640px reflow. Screen-reader audio, other browser/OS matrices and human/expert reviews were not performed. S06 is not a user review gate; the first review checklist is S07.",
-    "S03 remains a restart-configuration transport contract, not production migration or an exact solver/RNG/delay continuation snapshot. S01 inventory retains module-family ownership and 12 computed GPU imports; numerical and headless performance baselines retain documented limits.",
+    "S07 connects the existing double and compound-double physics with RK4/RK2/Euler, animation, state/time, energy, phase, Poincare and maximal Lyapunov, worker progress/cancel, explicit save/reload and JSON/CSV/SVG export. See core-lab-ko.md and stage-runs/S07-verification.json. Full Vitest 256 files/2233 tests passed, preserving all previous 2124 tests (five router case titles renamed with stronger route assertions) and adding 109. Dev Chromium desktop/mobile 112/112 and production 100/100 journeys passed with zero failed/skipped/flaky tests; typecheck, build and S01 golden checks passed.",
+    "Only double/compound-double now produce real physics in next.html. The other 32 systems retain explicit S06 mock behavior; no S08 content pipeline or later integration was implemented. System library and Learn retain lazy-loading isolation from physics/chaos. A full-browser regression exposed premature loading and was fixed in a separate validated CP2B before completion; the original shell preservation test was unchanged.",
+    "Explicit saves use only the new pendulum-product/planar/v1/{systemId} localStorage namespace. Canonical JSON preserves supported SI values, initial conditions, sampleEvery, analysis settings and source metadata, and restarts from initial conditions. No old-data migration or exact solver/RNG/delay continuation is claimed. The 12-entry per-system comparison tray remains Document-local; theme and the remaining mock settings remain document-local. Invalid imports or unsupported stored settings preserve originals and provide explicit recovery.",
+    "S02 catalog remains at 134 definitions and S01 legacy inventory at 883 files with zero broken imports/orphans. Existing app.html, engines, runtime, workers, public APIs, S03 contracts/persistence, package/lockfile, baseline and numerical fixtures remain unchanged. New analysis workers live under product adapters. Lab CSS uses an external stylesheet with the existing CSP.",
+    "Existing security findings remain unresolved: S01 official npm audit has 2 high and 2 moderate vulnerable packages; GitHub CodeQL has 32 open baseline alerts. GitHub push also reports 4 high default-branch Dependabot vulnerabilities, a distinct service aggregate. The S07 tracked-file secret scan found no credential-pattern findings; no new dependency audit, remediation or risk acceptance occurred. See baseline/security.md before S30.",
+    "Automated browser coverage is Windows Chromium desktop/mobile emulation, 320px reflow and CSS zoom 2. Eighteen new/updated screenshots were inspected; S05 gallery and historical S06 double baselines remain preserved. Screen-reader audio, other browser/OS matrices and human/expert reviews were not performed. Review gate 7 remains unapproved until the user requests stage 8 after receiving the S07 review report.",
+    "Scientific verification is automated golden/legacy-engine parity, not independent expert review. Poincare uses the legacy RK4 detector with a visible solver warning; finite-time Lyapunov estimates include uncertainty and convergence limits. Playback has a 200-step/frame and 0.25-second catch-up cap, so heavy work can slow nominal playback. S01 numerical and headless performance baselines retain their documented limits.",
     "Repository documents are authoritative; both desktop roadmap transport copies match their repository originals by SHA-256.",
     "A stage is complete only when its final status commit is verified on origin/codex/redesign."
   ]

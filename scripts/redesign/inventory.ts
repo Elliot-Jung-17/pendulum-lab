@@ -74,11 +74,22 @@ const scanRootFiles = [
   'vite.config.landing-kernel.ts'
 ];
 
+/** Only these exact new build guards are outside the legacy command fingerprint. */
+function isRedesignHarnessCommand(name: string, command: unknown): boolean {
+  return (
+    name.startsWith('redesign:') ||
+    (['prebuild', 'prebuild:lib', 'prebuild:standalone'].includes(name) && command === 'npm run redesign:catalog:check')
+  );
+}
+
 export function inventoryFiles(root: string): string[] {
   const files: string[] = [];
   function visit(relative: string): void {
-    // S01 harnesses are not legacy product capabilities; avoids self-referential snapshots.
-    if (/^(?:scripts\/redesign|tests\/characterization|e2e\/redesign)(?:\/|$)/.test(relative)) return;
+    // Keep the frozen legacy baseline separate from the additive product layer and its harnesses.
+    if (
+      /^(?:src\/product|tests\/product|scripts\/redesign|tests\/characterization|e2e\/redesign)(?:\/|$)/.test(relative)
+    )
+      return;
     const absolute = path.join(root, relative);
     if (!existsSync(absolute)) return;
     if (statSync(absolute).isDirectory()) {
@@ -195,7 +206,7 @@ export function buildInventory(root: string, seeds: readonly CapabilitySeed[] = 
       const commands = manifest.scripts as Record<string, unknown> | undefined;
       if (commands)
         manifest.scripts = Object.fromEntries(
-          Object.entries(commands).filter(([name]) => !name.startsWith('redesign:'))
+          Object.entries(commands).filter(([name, command]) => !isRedesignHarnessCommand(name, command))
         );
       normalized = Buffer.from(JSON.stringify(manifest));
     }
@@ -440,7 +451,7 @@ export function buildInventory(root: string, seeds: readonly CapabilitySeed[] = 
       })
     : {};
   for (const [name, command] of Object.entries(pkg.scripts ?? {})
-    .filter(([name]) => !name.startsWith('redesign:'))
+    .filter(([name, command]) => !isRedesignHarnessCommand(name, command))
     .sort(([a], [b]) => a.localeCompare(b, 'en'))) {
     const ownerFile = command.match(/scripts\/[\w./-]+\.(?:ts|mjs|js|py|ps1)/)?.[0] ?? 'package.json';
     add('cli-command', name, ownerFile, 1, `package.json script: ${command}`, name);

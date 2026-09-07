@@ -94,6 +94,9 @@
     "undici": "7.29.0"
   },
   "scripts": {
+    "prebuild": "npm run redesign:catalog:check",
+    "prebuild:lib": "npm run redesign:catalog:check",
+    "prebuild:standalone": "npm run redesign:catalog:check",
     "dev": "vite --host 127.0.0.1",
     "build": "vite build && node scripts/copy-legacy-assets.mjs && npm run audit:public-artifacts -- --root dist/reports",
     "build:standalone": "vite build --config vite.config.standalone.ts && node scripts/copy-css-into-standalone.mjs",
@@ -113,6 +116,7 @@
     "preview": "vite preview --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "redesign:check": "tsx scripts/redesign/validate-plan.ts",
+    "redesign:catalog:check": "tsx scripts/redesign/validate-catalog.ts",
     "redesign:preflight": "tsx scripts/redesign/preflight-stage.ts",
     "redesign:inventory": "tsx scripts/redesign/inventory.ts",
     "redesign:inventory:check": "tsx scripts/redesign/inventory.ts --check",

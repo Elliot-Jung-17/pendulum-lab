@@ -8,16 +8,18 @@
     "selectedByUser": true
   },
   "totalStages": 30,
-  "lastCompletedStage": 0,
-  "nextStage": 1,
-  "completedStages": [],
+  "lastCompletedStage": 1,
+  "nextStage": 2,
+  "completedStages": [1],
   "blockedStage": null,
-  "activeStage": 1,
-  "activeStageCheckpoint": "CP2",
+  "activeStage": null,
+  "activeStageCheckpoint": null,
   "reviewGates": [7, 9, 17, 24, 28],
   "approvedReviewGates": [],
   "notes": [
-    "Safety plan v2.1 is installed. Stage 1 begins the measured baseline, capability inventory, and security baseline.",
+    "S01 baseline is validated: 883 files, 118 semantic capabilities, zero orphan owners/stages or broken static imports; 232 test files and 1670 tests passed.",
+    "Existing security findings remain unresolved: official npm audit has 2 high and 2 moderate vulnerable packages; GitHub CodeQL has 32 open baseline alerts. See documents/redesign/baseline/security.md before the S30 security gate.",
+    "Inventory distinguishes module-family ownership and 12 computed imports in GPU tooling; numerical and headless performance baselines have documented limits. Next valid stage is S02.",
     "Repository documents are authoritative; desktop documents are transport copies.",
     "A stage is complete only when its final status commit is verified on origin/codex/redesign."
   ]

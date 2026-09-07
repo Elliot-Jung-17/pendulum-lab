@@ -16,8 +16,8 @@
 |---|---|---|---|
 | CP0 | 실행 기록과 activeStage 설정 | redesign:check, redesign:preflight -- 1 | 원격 보존 완료 |
 | CP1 | inventory 및 golden, 성능/보안 기준선 | inventory owner/stage/import 검사, 관련 unit, golden 재실행, typecheck | 원격 보존 완료 |
-| CP2 | 전체 검증과 최종 보고 | D + 전체 npm test, 문서/JSON 검사, diff 보존 확인 | candidate-complete; 전체 검증 통과, 보고서 push 예정 |
-| STATUS | 구현 원격 확인 후 완료 상태 | status 일관성 및 원격 HEAD 확인 | 진행 예정 |
+| CP2 | 전체 검증과 최종 보고 | D + 전체 npm test, 문서/JSON 검사, diff 보존 확인 | candidate-complete; 검증·원격 보존 완료 |
+| STATUS | 구현 원격 확인 후 완료 상태 | status 일관성 및 원격 HEAD 확인 | 별도 상태 commit; 원격 존재 시 S01 완료 |
 
 ## 변경 예정 경로
 
@@ -45,13 +45,21 @@
 - CP1 문서 검사: Markdown 7개, JSON 4개, 로컬 링크 131개 통과; 바탕화면 두 원본 사본 hash 재확인 일치.
 - CP2: CP1 원격 확인 뒤 전체 `npm test` 232개 파일·1,670개 통과(실패/보류 0). 기존 1,647개 테스트 식별자 보존, 기존 테스트 파일 229개 변경 없음. 최종 기록은 `baseline/verification.json`.
 - CP2: `redesign:check`, `redesign:inventory:check`, `typecheck` 통과. `src`, `app.html`, `css`, `public`, npm/Python lockfile의 원본 Git 객체가 일치한다.
+- CP2 최종 보고서 문서 검사: Markdown 7개, JSON 5개, 로컬 링크 132개 통과.
 
 ## Commit / 원격 증거
 
 - CP0: `ccfd9ef0a57b8a6ac93ca83bf8db494b21dbcc5d`; push 성공, ls-remote와 로컬 HEAD 일치 확인.
 - CP1: `1d6191ac8faf5b2b5240c4eed588af88943741ac`; push 성공, ls-remote와 로컬 HEAD 일치 확인. 신규 파일 포함 staged secret scan: 1,114 tracked / 1,084 text / 30 binary / 탐지 0.
+- CP2: `d40565ace455a23a99910048534b00e31371557c`; push 성공, ls-remote와 로컬 HEAD 일치 확인.
+- STATUS: CP2 원격 보존 확인 후 본 문서와 `status.json`만 별도 commit한다. 해당 status commit의 hash/push/원격 확인 결과는 최종 단계 완료 보고에 기록한다. 로컬 완료 표시는 원격 확인 전 효력이 없다.
 - 구현 checkpoint와 status commit은 각각 push하고 `git ls-remote origin refs/heads/codex/redesign`으로 검증한다.
 
-## 남은 작업
+## 최종 판정과 후속
 
-CP2 보고서 원격 보존, STATUS. 전체 필수 검증을 통과한 candidate-complete 상태다. 다음 단계는 시작하지 않았다.
+- 모든 S01 산출물과 필수 검증 완료. 최종 status commit까지 원격에 존재해야 완료 판정이 유효하다.
+- 기존 제품/공개 API/데이터/기존 fixture와 테스트 보존. 보안 항목은 기준선으로 기록했으며 해결·위험 수용 승인으로 표시하지 않았다.
+- 사용자 review gate 해당 없음. 과학 전문가 또는 사람 검토를 수행했다고 표시하지 않았다.
+- 바탕화면 두 전달용 문서의 원본 hash 일치. authoritative roadmap/실행 계획 내용은 변경하지 않아 추가 동기화 쓰기는 필요하지 않았다.
+- 롤백 기준은 기존 운영 앱과 원본 제품 `222fe19`, 원격 S01 checkpoint다. 기본 앱 전환은 수행하지 않았다.
+- 다음 유효 요청: **“2단계 실행해줘.”** S02 구현은 시작하지 않았다.

@@ -8,18 +8,19 @@
     "selectedByUser": true
   },
   "totalStages": 30,
-  "lastCompletedStage": 1,
-  "nextStage": 2,
-  "completedStages": [1],
+  "lastCompletedStage": 2,
+  "nextStage": 3,
+  "completedStages": [1, 2],
   "blockedStage": null,
-  "activeStage": 2,
-  "activeStageCheckpoint": "CP2",
+  "activeStage": null,
+  "activeStageCheckpoint": null,
   "reviewGates": [7, 9, 17, 24, 28],
   "approvedReviewGates": [],
   "notes": [
-    "S01 baseline is validated: 883 files, 118 semantic capabilities, zero orphan owners/stages or broken static imports; 232 test files and 1670 tests passed.",
+    "S02 catalog is validated: 134 definitions (34 systems, 51 analyses, 21 integrators, 28 auxiliary), complete bidirectional S01 coverage, source binding and API scope guards. 237 test files and 1735 tests passed; existing 1670 tests and 883-file baseline preserved.",
     "Existing security findings remain unresolved: official npm audit has 2 high and 2 moderate vulnerable packages; GitHub CodeQL has 32 open baseline alerts. See documents/redesign/baseline/security.md before the S30 security gate.",
-    "Inventory distinguishes module-family ownership and 12 computed imports in GPU tooling; numerical and headless performance baselines have documented limits. Next valid stage is S02.",
+    "Catalog discovery does not execute or replace legacy engines. Parameter/state references remain unversioned legacy APIs; canonical state, routes and sharing belong to S03. See documents/redesign/catalog-contract-ko.md and stage-runs/S02-verification.json. Next valid stage is S03.",
+    "S01 inventory retains module-family ownership and 12 computed GPU imports; numerical and headless performance baselines have documented limits.",
     "Repository documents are authoritative; desktop documents are transport copies.",
     "A stage is complete only when its final status commit is verified on origin/codex/redesign."
   ]

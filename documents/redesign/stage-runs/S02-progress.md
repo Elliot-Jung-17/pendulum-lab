@@ -16,8 +16,8 @@
 |---|---|---|---|
 | CP0 | 실행 기록, activeStage 설정 | redesign:check, redesign:preflight -- 2 | 원격 보존 완료 |
 | CP1 | 타입 계약, 전체 기능 정의, predicate, build guard 및 tests | 카탈로그 정상/경계/실패 test, typecheck, baseline coverage, build | 원격 보존 완료 |
-| CP2 | 전체 검증, 문서와 보존 증거 | D, 전체 기존 test 회귀 검사 | candidate-complete, 검증 통과 |
-| STATUS | 구현 원격 확인 후 완료 상태 | status 일관성, 별도 push/원격 HEAD 확인 | 대기 |
+| CP2 | 전체 검증, 문서와 보존 증거 | D, 전체 기존 test 회귀 검사 | candidate-complete, 검증·원격 보존 완료 |
+| STATUS | 구현 원격 확인 후 완료 상태 | status 일관성, 별도 push/원격 HEAD 확인 | 별도 status commit; 원격 존재 시 S02 완료 |
 
 ## 변경 예정 경로
 
@@ -51,11 +51,13 @@
 - 각 checkpoint는 검증 후 명시적 파일만 stage/commit하고 `origin/codex/redesign`에 push한다.
 - CP0: `2abd467a521b6ee2dd3837cf49fac8cbca4809a9`; push 성공, ls-remote에서 같은 hash 확인.
 - CP1: `1421d1a55ea3280af034c9c0734e9a06782f20a5`; 구현 push 성공, ls-remote와 로컬 HEAD 일치 확인. stage 후 secret scan: 1,145 tracked / 1,115 text / 30 binary / 탐지 0.
+- CP2: `6dade3d9070a21e713a56cf0883160a61af731e4`; 검증 증거 push 성공, ls-remote와 로컬 HEAD 일치 확인. 원격 status의 nextStage=2 유지도 확인했다.
+- STATUS: CP2 원격 확인 후 본 문서와 `status.json`만 별도 commit한다. status commit hash/push/원격 확인 결과는 최종 사용자 보고에 남긴다. 원격 존재 확인 전 로컬 완료 표시는 효력이 없다.
 - 구현 push 완료 전 nextStage=2를 유지한다. 최종 status commit의 원격 존재 확인 전에는 S02 완료가 아니다.
 
 ## 최종 판정과 후속
 
-- S02 구현과 필수 검증 완료. CP2 증거 commit과 별도 STATUS commit의 원격 확인이 남아 있으며, 그 전에는 완료 상태를 효력 있게 표시하지 않는다.
+- S02 구현과 필수 검증 및 증거 checkpoint 원격 보존 완료. 별도 STATUS commit까지 원격에 존재할 때 완료 판정이 유효하다.
 - 사용자 review gate 해당 없음. AI 코드 대조와 자동 계약 검사를 사람/전문가의 과학 검토로 표시하지 않았다.
 - 새 상태 serializer, migration, UI 또는 실행 adapter는 이번 단계 범위 밖이다. 기존 보안 문제는 S01의 미해결 상태 그대로이며 새 위험 수용은 없다.
 - 롤백 기준: `c82382d`의 S01 완료 상태와 그대로 유지한 기존 `app.html`. 기본 앱 전환은 수행하지 않았다.

@@ -41,7 +41,7 @@ test.describe('S06 system-first laboratory', () => {
     await page.getByLabel('목록 보기').selectOption('favorites');
     await expect(page.locator('.lab-system-grid article')).toHaveCount(1);
     await page.getByRole('link', { name: '점질량 이중 진자 선택하고 설정하기', exact: true }).click();
-    await expect(page.getByRole('button', { name: '시험 실행', exact: true })).toBeEnabled();
+    await expect(page.getByRole('button', { name: '실행', exact: true })).toBeEnabled();
     await page.getByRole('link', { name: '시스템 라이브러리', exact: true }).click();
     await page.getByLabel('목록 보기').selectOption('recent');
     await expect(page.locator('.lab-system-grid article')).toHaveCount(1);
@@ -61,7 +61,7 @@ test.describe('S06 system-first laboratory', () => {
     const mass = page.getByLabel('첫 번째 질량 · m1 (kg)', { exact: true });
     await mass.fill('-1');
     await expect(mass).toHaveAttribute('aria-invalid', 'true');
-    await expect(page.getByRole('button', { name: '시험 실행', exact: true })).toBeDisabled();
+    await expect(page.getByRole('button', { name: '실행', exact: true })).toBeDisabled();
     await audit(page);
     await mass.fill('2');
     await expect(mass).toHaveAttribute('aria-invalid', 'false');
@@ -70,7 +70,7 @@ test.describe('S06 system-first laboratory', () => {
     await page.getByRole('button', { name: '한 단계', exact: true }).click();
     await expect(page.locator('.lab-workspace')).toHaveAttribute('data-lab-status', 'paused');
     await panel(page, '작업 공간');
-    await expect(page.getByRole('progressbar')).toHaveAttribute('value', '1');
+    await expect(page.locator('#lab-time')).toHaveAttribute('data-time', '0.02');
     await openSystem(page, 'standard-map');
     await panel(page, '조건');
     await expect(page.getByLabel('반복 횟수 · iterations (회)', { exact: true })).toBeVisible();
@@ -81,7 +81,7 @@ test.describe('S06 system-first laboratory', () => {
   });
 
   test('runs, pauses, steps, cancels, resets and recovers a mock error without physical output', async ({ page }) => {
-    await openSystem(page);
+    await openSystem(page, 'spherical');
     await page.getByRole('button', { name: '시험 실행', exact: true }).click();
     await expect(page.locator('.lab-workspace')).toHaveAttribute('data-lab-status', 'running');
     await page.getByRole('button', { name: '일시정지', exact: true }).click();
@@ -105,23 +105,23 @@ test.describe('S06 system-first laboratory', () => {
   test('selects only compatible analyses and exports a restorable tray snapshot as explicit mock JSON', async ({
     page
   }) => {
-    await openSystem(page);
+    await openSystem(page, 'standard-map');
     await panel(page, '분석');
     const first = page.locator('.lab-analysis-choice button').first();
     await first.click();
     await expect(first).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('.lab-selected-analyses > div')).toHaveCount(1);
     await panel(page, '조건');
-    await page.getByLabel('첫 번째 질량 · m1 (kg)', { exact: true }).fill('3');
+    await page.getByLabel('반복 횟수 · iterations (회)', { exact: true }).fill('3');
     await panel(page, '보관함');
     await page.getByRole('button', { name: '현재 설정 보관', exact: true }).click();
     await expect(page.locator('.lab-tray-entry')).toHaveCount(1);
     await panel(page, '조건');
-    await page.getByLabel('첫 번째 질량 · m1 (kg)', { exact: true }).fill('4');
+    await page.getByLabel('반복 횟수 · iterations (회)', { exact: true }).fill('4');
     await panel(page, '보관함');
     await page.getByRole('button', { name: /설정 복원$/ }).click();
     await panel(page, '조건');
-    await expect(page.getByLabel('첫 번째 질량 · m1 (kg)', { exact: true })).toHaveValue('3');
+    await expect(page.getByLabel('반복 횟수 · iterations (회)', { exact: true })).toHaveValue('3');
     await panel(page, '내보내기');
     const pending = page.waitForEvent('download');
     await page.getByRole('button', { name: '모의 설정 JSON 다운로드' }).click();
@@ -131,7 +131,7 @@ test.describe('S06 system-first laboratory', () => {
       schema: 'pendulum-lab-mock/v1',
       mode: 'mock',
       scientificResults: false,
-      settings: { systemId: 'system:double', fields: { m1: '3' } }
+      settings: { systemId: 'system:standard-map', fields: { iterations: '3' } }
     });
     expect(payload.settings.analysisIds).toHaveLength(1);
     await panel(page, '보관함');
@@ -147,7 +147,7 @@ test.describe('S06 system-first laboratory', () => {
     await openSystem(page);
     await panel(page, '조건');
     await page.getByLabel('첫 번째 질량 · m1 (kg)', { exact: true }).fill('7');
-    await page.getByRole('button', { name: '시험 실행', exact: true }).click();
+    await page.getByRole('button', { name: '실행', exact: true }).click();
     await page.getByRole('link', { name: '시스템 라이브러리', exact: true }).click();
     await page.getByRole('link', { name: '균일 막대 복합 이중 진자 선택하고 설정하기', exact: true }).click();
     await panel(page, '조건');
@@ -161,7 +161,7 @@ test.describe('S06 system-first laboratory', () => {
 
   test('supports keyboard panel navigation and 320px/200% reflow with no axe violations', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 800 });
-    await openSystem(page);
+    await openSystem(page, 'spherical');
     const workspace = page.getByRole('tab', { name: '작업 공간', exact: true });
     await workspace.focus();
     await page.keyboard.press('ArrowRight');
@@ -187,17 +187,19 @@ test.describe('S06 system-first laboratory', () => {
     await audit(page);
   });
 
-  test('keeps stable library and workspace light/dark visual baselines', async ({ page }) => {
+  test('keeps the library baseline and reviews retained mock workspace light/dark visuals', async ({ page }) => {
     await page.goto('/next.html#/lab');
     await page.getByLabel('시스템 패밀리').selectOption('classical');
     await audit(page);
     await expect(page).toHaveScreenshot('lab-library-light.png', { fullPage: true });
-    await page.getByRole('link', { name: '점질량 이중 진자 선택하고 설정하기', exact: true }).click();
+    // S07 promotes double/compound to real engines. The original S06 double
+    // images remain historical evidence; retained mock visuals get distinct names.
+    await openSystem(page, 'spherical');
     await expect(page.locator('.lab-workspace')).toHaveAttribute('data-lab-status', 'ready');
-    await expect(page).toHaveScreenshot('lab-workspace-light.png', { fullPage: true });
+    await expect(page).toHaveScreenshot('lab-mock-workspace-light.png', { fullPage: true });
     await page.locator('#product-theme').selectOption('dark');
     await panel(page, '조건');
     await audit(page);
-    await expect(page).toHaveScreenshot('lab-inspector-dark.png', { fullPage: true });
+    await expect(page).toHaveScreenshot('lab-mock-inspector-dark.png', { fullPage: true });
   });
 });

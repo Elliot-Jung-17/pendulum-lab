@@ -42,7 +42,7 @@ export function createLibrary(document: Document): HTMLElement {
       document,
       'p',
       'lab-preview-note',
-      '시험 실행 미리보기 · 지금은 조립과 실행 흐름을 시험합니다. 실제 물리 계산은 기존 앱에서 이용하세요.'
+      '이중진자·복합진자는 실제 계산과 분석·내보내기를 제공합니다. 다른 시스템은 조립 흐름 미리보기이며 기존 앱에서 계산할 수 있습니다.'
     )
   );
   const intro = element(document, 'div', 'lab-inline-actions');

@@ -1,4 +1,46 @@
 /* Scoped to laboratory classes; the existing app and gallery keep their styling. */
+.core-scene {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  color: var(--ds-color-text);
+}
+.core-scene svg {
+  width: 100%;
+  max-width: 30rem;
+  max-height: 24rem;
+  background: var(--ds-color-surface);
+  border: 1px solid var(--ds-color-border);
+  border-radius: var(--ds-radius-md);
+}
+.core-plot {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--ds-color-border);
+  border-radius: var(--ds-radius-sm);
+}
+.core-time {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--ds-weight-bold);
+}
+.core-result-json {
+  max-height: 24rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: var(--ds-text-sm);
+}
+.core-workspace select {
+  max-width: 100%;
+}
+.core-workspace .lab-fieldset {
+  padding: var(--ds-space-4);
+}
+.core-workspace .ds-field__control[type='file'] {
+  width: 100%;
+  min-width: 0;
+}
 .lab-library,
 .lab-workspace {
   min-width: 0;

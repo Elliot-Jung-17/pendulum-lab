@@ -15,8 +15,8 @@
 | ID | 작업 | 검증 | 상태 |
 |---|---|---|---|
 | CP0 | 실행 기록 및 activeStage | redesign:check, redesign:preflight -- 3 | 원격 보존 완료 |
-| CP1 | canonical 상태/단위와 안전한 직렬화·공유·route, adapter 계약 | 관련 unit/property/round-trip/unsafe tests, typecheck | 검증 통과, 원격 보존 준비 |
-| CP2 | 계약 문서·전체 회귀·보존 증거 | D, 전체 Vitest, baseline/catalog 검증 | 대기 |
+| CP1 | canonical 상태/단위와 안전한 직렬화·공유·route, adapter 계약 | 관련 unit/property/round-trip/unsafe tests, typecheck | 원격 보존 완료 |
+| CP2 | 계약 문서·전체 회귀·보존 증거 | D, 전체 Vitest, baseline/catalog 검증 | candidate-complete, 전체 검증 통과 |
 | STATUS | 구현 원격 확인 후 완료 상태 | 별도 status commit/push, 원격 HEAD 확인 | 대기 |
 
 ## 변경 예정 경로
@@ -40,12 +40,17 @@
 - 기존 app/엔진/API/storage/worker/검증/lockfile과 baseline fixture를 수정하지 않았다. master roadmap 및 실행 계획 사본은 각각 SHA-256 `1d46e04691d4119ced60dacb41945c75d9d1a20f66cbaed2b3664909f47f8995`, `803b191496edd95ebf2199a8983b920058109bb159d55f8bafeb0737fa735fc5`로 원본/바탕화면 일치.
 - 공유 CRC32는 손상 탐지이며 인증/암호화가 아니다. 선언형 model field·단위·generator 실행 적합성, solver/RNG/delay 내부 상태와 전체 legacy migration은 후속 adapter 단계 책임이다.
 - CP0 push 응답에서 GitHub default branch Dependabot 4 high 경고도 관찰했다. S01 npm audit의 2 high/2 moderate 패키지와는 다른 집계이며 별도로 기록한다. 재감사나 해결/수용은 수행하지 않았다.
+- CP2: 구현 원격 확인 후 `npm test -- --reporter=json --outputFile=tmp/s03-vitest-results.json` 전체 245개 파일·1,974개 테스트 통과. 기존 237개 파일·1,735개와 신규 8개 파일·239개가 모두 통과하고 실패/보류/todo 0이다.
+- `redesign:check`, `redesign:catalog:check`, `redesign:inventory:check` 재확인 통과. 원격 CP1 status가 nextStage=3인 상태에서 전체 검증했다. 집계·원시 결과 SHA-256은 [S03-verification.json](S03-verification.json)에 기록한다.
+- 바탕화면 두 사본과 원본의 hash 최종 일치. 원본 roadmap/실행 계획 본문을 수정하지 않아 사본을 다시 쓰지 않았다.
 
 ## Commit / 원격 증거
 
 - checkpoint는 검증 후 명시적 경로만 stage하고 push한다. 구현 원격 확인 전 nextStage=3 유지.
 - 각 hash와 원격 확인 결과는 후속 checkpoint에 기록한다. STATUS는 최종 사용자 보고에도 남긴다.
 - CP0: `c66f435693dceb83c53aefd47818379d1c2d582d`, push 성공 및 ls-remote 일치 확인.
+- CP1: `d0b1693ea06fcd15cc6216d6a363ffb84f2b5f8e`, 구현 push 성공, ls-remote와 로컬 HEAD 일치. 완료 목록/nextStage=3 유지.
+- CP1 stage 후 secret scan: 1,174 tracked / 1,144 text / 30 binary, 알려진 패턴 탐지 0. history/ignored/binary 내용/임의 비밀값은 검사 범위 밖.
 
 ## 후속
 

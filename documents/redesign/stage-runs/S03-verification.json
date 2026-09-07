@@ -1,0 +1,94 @@
+{
+  "schemaVersion": "pendulum-state-contract-verification/v1",
+  "stage": 3,
+  "capturedAt": "2026-09-07T05:15:04.503Z",
+  "baselineCommit": "d2743f15b63ecf57f0b497593abcd7e612d9c200",
+  "implementationCommit": "d0b1693ea06fcd15cc6216d6a363ffb84f2b5f8e",
+  "verifiedOriginImplementation": "d0b1693ea06fcd15cc6216d6a363ffb84f2b5f8e",
+  "environment": {
+    "node": "v26.3.0",
+    "npm": "11.16.0",
+    "platform": "win32"
+  },
+  "contracts": {
+    "experiment": "pendulum-experiment/v1",
+    "ui": "pendulum-ui/v1",
+    "analysisArtifact": "pendulum-analysis-provenance/v1",
+    "share": "pe1 with v=1 envelope",
+    "systems": 34,
+    "courses": 8,
+    "units": 86
+  },
+  "targetedTests": {
+    "command": "npx vitest run tests/product/contracts tests/product/catalog tests/characterization",
+    "files": 16,
+    "passed": 327,
+    "failed": 0,
+    "pending": 0,
+    "finalContractRerun": {
+      "files": 8,
+      "passed": 239,
+      "failed": 0
+    }
+  },
+  "fullTests": {
+    "command": "npm test -- --reporter=json --outputFile=tmp/s03-vitest-results.json",
+    "files": 245,
+    "total": 1974,
+    "passed": 1974,
+    "failed": 0,
+    "pending": 0,
+    "todo": 0,
+    "success": true,
+    "existingFiles": 237,
+    "existingTests": 1735,
+    "newContractFiles": 8,
+    "newContractTests": 239,
+    "previousTestNamesPreserved": true,
+    "rawLocalReportSha256": "04bb2d259d14b4be825220f1d2469532fe11ee579ce1d264643fb57fdb129033"
+  },
+  "checks": [
+    "redesign:check",
+    "redesign:preflight -- 3 (before changes)",
+    "redesign:catalog:check",
+    "redesign:inventory:check",
+    "typecheck",
+    "targeted ESLint --max-warnings 0",
+    "targeted Prettier",
+    "audit:modules (481 source files, zero exceptions)",
+    "contract documentation: 14 relative links and 2 code fences",
+    "git diff --check",
+    "secret pattern scan after explicit staging"
+  ],
+  "preservation": {
+    "frozenInventoryFiles": 883,
+    "semanticCapabilities": 118,
+    "catalogDefinitions": 134,
+    "legacyEngineApiFixtureAndLockfileDiffs": 0,
+    "existingAppRetained": true,
+    "productionMigrationApplied": false,
+    "desktopRoadmapHashMatches": true,
+    "desktopExecutionPlanHashMatches": true
+  },
+  "secretScan": {
+    "trackedFiles": 1174,
+    "textFiles": 1144,
+    "binaryFiles": 30,
+    "knownPatternFindings": 0,
+    "scope": "Tracked working-tree text only; not history, ignored files, binary contents or arbitrary secrets."
+  },
+  "review": {
+    "userGateRequired": false,
+    "humanScientificReviewPerformed": false,
+    "newScientificContent": false,
+    "security": "S01 npm audit 2 high/2 moderate packages and CodeQL 32 alerts unresolved. Push also reported 4 high default-branch Dependabot vulnerabilities; this is a distinct service aggregate, not a new npm audit."
+  },
+  "limitations": [
+    "S03 defines restart configuration transport; model-specific fields/units/ranges, generator/algorithm support and required analysis data still need execution adapters.",
+    "No exact continuation of solver/RNG/delay buffers or full legacy session migration is claimed; only a test-local v11 double projection roundtrip is provided.",
+    "Share CRC32 detects accidental damage, not authenticity or secrecy. Opaque identifiers must not contain private data.",
+    "UI/build/E2E/performance reruns are outside S03 D profile; no existing entrypoint or engine code changed.",
+    "Unknown versions/fields fail without mutating originals; no automatic migrations or fallback coercion.",
+    "Stage completion requires a separate status commit verified on origin/codex/redesign."
+  ]
+}

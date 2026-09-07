@@ -13,7 +13,7 @@
   "completedStages": [1, 2],
   "blockedStage": null,
   "activeStage": 3,
-  "activeStageCheckpoint": "CP1",
+  "activeStageCheckpoint": "CP2",
   "reviewGates": [7, 9, 17, 24, 28],
   "approvedReviewGates": [],
   "notes": [

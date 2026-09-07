@@ -1,0 +1,1091 @@
+{
+  "schemaVersion": "pendulum-security-baseline/v1",
+  "capturedAt": "2026-09-07T03:35:39.249Z",
+  "sourceCommit": "ccfd9ef0a57b8a6ac93ca83bf8db494b21dbcc5d",
+  "locks": [
+    {
+      "path": "package-lock.json",
+      "sha256": "c19b38e230056a32b42bc9189720031accb0c214ccee7fa7c590578936ba0d33"
+    },
+    {
+      "path": "requirements.lock",
+      "sha256": "36607b8f43c8ac0ded54181a48488c1b441a5d3c6f0434e6950202304cdfa658"
+    }
+  ],
+  "audit": {
+    "command": "npm audit --package-lock-only --json --registry=https://registry.npmjs.org",
+    "exitCode": 1,
+    "report": {
+      "auditReportVersion": 2,
+      "vulnerabilities": {
+        "browserslist": {
+          "name": "browserslist",
+          "severity": "high",
+          "isDirect": false,
+          "via": [
+            {
+              "source": 1153171,
+              "name": "browserslist",
+              "dependency": "browserslist",
+              "title": "Browserslist: Unbounded memory growth (no cache eviction) via distinct query results, leading to eventual OOM",
+              "url": "https://github.com/advisories/GHSA-c83g-rgw3-j3cx",
+              "severity": "high",
+              "cwe": [
+                "CWE-770"
+              ],
+              "cvss": {
+                "score": 7.5,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "range": "<=4.28.6"
+            },
+            {
+              "source": 1153172,
+              "name": "browserslist",
+              "dependency": "browserslist",
+              "title": "Browserslist: Uncaught crash / prototype write via untrusted browserslist-stats.json custom stats (normalizeStats)",
+              "url": "https://github.com/advisories/GHSA-73wf-gq98-2v4g",
+              "severity": "high",
+              "cwe": [
+                "CWE-248",
+                "CWE-1321"
+              ],
+              "cvss": {
+                "score": 7.5,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "range": "<=4.28.6"
+            }
+          ],
+          "effects": [],
+          "range": "<=4.28.6",
+          "nodes": [
+            "node_modules/browserslist"
+          ],
+          "fixAvailable": true
+        },
+        "fast-uri": {
+          "name": "fast-uri",
+          "severity": "high",
+          "isDirect": false,
+          "via": [
+            {
+              "source": 1158521,
+              "name": "fast-uri",
+              "dependency": "fast-uri",
+              "title": "fast-uri vulnerable to host confusion via skipped IDN canonicalization on scheme-relative references",
+              "url": "https://github.com/advisories/GHSA-5jgf-p345-68v8",
+              "severity": "high",
+              "cwe": [
+                "CWE-436"
+              ],
+              "cvss": {
+                "score": 7.5,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+              },
+              "range": ">=3.1.3 <3.1.6"
+            },
+            {
+              "source": 1158524,
+              "name": "fast-uri",
+              "dependency": "fast-uri",
+              "title": "fast-uri vulnerable to server-side request forgery via malformed IPv6 normalization",
+              "url": "https://github.com/advisories/GHSA-f65p-4m7j-42xc",
+              "severity": "high",
+              "cwe": [
+                "CWE-20",
+                "CWE-918"
+              ],
+              "cvss": {
+                "score": 7.5,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+              },
+              "range": ">=3.0.0 <3.1.6"
+            },
+            {
+              "source": 1158527,
+              "name": "fast-uri",
+              "dependency": "fast-uri",
+              "title": "fast-uri vulnerable to server-side request forgery via repeated hostname percent-decoding",
+              "url": "https://github.com/advisories/GHSA-fph4-wmhf-6fwf",
+              "severity": "high",
+              "cwe": [
+                "CWE-174",
+                "CWE-918"
+              ],
+              "cvss": {
+                "score": 7.5,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+              },
+              "range": ">=3.1.2 <3.1.6"
+            },
+            {
+              "source": 1158530,
+              "name": "fast-uri",
+              "dependency": "fast-uri",
+              "title": "fast-uri vulnerable to host confusion via percent-encoded scheme normalization",
+              "url": "https://github.com/advisories/GHSA-jqff-g426-hqxp",
+              "severity": "high",
+              "cwe": [
+                "CWE-177"
+              ],
+              "cvss": {
+                "score": 7.5,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+              },
+              "range": ">=3.0.0 <3.1.6"
+            }
+          ],
+          "effects": [],
+          "range": "3.0.0 - 3.1.5",
+          "nodes": [
+            "node_modules/fast-uri"
+          ],
+          "fixAvailable": true
+        },
+        "qs": {
+          "name": "qs",
+          "severity": "moderate",
+          "isDirect": false,
+          "via": [
+            {
+              "source": 1158506,
+              "name": "qs",
+              "dependency": "qs",
+              "title": "qs array-limit bypass via bracket-key comma parsing",
+              "url": "https://github.com/advisories/GHSA-x5fp-wj9c-mxmx",
+              "severity": "moderate",
+              "cwe": [
+                "CWE-770"
+              ],
+              "cvss": {
+                "score": 3.7,
+                "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L"
+              },
+              "range": ">=6.14.2 <=6.15.3"
+            },
+            {
+              "source": 1158507,
+              "name": "qs",
+              "dependency": "qs",
+              "title": "qs: Denial of Service via Attacker Controlled isBuffer",
+              "url": "https://github.com/advisories/GHSA-4mjr-xmp4-gh2g",
+              "severity": "moderate",
+              "cwe": [
+                "CWE-248",
+                "CWE-703"
+              ],
+              "cvss": {
+                "score": 5.3,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+              },
+              "range": ">=2.2.5 <6.16.0"
+            }
+          ],
+          "effects": [
+            "typed-rest-client"
+          ],
+          "range": "2.2.5 - 6.15.3",
+          "nodes": [
+            "node_modules/qs"
+          ],
+          "fixAvailable": true
+        },
+        "typed-rest-client": {
+          "name": "typed-rest-client",
+          "severity": "moderate",
+          "isDirect": false,
+          "via": [
+            "qs"
+          ],
+          "effects": [],
+          "range": ">=2.3.1",
+          "nodes": [
+            "node_modules/typed-rest-client"
+          ],
+          "fixAvailable": true
+        }
+      },
+      "metadata": {
+        "vulnerabilities": {
+          "info": 0,
+          "low": 0,
+          "moderate": 2,
+          "high": 2,
+          "critical": 0,
+          "total": 4
+        },
+        "dependencies": {
+          "prod": 1,
+          "dev": 448,
+          "optional": 92,
+          "peer": 0,
+          "peerOptional": 0,
+          "total": 448
+        }
+      }
+    }
+  },
+  "supersededSandboxAudit": {
+    "exitCode": 0,
+    "acceptedAsCleanEvidence": false,
+    "report": {
+      "auditReportVersion": 2,
+      "vulnerabilities": {},
+      "metadata": {
+        "vulnerabilities": {
+          "info": 0,
+          "low": 0,
+          "moderate": 0,
+          "high": 0,
+          "critical": 0,
+          "total": 0
+        },
+        "dependencies": {
+          "prod": 1,
+          "dev": 448,
+          "optional": 92,
+          "peer": 0,
+          "peerOptional": 0,
+          "total": 448
+        }
+      }
+    }
+  },
+  "github": {
+    "dependabot": {
+      "exitCode": 0,
+      "alerts": [
+        {
+          "dependency": {
+            "manifest_path": "package-lock.json",
+            "package": {
+              "ecosystem": "npm",
+              "name": "fast-uri"
+            },
+            "scope": "development"
+          },
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/dependabot/23",
+          "number": 23,
+          "security_advisory": {
+            "ghsa_id": "GHSA-jqff-g426-hqxp",
+            "html_url": null,
+            "severity": "high",
+            "summary": "fast-uri vulnerable to host confusion via percent-encoded scheme normalization"
+          },
+          "security_vulnerability": {
+            "first_patched_version": {
+              "identifier": "3.1.6"
+            },
+            "package": {
+              "ecosystem": "npm",
+              "name": "fast-uri"
+            },
+            "severity": "high",
+            "vulnerable_version_range": ">= 3.0.0, < 3.1.6"
+          },
+          "state": "open"
+        },
+        {
+          "dependency": {
+            "manifest_path": "package-lock.json",
+            "package": {
+              "ecosystem": "npm",
+              "name": "fast-uri"
+            },
+            "scope": "development"
+          },
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/dependabot/22",
+          "number": 22,
+          "security_advisory": {
+            "ghsa_id": "GHSA-f65p-4m7j-42xc",
+            "html_url": null,
+            "severity": "high",
+            "summary": "fast-uri vulnerable to server-side request forgery via malformed IPv6 normalization"
+          },
+          "security_vulnerability": {
+            "first_patched_version": {
+              "identifier": "3.1.6"
+            },
+            "package": {
+              "ecosystem": "npm",
+              "name": "fast-uri"
+            },
+            "severity": "high",
+            "vulnerable_version_range": ">= 3.0.0, < 3.1.6"
+          },
+          "state": "open"
+        },
+        {
+          "dependency": {
+            "manifest_path": "package-lock.json",
+            "package": {
+              "ecosystem": "npm",
+              "name": "fast-uri"
+            },
+            "scope": "development"
+          },
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/dependabot/20",
+          "number": 20,
+          "security_advisory": {
+            "ghsa_id": "GHSA-fph4-wmhf-6fwf",
+            "html_url": null,
+            "severity": "high",
+            "summary": "fast-uri vulnerable to server-side request forgery via repeated hostname percent-decoding"
+          },
+          "security_vulnerability": {
+            "first_patched_version": {
+              "identifier": "3.1.6"
+            },
+            "package": {
+              "ecosystem": "npm",
+              "name": "fast-uri"
+            },
+            "severity": "high",
+            "vulnerable_version_range": ">= 3.1.2, < 3.1.6"
+          },
+          "state": "open"
+        },
+        {
+          "dependency": {
+            "manifest_path": "package-lock.json",
+            "package": {
+              "ecosystem": "npm",
+              "name": "fast-uri"
+            },
+            "scope": "development"
+          },
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/dependabot/19",
+          "number": 19,
+          "security_advisory": {
+            "ghsa_id": "GHSA-5jgf-p345-68v8",
+            "html_url": null,
+            "severity": "high",
+            "summary": "fast-uri vulnerable to host confusion via skipped IDN canonicalization on scheme-relative references"
+          },
+          "security_vulnerability": {
+            "first_patched_version": {
+              "identifier": "3.1.6"
+            },
+            "package": {
+              "ecosystem": "npm",
+              "name": "fast-uri"
+            },
+            "severity": "high",
+            "vulnerable_version_range": ">= 3.1.3, < 3.1.6"
+          },
+          "state": "open"
+        }
+      ]
+    },
+    "codeScanning": {
+      "exitCode": 0,
+      "alerts": [
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/36",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 180,
+            "path": "scripts/standalone-byte-attribution.ts",
+            "ref": "refs/heads/master",
+            "start_line": 180,
+            "state": "open"
+          },
+          "number": 36,
+          "rule": {
+            "id": "js/file-system-race",
+            "name": "js/file-system-race",
+            "security_severity_level": "high",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/35",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 124,
+            "path": "scripts/standalone-html-minify.mjs",
+            "ref": "refs/heads/master",
+            "start_line": 124,
+            "state": "open"
+          },
+          "number": 35,
+          "rule": {
+            "id": "js/incomplete-multi-character-sanitization",
+            "name": "js/incomplete-multi-character-sanitization",
+            "security_severity_level": "high",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/34",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 35,
+            "path": "scripts/validate-claim-registry.ts",
+            "ref": "refs/heads/master",
+            "start_line": 35,
+            "state": "open"
+          },
+          "number": 34,
+          "rule": {
+            "id": "js/file-system-race",
+            "name": "js/file-system-race",
+            "security_severity_level": "high",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/33",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 171,
+            "path": "scripts/audit-public-artifacts.ts",
+            "ref": "refs/heads/master",
+            "start_line": 171,
+            "state": "open"
+          },
+          "number": 33,
+          "rule": {
+            "id": "js/file-system-race",
+            "name": "js/file-system-race",
+            "security_severity_level": "high",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/32",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 146,
+            "path": "scripts/verify-deployment-security.ts",
+            "ref": "refs/heads/master",
+            "start_line": 146,
+            "state": "open"
+          },
+          "number": 32,
+          "rule": {
+            "id": "js/http-to-file-access",
+            "name": "js/http-to-file-access",
+            "security_severity_level": "medium",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/31",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 88,
+            "path": "src/physics/variational.ts",
+            "ref": "refs/heads/master",
+            "start_line": 88,
+            "state": "open"
+          },
+          "number": 31,
+          "rule": {
+            "id": "js/remote-property-injection",
+            "name": "js/remote-property-injection",
+            "security_severity_level": "high",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/30",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 188,
+            "path": "src/physics/nPendulum.ts",
+            "ref": "refs/heads/master",
+            "start_line": 188,
+            "state": "open"
+          },
+          "number": 30,
+          "rule": {
+            "id": "js/remote-property-injection",
+            "name": "js/remote-property-injection",
+            "security_severity_level": "high",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/29",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 102,
+            "path": "src/physics/expandedModels-research-presets.ts",
+            "ref": "refs/heads/master",
+            "start_line": 102,
+            "state": "open"
+          },
+          "number": 29,
+          "rule": {
+            "id": "js/remote-property-injection",
+            "name": "js/remote-property-injection",
+            "security_severity_level": "high",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/28",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 250,
+            "path": "scripts/product-release-manifest.ts",
+            "ref": "refs/heads/master",
+            "start_line": 250,
+            "state": "open"
+          },
+          "number": 28,
+          "rule": {
+            "id": "js/file-access-to-http",
+            "name": "js/file-access-to-http",
+            "security_severity_level": "medium",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/27",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 185,
+            "path": "src/app/parity/figure-export-paper.ts",
+            "ref": "refs/heads/master",
+            "start_line": 183,
+            "state": "open"
+          },
+          "number": 27,
+          "rule": {
+            "id": "js/incomplete-sanitization",
+            "name": "js/incomplete-sanitization",
+            "security_severity_level": "high",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/26",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 135,
+            "path": "scripts/product-release-manifest.ts",
+            "ref": "refs/heads/master",
+            "start_line": 135,
+            "state": "open"
+          },
+          "number": 26,
+          "rule": {
+            "id": "js/double-escaping",
+            "name": "js/double-escaping",
+            "security_severity_level": "high",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/25",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 147,
+            "path": "src/physics/variational.ts",
+            "ref": "refs/heads/master",
+            "start_line": 147,
+            "state": "open"
+          },
+          "number": 25,
+          "rule": {
+            "id": "js/remote-property-injection",
+            "name": "js/remote-property-injection",
+            "security_severity_level": "high",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/22",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 219,
+            "path": "src/physics/expandedModels-factory.ts",
+            "ref": "refs/heads/master",
+            "start_line": 219,
+            "state": "open"
+          },
+          "number": 22,
+          "rule": {
+            "id": "js/remote-property-injection",
+            "name": "js/remote-property-injection",
+            "security_severity_level": "high",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/21",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 86,
+            "path": "src/chaos/ftle.ts",
+            "ref": "refs/heads/master",
+            "start_line": 86,
+            "state": "open"
+          },
+          "number": 21,
+          "rule": {
+            "id": "js/remote-property-injection",
+            "name": "js/remote-property-injection",
+            "security_severity_level": "high",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/20",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 75,
+            "path": "scripts/zenodo-release.ts",
+            "ref": "refs/heads/master",
+            "start_line": 75,
+            "state": "open"
+          },
+          "number": 20,
+          "rule": {
+            "id": "js/file-access-to-http",
+            "name": "js/file-access-to-http",
+            "security_severity_level": "medium",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/19",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 49,
+            "path": "scripts/publication-status.ts",
+            "ref": "refs/heads/master",
+            "start_line": 49,
+            "state": "open"
+          },
+          "number": 19,
+          "rule": {
+            "id": "js/file-access-to-http",
+            "name": "js/file-access-to-http",
+            "security_severity_level": "medium",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/18",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 16,
+            "path": "src/workers/physics.worker.ts",
+            "ref": "refs/heads/master",
+            "start_line": 16,
+            "state": "open"
+          },
+          "number": 18,
+          "rule": {
+            "id": "js/missing-origin-check",
+            "name": "js/missing-origin-check",
+            "security_severity_level": "medium",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/17",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 17,
+            "path": "src/workers/mainCanvas.worker.ts",
+            "ref": "refs/heads/master",
+            "start_line": 17,
+            "state": "open"
+          },
+          "number": 17,
+          "rule": {
+            "id": "js/missing-origin-check",
+            "name": "js/missing-origin-check",
+            "security_severity_level": "medium",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/16",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 30,
+            "path": "src/workers/labSidePlots.worker.ts",
+            "ref": "refs/heads/master",
+            "start_line": 30,
+            "state": "open"
+          },
+          "number": 16,
+          "rule": {
+            "id": "js/missing-origin-check",
+            "name": "js/missing-origin-check",
+            "security_severity_level": "medium",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/15",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 15,
+            "path": "src/workers/expansion.worker.ts",
+            "ref": "refs/heads/master",
+            "start_line": 15,
+            "state": "open"
+          },
+          "number": 15,
+          "rule": {
+            "id": "js/missing-origin-check",
+            "name": "js/missing-origin-check",
+            "security_severity_level": "medium",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/14",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 17,
+            "path": "src/workers/chaos.worker.ts",
+            "ref": "refs/heads/master",
+            "start_line": 17,
+            "state": "open"
+          },
+          "number": 14,
+          "rule": {
+            "id": "js/missing-origin-check",
+            "name": "js/missing-origin-check",
+            "security_severity_level": "medium",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/13",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 16,
+            "path": "src/worker/sim.worker.ts",
+            "ref": "refs/heads/master",
+            "start_line": 16,
+            "state": "open"
+          },
+          "number": 13,
+          "rule": {
+            "id": "js/missing-origin-check",
+            "name": "js/missing-origin-check",
+            "security_severity_level": "medium",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/12",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 188,
+            "path": "public/sw.js",
+            "ref": "refs/heads/master",
+            "start_line": 188,
+            "state": "open"
+          },
+          "number": 12,
+          "rule": {
+            "id": "js/missing-origin-check",
+            "name": "js/missing-origin-check",
+            "security_severity_level": "medium",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/11",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 322,
+            "path": "scripts/portfolio-korean-pdf.ts",
+            "ref": "refs/heads/master",
+            "start_line": 322,
+            "state": "open"
+          },
+          "number": 11,
+          "rule": {
+            "id": "js/file-system-race",
+            "name": "js/file-system-race",
+            "security_severity_level": "high",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/10",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 27,
+            "path": "scripts/check-visual-baselines.mjs",
+            "ref": "refs/heads/master",
+            "start_line": 27,
+            "state": "open"
+          },
+          "number": 10,
+          "rule": {
+            "id": "js/file-system-race",
+            "name": "js/file-system-race",
+            "security_severity_level": "high",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/9",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 118,
+            "path": "scripts/zenodo-release.ts",
+            "ref": "refs/heads/master",
+            "start_line": 118,
+            "state": "open"
+          },
+          "number": 9,
+          "rule": {
+            "id": "js/http-to-file-access",
+            "name": "js/http-to-file-access",
+            "security_severity_level": "medium",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/7",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 334,
+            "path": "scripts/research-notebook.ts",
+            "ref": "refs/heads/master",
+            "start_line": 334,
+            "state": "open"
+          },
+          "number": 7,
+          "rule": {
+            "id": "js/incomplete-html-attribute-sanitization",
+            "name": "js/incomplete-html-attribute-sanitization",
+            "security_severity_level": "medium",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/5",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 356,
+            "path": "scripts/css-coverage-audit.ts",
+            "ref": "refs/heads/master",
+            "start_line": 356,
+            "state": "open"
+          },
+          "number": 5,
+          "rule": {
+            "id": "js/incomplete-sanitization",
+            "name": "js/incomplete-sanitization",
+            "security_severity_level": "high",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/4",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 194,
+            "path": "scripts/audit-mojibake.ts",
+            "ref": "refs/heads/master",
+            "start_line": 194,
+            "state": "open"
+          },
+          "number": 4,
+          "rule": {
+            "id": "js/incomplete-sanitization",
+            "name": "js/incomplete-sanitization",
+            "security_severity_level": "high",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/3",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 194,
+            "path": "scripts/audit-mojibake.ts",
+            "ref": "refs/heads/master",
+            "start_line": 194,
+            "state": "open"
+          },
+          "number": 3,
+          "rule": {
+            "id": "js/incomplete-sanitization",
+            "name": "js/incomplete-sanitization",
+            "security_severity_level": "high",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/2",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 49,
+            "path": "src/app/parity/research-workspace-controller.ts",
+            "ref": "refs/heads/master",
+            "start_line": 49,
+            "state": "open"
+          },
+          "number": 2,
+          "rule": {
+            "id": "js/insecure-randomness",
+            "name": "js/insecure-randomness",
+            "security_severity_level": "high",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        },
+        {
+          "html_url": "https://github.com/elliotjung/pendulum-lab/security/code-scanning/1",
+          "most_recent_instance": {
+            "commit_sha": "222fe192b694138e0f771074c2ec35ef56b19377",
+            "end_line": 176,
+            "path": "src/research/evidenceSummary.ts",
+            "ref": "refs/heads/master",
+            "start_line": 176,
+            "state": "open"
+          },
+          "number": 1,
+          "rule": {
+            "id": "js/identity-replacement",
+            "name": "js/identity-replacement",
+            "security_severity_level": "medium",
+            "severity": "warning"
+          },
+          "state": "open",
+          "tool": "CodeQL"
+        }
+      ]
+    },
+    "secretScanning": {
+      "exitCode": 0,
+      "alerts": []
+    }
+  },
+  "localSecretScan": {
+    "schemaVersion": "pendulum-secret-scan/v1",
+    "capturedAt": "2026-09-07T03:33:55.046Z",
+    "sourceCommit": "ccfd9ef0a57b8a6ac93ca83bf8db494b21dbcc5d",
+    "trackedContentSha256": "25f77a9f85ad01a521bdae2f748b56530023e2ddf1b4e0cf51399921cd77628e",
+    "scope": "All Git-tracked working-tree text files; binary files listed separately; no history or ignored files.",
+    "rules": [
+      "private-key",
+      "github-classic-token",
+      "github-fine-grained-token",
+      "aws-access-id",
+      "google-api-key",
+      "openai-api-key",
+      "slack-token",
+      "npm-token",
+      "url-userinfo"
+    ],
+    "trackedFiles": 1097,
+    "textFiles": 1067,
+    "textBytes": 10715700,
+    "binaryFiles": [
+      "e2e/visual-regression.spec.ts-snapshots/lab-controls-chromium-darwin.png",
+      "e2e/visual-regression.spec.ts-snapshots/lab-controls-chromium-linux.png",
+      "e2e/visual-regression.spec.ts-snapshots/lab-controls-chromium-win32.png",
+      "e2e/visual-regression.spec.ts-snapshots/lab-controls-mobile-chrome-darwin.png",
+      "e2e/visual-regression.spec.ts-snapshots/lab-controls-mobile-chrome-linux.png",
+      "e2e/visual-regression.spec.ts-snapshots/lab-controls-mobile-chrome-win32.png",
+      "e2e/visual-regression.spec.ts-snapshots/rail-sidebar-chromium-darwin.png",
+      "e2e/visual-regression.spec.ts-snapshots/rail-sidebar-chromium-linux.png",
+      "e2e/visual-regression.spec.ts-snapshots/rail-sidebar-chromium-win32.png",
+      "e2e/visual-regression.spec.ts-snapshots/rail-sidebar-mobile-chrome-darwin.png",
+      "e2e/visual-regression.spec.ts-snapshots/rail-sidebar-mobile-chrome-linux.png",
+      "e2e/visual-regression.spec.ts-snapshots/rail-sidebar-mobile-chrome-win32.png",
+      "e2e/visual-regression.spec.ts-snapshots/research-experiment-card-chromium-darwin.png",
+      "e2e/visual-regression.spec.ts-snapshots/research-experiment-card-chromium-linux.png",
+      "e2e/visual-regression.spec.ts-snapshots/research-experiment-card-chromium-win32.png",
+      "e2e/visual-regression.spec.ts-snapshots/research-experiment-card-mobile-chrome-darwin.png",
+      "e2e/visual-regression.spec.ts-snapshots/research-experiment-card-mobile-chrome-linux.png",
+      "e2e/visual-regression.spec.ts-snapshots/research-experiment-card-mobile-chrome-win32.png",
+      "paper/paper.pdf",
+      "public/icons/pendulum-lab-192.png",
+      "public/icons/pendulum-lab-512.png",
+      "reports/demo-narrated-ko.mp4",
+      "reports/index-final-visual-check.png",
+      "reports/liquid-glass-file-protocol.png",
+      "reports/modern-demo-screenshot.png",
+      "reports/modern-visual-check.png",
+      "reports/portfolio-korean.pdf",
+      "reports/portfolio-summary.pdf",
+      "reports/walkthrough-30s.gif",
+      "src/runtime/wasm/pendulum-kernel.wasm"
+    ],
+    "findings": [],
+    "limitations": [
+      "Known credential formats only; no entropy analysis, provider validation, or detection of arbitrary passwords.",
+      "Zero findings means no matches for these rules, not proof that all secrets are absent.",
+      "Git history, ignored files, binary contents, and external services are outside this local scan."
+    ]
+  },
+  "disposition": "Existing findings recorded; unresolved, not approved risk acceptance. Remediation and full disposition required before S30 release gate."
+}

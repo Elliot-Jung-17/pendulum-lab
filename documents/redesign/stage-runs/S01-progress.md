@@ -14,8 +14,8 @@
 
 | ID | 작업 | 필수 검증 | 상태 |
 |---|---|---|---|
-| CP0 | 실행 기록과 activeStage 설정 | redesign:check, redesign:preflight -- 1 | 검증 완료, commit/push 예정 |
-| CP1 | inventory 및 golden, 성능/보안 기준선 | inventory owner/stage/import 검사, 관련 unit, golden 재실행, typecheck | 진행 예정 |
+| CP0 | 실행 기록과 activeStage 설정 | redesign:check, redesign:preflight -- 1 | 원격 보존 완료 |
+| CP1 | inventory 및 golden, 성능/보안 기준선 | inventory owner/stage/import 검사, 관련 unit, golden 재실행, typecheck | 검증 완료, commit/push 예정 |
 | CP2 | 전체 검증과 최종 보고 | D + 전체 npm test, 문서/JSON 검사, diff 보존 확인 | 진행 예정 |
 | STATUS | 구현 원격 확인 후 완료 상태 | status 일관성 및 원격 HEAD 확인 | 진행 예정 |
 
@@ -35,12 +35,20 @@
 - 두 바탕화면 전달용 문서와 저장소 원본 SHA-256 일치; 원본 계획 내용 변경 없음.
 - 수치 fixture는 기존 엔진의 현재 동작 보존 증거이며 독립 과학 검증 또는 사람 검토를 의미하지 않는다.
 - 감사에서 접근 불가능한 외부 보안 정보는 clean으로 표시하지 않고 미확인으로 기록한다.
+- 기존 전체 Vitest: 229개 파일·1,647개 통과, 계획 출발점과 일치.
+- CP1 관련 Vitest: 3개 파일·23개 통과(inventory 7, golden 13, secret scan 3), typecheck 및 대상 ESLint 통과.
+- inventory: 883개 파일/118개 의미 기능/6,825개 관찰/2,548개 relative import, orphan 및 깨진 import/binding 0. 모듈 계열 배정 771개와 GPU 도구의 계산된 import 12개를 명시적으로 구분했다.
+- 교차 검토에서 선언 anchor 불일치, 기존 npm 명령 삭제 누락, CRLF 동적 import 표현식, 마지막 export 삭제 탐지 문제를 수정하고 corruption fixture로 검증했다.
+- Golden 최초 Poincaré assertion 1개는 rootTol의 단위를 시간 bracket으로 바로잡았다. 생산 코드/고정 예상값은 변경하지 않았다.
+- Production build 및 3회 실제 browser 성능 측정 통과; 중앙값 시작 253.9 ms, 앱 FPS 59.946, JS heap 5.234 MiB, RQA 144.8 ms. console/page error 0.
+- 공식 npm audit exit 1: High 2/Moderate 2 패키지. 첫 sandbox audit의 0건 응답은 모순되어 clean 근거에서 제외했다. GitHub Dependabot 4 High, 기존 master CodeQL 32건(18 High/14 Medium), secret scanning 열린 경고 0건. 기존 위험은 미해결로 기록하고 패키지는 변경하지 않았다.
+- CP1 문서 검사: Markdown 7개, JSON 4개, 로컬 링크 131개 통과; 바탕화면 두 원본 사본 hash 재확인 일치.
 
 ## Commit / 원격 증거
 
-- CP0: 아직 commit/push하지 않음.
+- CP0: `ccfd9ef0a57b8a6ac93ca83bf8db494b21dbcc5d`; push 성공, ls-remote와 로컬 HEAD 일치 확인.
 - 구현 checkpoint와 status commit은 각각 push하고 `git ls-remote origin refs/heads/codex/redesign`으로 검증한다.
 
 ## 남은 작업
 
-CP1, CP2, STATUS. 다음 단계는 시작하지 않았다.
+CP1 원격 보존, CP2 전체 재검증, STATUS. 다음 단계는 시작하지 않았다.

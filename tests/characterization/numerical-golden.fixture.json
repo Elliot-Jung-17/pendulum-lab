@@ -1,0 +1,409 @@
+{
+  "schema": "pendulum-redesign/numerical-golden/v1",
+  "provenance": {
+    "capturedAt": "2026-09-07T03:34:37.947Z",
+    "repositoryCommit": "ccfd9ef0a57b8a6ac93ca83bf8db494b21dbcc5d",
+    "productVersion": "10.36.0",
+    "runtime": {
+      "node": "v26.3.0",
+      "v8": "14.6.202.34-node.20",
+      "platform": "win32",
+      "arch": "x64"
+    },
+    "sourceSha256": {
+      "src/physics/double.ts": "4bee8160a46c5181d0a709707dd4ba009e79c54873db6930d475e130055e5660",
+      "src/physics/compoundDouble.ts": "15af2a169bf9a4cbd409903c4de14bbbe05ffea1d95995aee6e8bf76e79e485c",
+      "src/physics/integrators.ts": "4d5fc4ea4630f66e0b8ceec8eb6a5c73cb80f05f9e760ccef6ebd08d31a8c5ed",
+      "src/physics/stochastic.ts": "0982b101f9a7f7b2c4024552c8ef8108ef3ba4fa17136fafdbb3d7eaafeba59c",
+      "src/physics/stochasticAdditive.ts": "6e8ae72aa6bb6df86b5256b0f0821d2a874bd76db9c7a8c928c7c6b9944424e8",
+      "src/physics/stochasticStepperShared.ts": "7dd4004b9d7038802941df3fa6dd6dd2de820bcf2bd64ff7729f6fe22cf2325f",
+      "src/physics/variational.ts": "64b43267d328b959379342a8eebd30748bd35a008868e699538a247eee8ec47f",
+      "src/physics/standardMap.ts": "eb73dc133acacaf18caeae0f00b1ceaf573076993956550cc1e513fe205789f5",
+      "src/physics/fft.ts": "584d04cd45fccee3337d000e9a671da47b7382fa48d2e580238abc2ad1632942",
+      "src/chaos/rqa.ts": "5f9564b56b22688ee1f1697c102d3bf419ede3ebe6c49cd9b2a28b19ded1362b",
+      "src/chaos/poincare.ts": "19cc0cab3465b7d2b024398a40e613675a9d9918be6d519df140127828bac8b1",
+      "src/physics/events.ts": "67400faacc2f6d612c447dbe460f816ff21e0687e3c7bd6fd573af1b4d75cf12",
+      "src/physics/eventLocator.ts": "9572724bf335f3492c7495ec89e970f294bd8c2913e55312a3718fc3869ea926"
+    },
+    "purpose": "Characterize existing implementation for redesign parity; not an independent scientific reference.",
+    "updatePolicy": "No automatic update mode. Investigate deviations and record justification, independent evidence and reviewed diff before changing expected values."
+  },
+  "units": {
+    "parameters": {
+      "m1": "kg",
+      "m2": "kg",
+      "l1": "m",
+      "l2": "m",
+      "g": "m/s^2"
+    },
+    "planarState": ["rad", "rad", "rad/s", "rad/s"],
+    "planarRhs": ["rad/s", "rad/s", "rad/s^2", "rad/s^2"],
+    "energy": "J; potential zero at pivot height",
+    "time": "s",
+    "gamma": "generalized hinge torque coefficient; N*m*s/rad",
+    "diffusion": ["rad/sqrt(s)", "rad/sqrt(s)", "(rad/s)/sqrt(s)", "(rad/s)/sqrt(s)"],
+    "standardMap": "dimensionless theta wrapped to [0, 2*pi) and unwrapped p; integer iteration",
+    "fft": "unnormalized complex coefficients of angle samples (rad); bin frequency = bin/(samples*sampleEvery*dt)",
+    "rqa": "dimensionless ratios; line lengths and delays in samples; epsilon in embedded angle units (rad)"
+  },
+  "tolerance": {
+    "numeric": {
+      "absolute": 1e-11,
+      "relative": 1e-10
+    },
+    "poincare": {
+      "absolute": 2e-8,
+      "relative": 1e-9
+    },
+    "rationale": "Float64 short-horizon replay permits libm rounding differences. Refined event positions allow explicit rootTol and integrator interpolation differences; not a long-time chaotic orbit promise."
+  },
+  "inputs": {
+    "planar": {
+      "parameters": {
+        "m1": 0.9,
+        "m2": 1.3,
+        "l1": 1.1,
+        "l2": 0.8,
+        "g": 9.81
+      },
+      "initialState": [0.7, -0.4, 0.2, -0.1],
+      "gamma": 0,
+      "integrator": "rk4",
+      "dt": 0.001,
+      "steps": 1024,
+      "snapshotSteps": [0, 1, 25, 250, 1024]
+    },
+    "stochastic": {
+      "initialState": [0.3, -0.2, 0.05, 0.1],
+      "gamma": 0.08,
+      "diffusion": [0, 0, 0.1, 0.15],
+      "integrator": "euler-maruyama",
+      "dt": 0.001,
+      "steps": 256,
+      "snapshotSteps": [0, 1, 16, 64, 256],
+      "seed": 20260907,
+      "generator": "mulberry32 + cached Box-Muller (stochasticStepperShared.ts)",
+      "gaussianPrefixLength": 8
+    },
+    "standardMap": {
+      "initialState": {
+        "theta": 0.37,
+        "p": -0.23
+      },
+      "K": 0.7,
+      "steps": 16,
+      "snapshotSteps": [0, 1, 4, 8, 16]
+    },
+    "fft": {
+      "source": "double.theta1",
+      "sampleEvery": 4,
+      "samples": 256,
+      "startStep": 0,
+      "window": "none",
+      "normalization": "unnormalized forward complex FFT",
+      "bins": [0, 1, 2, 3, 4, 8, 16, 32, 64, 128, 255]
+    },
+    "rqa": {
+      "source": "double.theta1",
+      "sampleEvery": 16,
+      "samples": 64,
+      "startStep": 0,
+      "options": {
+        "dimension": 2,
+        "delay": 2,
+        "epsilon": 0.04,
+        "lMin": 2,
+        "vMin": 2,
+        "theiler": 2
+      }
+    },
+    "poincare": {
+      "source": "double",
+      "preset": {
+        "kind": "coordinate",
+        "index": 0,
+        "value": 0,
+        "direction": "both"
+      },
+      "dt": 0.002,
+      "maxTime": 6,
+      "maxPoints": 4,
+      "transientDiscard": 0,
+      "rootTol": 1e-10
+    }
+  },
+  "expected": {
+    "double": {
+      "snapshots": [
+        {
+          "step": 0,
+          "time": 0,
+          "state": [0.7, -0.4, 0.2, -0.1],
+          "rhs": [0.2, -0.1, -7.615361577413623, 9.573919230169464],
+          "energy": {
+            "total": -27.50751745904447,
+            "KE": 0.047021720741782805,
+            "PE": -27.554539179786254
+          }
+        },
+        {
+          "step": 1,
+          "time": 0.001,
+          "state": [0.7001961926019614, -0.40009521410786986, 0.1923854809638481, -0.0904292715636431],
+          "rhs": [0.1923854809638481, -0.0904292715636431, -7.613699333499618, 9.567584286219898],
+          "energy": {
+            "total": -27.507517459044486,
+            "KE": 0.043642501351388266,
+            "PE": -27.551159960395875
+          }
+        },
+        {
+          "step": 25,
+          "time": 0.025,
+          "state": [0.7026224979404931, -0.39952047808060165, 0.009804148691529709, 0.13804937875555676],
+          "rhs": [0.009804148691529709, 0.13804937875555676, -7.61428808240785, 9.498928498103913],
+          "energy": {
+            "total": -27.507517459044596,
+            "KE": 0.00875528081112809,
+            "PE": -27.516272739855726
+          }
+        },
+        {
+          "step": 250,
+          "time": 0.25,
+          "state": [0.4906623862052754, -0.09088098439841412, -2.1034006980944517, 2.9824238112107957],
+          "rhs": [-2.1034006980944517, 2.9824238112107957, -13.452293507106925, 19.910901480885315],
+          "energy": {
+            "total": -27.507517459124536,
+            "KE": 3.5921321767162677,
+            "PE": -31.0996496358408
+          }
+        },
+        {
+          "step": 1024,
+          "time": 1.024,
+          "state": [-0.10716587152626603, -0.5209156596567828, 1.878855636188839, -4.853272962937284],
+          "rhs": [1.878855636188839, -4.853272962937284, -12.455376457447153, 23.73525037435528],
+          "energy": {
+            "total": -27.507517459311025,
+            "KE": 4.945683378920215,
+            "PE": -32.45320083823124
+          }
+        }
+      ],
+      "maxAbsoluteEnergyDrift": 1.1338414651618223e-9
+    },
+    "compound": {
+      "snapshots": [
+        {
+          "step": 0,
+          "time": 0,
+          "state": [0.7, -0.4, 0.2, -0.1],
+          "rhs": [0.2, -0.1, -8.296503867981963, 14.998116066356951],
+          "energy": {
+            "total": -19.107069890797064,
+            "KE": 0.034917527037558065,
+            "PE": -19.14198741783462
+          }
+        },
+        {
+          "step": 1,
+          "time": 0.001,
+          "state": [0.7001958520595885, -0.40009250271357794, 0.19170442130000073, -0.08500717522278678],
+          "rhs": [0.19170442130000073, -0.08500717522278678, -8.294691133320601, 14.987627666373804],
+          "energy": {
+            "total": -19.10706989079708,
+            "KE": 0.03235082169903918,
+            "PE": -19.139420712496122
+          }
+        },
+        {
+          "step": 25,
+          "time": 0.025,
+          "state": [0.7024087185160943, -0.39783198722384944, -0.007392007561080462, 0.27305014152474766],
+          "rhs": [-0.007392007561080462, 0.27305014152474766, -8.317941745470499, 14.904320718682207],
+          "energy": {
+            "total": -19.10706989079719,
+            "KE": 0.009867940541402146,
+            "PE": -19.116937831338593
+          }
+        },
+        {
+          "step": 250,
+          "time": 0.25,
+          "state": [0.4502622737135406, 0.13114639853169563, -2.5988896309509335, 5.3036902666481955],
+          "rhs": [-2.5988896309509335, 5.3036902666481955, -16.430639263952468, 34.14232684097138],
+          "energy": {
+            "total": -19.107069891136195,
+            "KE": 2.9524375079902363,
+            "PE": -22.05950739912643
+          }
+        },
+        {
+          "step": 1024,
+          "time": 1.024,
+          "state": [-0.09526419000949302, -1.320036984850279, -0.10991047861225772, -2.5357112989866826],
+          "rhs": [-0.10991047861225772, -2.5357112989866826, -2.846711874276051, 19.83323419178085],
+          "energy": {
+            "total": -19.107069890776962,
+            "KE": 0.9573649478266144,
+            "PE": -20.064434838603578
+          }
+        }
+      ],
+      "maxAbsoluteEnergyDrift": 1.763901025242376e-9
+    },
+    "stochastic": {
+      "gaussianPrefix": [
+        0.14684651874960236, -1.3602944918701967, 0.7408436393879122, 0.6157170862191511, -1.8287829350319669,
+        -0.09938753898354492, -0.3482983862410953, -1.2591920672495842
+      ],
+      "snapshots": [
+        {
+          "step": 0,
+          "time": 0,
+          "state": [0.3, -0.2, 0.05, 0.1]
+        },
+        {
+          "step": 1,
+          "time": 0.001,
+          "state": [0.30005, -0.19990000000000002, 0.043940639559145525, 0.10384780044138273]
+        },
+        {
+          "step": 16,
+          "time": 0.016,
+          "state": [0.2999133918182842, -0.19737351485189875, -0.05786390867501815, 0.25204505393627447]
+        },
+        {
+          "step": 64,
+          "time": 0.064,
+          "state": [0.2890364094936518, -0.17423561041703464, -0.39404228108043, 0.7167408720277774]
+        },
+        {
+          "step": 256,
+          "time": 0.256,
+          "state": [0.09948532337326679, 0.12120870930825597, -1.3883077852154566, 1.9721830376656813]
+        }
+      ]
+    },
+    "standardMap": [
+      {
+        "step": 0,
+        "theta": 0.37,
+        "p": -0.23
+      },
+      {
+        "step": 1,
+        "theta": 0.3931308023754734,
+        "p": 0.023130802375473353
+      },
+      {
+        "step": 4,
+        "theta": 2.843980906410386,
+        "p": 1.4257171665281305
+      },
+      {
+        "step": 8,
+        "theta": 5.972184694091453,
+        "p": 0.1253708941569629
+      },
+      {
+        "step": 16,
+        "theta": 0.3125741453061117,
+        "p": -0.08623941950286201
+      }
+    ],
+    "analysis": {
+      "fft": [
+        {
+          "bin": 0,
+          "re": 6.684641665888588,
+          "im": 0
+        },
+        {
+          "bin": 1,
+          "re": 27.16942524390845,
+          "im": -64.78548444870812
+        },
+        {
+          "bin": 2,
+          "re": 2.0759891681663025,
+          "im": -21.24676979145088
+        },
+        {
+          "bin": 3,
+          "re": 2.5639739069216834,
+          "im": -10.282750649372232
+        },
+        {
+          "bin": 4,
+          "re": 1.9528220246975052,
+          "im": -8.4545140492101
+        },
+        {
+          "bin": 8,
+          "re": 0.570612709248114,
+          "im": -4.073042635544965
+        },
+        {
+          "bin": 16,
+          "re": 0.4476722828598552,
+          "im": -2.027737744295152
+        },
+        {
+          "bin": 32,
+          "re": 0.41505114194331083,
+          "im": -0.9741708657714843
+        },
+        {
+          "bin": 64,
+          "re": 0.40694097311463795,
+          "im": -0.40356341881326124
+        },
+        {
+          "bin": 128,
+          "re": 0.4052618336550031,
+          "im": 0
+        },
+        {
+          "bin": 255,
+          "re": 27.1694252439085,
+          "im": 64.78548444870829
+        }
+      ],
+      "rqa": {
+        "recurrenceRate": 0.05129561078794289,
+        "determinism": 0.925,
+        "laminarity": 0.8041237113402062,
+        "longestDiagonal": 8,
+        "divergence": 0.125,
+        "meanDiagonal": 4.111111111111111,
+        "entropy": 1.7351264569629226,
+        "trappingTime": 3.9,
+        "epsilon": 0.04,
+        "embeddedLength": 62
+      },
+      "poincare": {
+        "points": [
+          [-1.2621102622213665e-14, 0.5856962980617543, -2.455673930753504, 2.8804805282842953],
+          [2.710505431213761e-19, -0.8188596204846148, 1.0612722950795557, -3.2519078479827033],
+          [-7.279928656428458e-11, -0.766115045682028, -1.1356982638581667, 3.5245459309191287],
+          [2.1678664332419606e-10, 0.6254095924771741, 2.350292510055539, -2.752151837449067]
+        ],
+        "times": [0.4260402894570946, 1.0982318306888978, 1.5872509124893375, 2.2434623778764795],
+        "directions": [-1, 1, -1, 1],
+        "rootResiduals": [1.2621102622213665e-14, 2.710505431213761e-19, 7.279928656428458e-11, 2.1678664332419606e-10],
+        "rootBracketWidths": [
+          6.827437186028747e-11, 8.746749567581195e-11, 6.410090817518532e-11, 9.223815439739214e-11
+        ],
+        "metadata": {
+          "dt": 0.002,
+          "maxTime": 6,
+          "rootTolerance": 1e-10,
+          "requestedDirection": "both",
+          "transientDiscarded": 0
+        }
+      }
+    }
+  }
+}

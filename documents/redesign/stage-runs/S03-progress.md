@@ -16,8 +16,8 @@
 |---|---|---|---|
 | CP0 | 실행 기록 및 activeStage | redesign:check, redesign:preflight -- 3 | 원격 보존 완료 |
 | CP1 | canonical 상태/단위와 안전한 직렬화·공유·route, adapter 계약 | 관련 unit/property/round-trip/unsafe tests, typecheck | 원격 보존 완료 |
-| CP2 | 계약 문서·전체 회귀·보존 증거 | D, 전체 Vitest, baseline/catalog 검증 | candidate-complete, 전체 검증 통과 |
-| STATUS | 구현 원격 확인 후 완료 상태 | 별도 status commit/push, 원격 HEAD 확인 | 대기 |
+| CP2 | 계약 문서·전체 회귀·보존 증거 | D, 전체 Vitest, baseline/catalog 검증 | candidate-complete, 검증·원격 보존 완료 |
+| STATUS | 구현 원격 확인 후 완료 상태 | 별도 status commit/push, 원격 HEAD 확인 | 별도 status commit; 원격 존재 시 S03 완료 |
 
 ## 변경 예정 경로
 
@@ -51,9 +51,13 @@
 - CP0: `c66f435693dceb83c53aefd47818379d1c2d582d`, push 성공 및 ls-remote 일치 확인.
 - CP1: `d0b1693ea06fcd15cc6216d6a363ffb84f2b5f8e`, 구현 push 성공, ls-remote와 로컬 HEAD 일치. 완료 목록/nextStage=3 유지.
 - CP1 stage 후 secret scan: 1,174 tracked / 1,144 text / 30 binary, 알려진 패턴 탐지 0. history/ignored/binary 내용/임의 비밀값은 검사 범위 밖.
+- CP2: `af19bf8e014ee6978b61b2c49bf1063ee6e114bc`, 검증 증거 push 성공, ls-remote와 로컬 HEAD 일치.
+- STATUS: CP2 원격 확인 뒤 본 문서와 status.json만 별도 commit한다. status commit hash와 원격 일치 확인은 최종 사용자 보고에 남긴다. 원격 존재 전 로컬 완료 표시는 효력이 없다.
 
 ## 후속
 
 - S03은 사용자 review gate가 아니다. 사람/전문가 검토 완료를 주장하지 않는다.
 - 롤백 기준은 `d2743f1` 및 변경하지 않는 기존 app.html이다.
 - STATUS 원격 확인 뒤에만 다음 유효 입력은 “4단계 실행해줘.”이다.
+- 모든 구현/필수 검증/증거 checkpoint를 원격에 보존했다. 최종 status commit까지 원격에 존재할 때 S03 완료 판정이 유효하다.
+- 기존 UI·계산 경로는 그대로 유지되며 S04를 선행 구현하지 않았다. 사용자 review gate 대상이 아니고 사람/전문가 과학 검토를 수행했다고 표시하지 않았다.

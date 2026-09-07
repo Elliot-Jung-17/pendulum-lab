@@ -1,0 +1,239 @@
+{
+  "schemaVersion": "pendulum-redesign-verification/v1",
+  "stage": 5,
+  "state": "candidate-complete",
+  "baselineCommit": "8edb88840260c8ae753ab5e3cffd1e2f4dcb634f",
+  "implementationCommit": "05d1eb100451a2c2302775947a8bcf8e6c132b9a",
+  "environment": {
+    "platform": "win32",
+    "node": "v26.3.0",
+    "dateUtc": "2026-09-07T06:27:00.658Z",
+    "browserProjects": ["chromium", "mobile-chrome"]
+  },
+  "checks": {
+    "plan": "npm run redesign:check",
+    "preflight": "npm run redesign:preflight -- 5",
+    "targeted": {
+      "commandReport": "tmp/S05-targeted-vitest.json",
+      "sha256": "3b895e7b447138590036b25c8b3984fda46f754cfa0ead5e80c841b8cea230be",
+      "files": 23,
+      "passed": 457,
+      "failed": 0,
+      "pending": 0,
+      "total": 457,
+      "allFilesPassed": true
+    },
+    "full": {
+      "commandReport": "tmp/S05-full-vitest.json",
+      "sha256": "b0570deebcf940f1478733918be7674b667edb91925286050852656a9951b4ad",
+      "files": 251,
+      "passed": 2101,
+      "failed": 0,
+      "pending": 0,
+      "total": 2101,
+      "allFilesPassed": true
+    },
+    "regression": {
+      "previousFiles": 248,
+      "previousTests": 2030,
+      "missingPreviousTests": [],
+      "newTests": 71
+    },
+    "dev": {
+      "commandReport": "tmp/S05-dev-playwright.json",
+      "sha256": "f516ee012f0b1a565257f6971cbedf2abd5fd46882e56d7709fd9ca66bf90945",
+      "startTime": "2026-09-07T06:21:06.351Z",
+      "duration": 72490.911,
+      "expected": 70,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "production": {
+      "commandReport": "tmp/S05-production-playwright.json",
+      "sha256": "169ff3981d9d400b07c9e64aebefae09a00ad0d3c522f0d3d3b060112452b6a9",
+      "startTime": "2026-09-07T06:25:21.936Z",
+      "duration": 80668.955,
+      "expected": 58,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "typecheck": "passed",
+    "build": {
+      "result": "passed",
+      "log": "tmp/S05-build.log",
+      "sha256": "58bbdc68e4fbebfd261452ec4ad673a905f473bd8ca44bd119fe85ae08b93666"
+    },
+    "eslint": "targeted paths passed with zero warnings",
+    "prettier": "all changed code/style/test paths passed",
+    "sourcePolicy": "passed",
+    "moduleSize": "passed",
+    "inventory": {
+      "files": 883,
+      "brokenImports": 0,
+      "orphans": 0,
+      "frozenBaselineUnchanged": true
+    },
+    "catalog": {
+      "definitions": 134,
+      "systems": 34,
+      "analyses": 51,
+      "integrators": 21,
+      "auxiliary": 28
+    },
+    "documentation": {
+      "links": 13,
+      "missing": [],
+      "codeFencesBalanced": true
+    },
+    "secretScan": {
+      "trackedFiles": 1221,
+      "textFiles": 1179,
+      "binaryFiles": 42,
+      "knownPatternFindings": 0,
+      "scope": "Git-tracked working-tree text, excluding history/ignored/binary contents"
+    },
+    "visualBaselines": {
+      "images": [
+        {
+          "file": "e2e/redesign/a11y-design-system.spec.ts-snapshots/dialog-dark-chromium-win32.png",
+          "sha256": "0c7ba6c6567295613457d8ce04a690bfda43170be6859e0cc69b176fc04642db"
+        },
+        {
+          "file": "e2e/redesign/a11y-design-system.spec.ts-snapshots/dialog-dark-mobile-chrome-win32.png",
+          "sha256": "1fedb1055204d92e0e4200ce22eda57088825d66501f823f3ecf013c9d8a6f10"
+        },
+        {
+          "file": "e2e/redesign/a11y-design-system.spec.ts-snapshots/dialog-light-chromium-win32.png",
+          "sha256": "248ba4362380fdc95869c5b094c6fbbf1db0142fa4b17d3cbe94a755045da9cc"
+        },
+        {
+          "file": "e2e/redesign/a11y-design-system.spec.ts-snapshots/dialog-light-mobile-chrome-win32.png",
+          "sha256": "2cd6a644a8ea2ba3a3e2c67add551cb782adf2d7cd7e4231f8aa6bc7be505a18"
+        },
+        {
+          "file": "e2e/redesign/a11y-design-system.spec.ts-snapshots/gallery-320-chromium-win32.png",
+          "sha256": "392b7fd92d434158bcbf7d8ec0efabf85dadb757489c9cc937ade771864291d2"
+        },
+        {
+          "file": "e2e/redesign/a11y-design-system.spec.ts-snapshots/gallery-320-mobile-chrome-win32.png",
+          "sha256": "392b7fd92d434158bcbf7d8ec0efabf85dadb757489c9cc937ade771864291d2"
+        },
+        {
+          "file": "e2e/redesign/a11y-design-system.spec.ts-snapshots/gallery-contrast-chromium-win32.png",
+          "sha256": "a3aa0276b9b7f12b07ead00f88a849267b5eef98148a490a1fd15d49463edfae"
+        },
+        {
+          "file": "e2e/redesign/a11y-design-system.spec.ts-snapshots/gallery-contrast-mobile-chrome-win32.png",
+          "sha256": "3860b8a739103af53af76b05a6bc955b7128f6b131978364bb758a13508a488e"
+        },
+        {
+          "file": "e2e/redesign/a11y-design-system.spec.ts-snapshots/gallery-dark-chromium-win32.png",
+          "sha256": "6107cfefb9a093b81428bf68fdb5865cc814393e41bdc898c55833f55ec388f7"
+        },
+        {
+          "file": "e2e/redesign/a11y-design-system.spec.ts-snapshots/gallery-dark-mobile-chrome-win32.png",
+          "sha256": "b312cd946002c2bb6753ac96a1433a8fc6b8610347e6b769d6929a08cb21c370"
+        },
+        {
+          "file": "e2e/redesign/a11y-design-system.spec.ts-snapshots/gallery-light-chromium-win32.png",
+          "sha256": "2393c486a21096c9eabb5a6fc64034196dc620104f32fdb75d512f8dce6838ac"
+        },
+        {
+          "file": "e2e/redesign/a11y-design-system.spec.ts-snapshots/gallery-light-mobile-chrome-win32.png",
+          "sha256": "190a23eb41bd9a74462d2f2a6a74045ea7828f766e9ddbd2a19c0dc9ae1f93f5"
+        }
+      ],
+      "inspected": "Representative light desktop, dark mobile, desktop/mobile dialogs, 320px and forced-colors images directly inspected. No clipping or overlapping content found."
+    }
+  },
+  "preservedPaths": [
+    "app.html",
+    "src/physics",
+    "src/chaos",
+    "src/research",
+    "src/runtime",
+    "src/workers",
+    "src/validation",
+    "src/lib",
+    "src/product/contracts",
+    "src/product/persistence",
+    "package.json",
+    "package-lock.json",
+    "documents/redesign/baseline",
+    "tests/characterization"
+  ],
+  "preservationDiff": "",
+  "productBuildAssets": [
+    {
+      "file": "dist/assets/application-BmjViTOI.js",
+      "bytes": 17903,
+      "sha256": "643688bc60fb0637c6bad7248a67343513784f565c843f8524d7afb0b989b700"
+    },
+    {
+      "file": "dist/assets/dom-CuEJMCJS.js",
+      "bytes": 407,
+      "sha256": "02f5def3fad390e257d4cb01512edf79cc491c1f43bbadf49656667da753e09a"
+    },
+    {
+      "file": "dist/assets/gallery-CUz9-ZYr.js",
+      "bytes": 19949,
+      "sha256": "444d90dd95d803381562a687f15ecfdbfe7c978d7a5479133b60152d4650f529"
+    },
+    {
+      "file": "dist/assets/lab-D60GWz29.js",
+      "bytes": 3057,
+      "sha256": "eed14927e22939e57d990268808bcbbd3a38a932a0376fedc55c5bf6dd3da5c4"
+    },
+    {
+      "file": "dist/assets/learn-B4F3xw18.js",
+      "bytes": 2362,
+      "sha256": "675bb2d95f2c5864f21ade769e12aea64dccbf8f06c40b332af71569392835b6"
+    },
+    {
+      "file": "dist/assets/next-Bcy82gNB.js",
+      "bytes": 2889,
+      "sha256": "67fbe39e7d4a9b8335f955084dea21ea1aa5b63ba1e283be7222ff3427a0802c"
+    },
+    {
+      "file": "dist/assets/next-DczmyDoI.css",
+      "bytes": 22746,
+      "sha256": "b44d1df625d5c9a337078a58e877b5f92d4ac1fbdbdf0aa475b1e1da75a82346"
+    },
+    {
+      "file": "dist/assets/preload-helper-HclGiUj8.js",
+      "bytes": 1211,
+      "sha256": "bba5840eec0028b00854bcd58fba80694d02d41e98417656424c05b26db7120c"
+    },
+    {
+      "file": "dist/assets/theme-CuHuob_A.js",
+      "bytes": 5327,
+      "sha256": "1de1d27ea2343f27c10437b85221da448f234b241af7f9baf11065babb9db8f9"
+    }
+  ],
+  "transportCopies": [
+    {
+      "source": "documents/redesign/master-roadmap-ko.md",
+      "copy": "C:/Users/junge/Desktop/Pendulum_Lab_Complete_Redesign_Roadmap_KO.md",
+      "sourceSha256": "1d46e04691d4119ced60dacb41945c75d9d1a20f66cbaed2b3664909f47f8995",
+      "copySha256": "1d46e04691d4119ced60dacb41945c75d9d1a20f66cbaed2b3664909f47f8995",
+      "equal": true
+    },
+    {
+      "source": "documents/redesign/execution-plan-ko.md",
+      "copy": "C:/Users/junge/Desktop/Pendulum_Lab_Codex_Execution_Steps_KO.md",
+      "sourceSha256": "803b191496edd95ebf2199a8983b920058109bb159d55f8bafeb0737fa735fc5",
+      "copySha256": "803b191496edd95ebf2199a8983b920058109bb159d55f8bafeb0737fa735fc5",
+      "equal": true
+    }
+  ],
+  "limitations": [
+    "200% zoom tested with Chromium CSS zoom:2 plus independent 640px reflow, not native browser toolbar zoom or OS magnification.",
+    "No actual screen-reader audio session or human/expert review was performed; S05 is not a human review gate.",
+    "Visual raster baselines cover Windows Chromium desktop/mobile only; lifecycle source fixtures run in development only and shipped gallery journeys run in production.",
+    "Quantity controls accept S03 canonical scalar units; system-specific adapters, display conversions, engines, Lab workflows and Learn content belong to subsequent stages.",
+    "Theme preference is document-local and resets to light on reload. Existing user storage is untouched.",
+    "Existing security baseline remains unresolved: npm audit high2/moderate2, CodeQL32; GitHub default-branch Dependabot4high is a separate service aggregate."
+  ]
+}

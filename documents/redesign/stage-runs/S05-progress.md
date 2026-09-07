@@ -15,8 +15,8 @@
 | ID | 작업 | 검증 | 상태 |
 |---|---|---|---|
 | CP0 | 실행 기록과 activeStage | redesign:check, redesign:preflight -- 5 | 원격 보존 완료 |
-| CP1 | token·컴포넌트·gallery·shell 적용 | 관련 Vitest, typecheck, build, axe/keyboard/반응형 | 검증 통과, commit/push 대상 |
-| CP2 | 전체 회귀·시각 baseline·운영 문서·보존 증거 | 전체 Vitest, dev/production E2E, inventory/catalog | 진행 예정 |
+| CP1 | token·컴포넌트·gallery·shell 적용 | 관련 Vitest, typecheck, build, axe/keyboard/반응형 | 원격 보존 완료 |
+| CP2 | 전체 회귀·시각 baseline·운영 문서·보존 증거 | 전체 Vitest, dev/production E2E, inventory/catalog | candidate-complete, 검증 통과 |
 | STATUS | 별도 완료 상태 | 구현 원격 확인, status push 및 원격 HEAD | 예정 |
 
 ## 변경 예정 경로
@@ -42,12 +42,21 @@
 - 시각 baseline 12개 생성 후 갱신 없이 개발 Playwright 70/70 통과, 실패·skip·retry 0. S04 shell 34 + S05 gallery 24 + lifecycle 12; Chromium desktop/mobile 각각 실행.
 - 실제 axe에서 light/dark, 입력 오류, 대화상자, 알림, shell, 320px, zoom/reflow, forced colors에 지정 WCAG 위반 0. 200%는 CSS zoom 2와 독립 640px reflow이며 native 브라우저 메뉴 확대 또는 screen reader 음성 청취를 주장하지 않는다.
 - light desktop/dark mobile, desktop/mobile dialog, 320px/forced-colors 이미지를 직접 확인했다. 잘림/겹침은 발견하지 않았다. 이 결과는 Windows Chromium raster 기준이다.
+- CP2 최종 전체 Vitest: 251개 파일·2,101개 테스트 통과, 실패/pending 0. S04 원시 보고서의 SHA-256을 대조하고 기존 248개 파일·2,030개 테스트 이름이 모두 유지됨을 확인했다. 신규는 3개 파일·71개 테스트다.
+- CP2 production Playwright: 58/58 통과, 실패/skip/retry 0. 같은 Windows 시각 baseline을 갱신하지 않고 S04 shell 34 + S05 gallery 24를 실제 빌드된 chunk에서 검증했다. source 모듈을 직접 호출하는 lifecycle 12개는 dev 전용이며 production에서는 갤러리 여정으로 검증한다.
+- build/typecheck/대상 ESLint/Prettier/소스 정책/모듈 크기 검사 모두 통과. 마지막 inventory 883/orphan 0/broken import 0, catalog 134. 정상 gallery 이동의 pageerror/console error 0; 기존 앱 병행과 local/session storage 보존 통과.
+- [design-system-ko.md](../design-system-ko.md)의 링크 13개와 code fence를 확인했다. [S05-verification.json](S05-verification.json)에 전체/관련 테스트, E2E 보고서 hash, 12개 screenshot hash, build 자산, 보존 경로 diff와 한계를 기록했다.
+- 보존 경로 Git diff 0: app.html, engines/runtime/workers/validation, lib 공개 API, S03 contracts/persistence, package/lockfile, S01 baseline 및 characterization tests. 기존 CSS는 그대로이며 S04 product shell CSS만 token으로 바꾸었다.
+- CP1 stage 후 secret scan: 1,221 tracked / 1,179 text / 42 binary, 알려진 패턴 0. Git history/ignored/binary 내용/임의 비밀값은 검사 범위 밖이다.
+- 마지막 바탕화면 사본 hash 일치: roadmap `1d46e04691d4119ced60dacb41945c75d9d1a20f66cbaed2b3664909f47f8995`, 실행 계획 `803b191496edd95ebf2199a8983b920058109bb159d55f8bafeb0737fa735fc5`. 두 원본 계획을 수정하지 않아 다시 쓰지 않았다.
 
 ## Commit / 원격 증거
 
 - 명시적 경로만 stage한다. 모든 구현 원격 확인 전 nextStage=5를 유지한다.
 - commit과 원격 증거는 후속 checkpoint에 기록한다. 최종 status hash는 사용자 보고에 남긴다.
 - CP0: `97df9e6fd84350f9bb4ae56c6add7479e6ba3b44`, push 성공 및 ls-remote 일치.
+- CP1: `05d1eb100451a2c2302775947a8bcf8e6c132b9a`, 구현 push 성공 및 ls-remote 일치. 원격 nextStage=5를 유지한 뒤 전체 회귀를 실행했다.
+- CP2: 본 기록과 운영 문서/검증 증거를 별도 commit/push한다. 이후에만 완료 status를 갱신한다.
 
 ## 후속
 

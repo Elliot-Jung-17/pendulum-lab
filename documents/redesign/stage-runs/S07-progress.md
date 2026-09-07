@@ -14,8 +14,8 @@
 
 | ID | 작업 | 필수 검증 | 상태 |
 |---|---|---|---|
-| CP0 | 사전 점검·실행 기록 | redesign:check, redesign:preflight -- 7 | 통과 |
-| CP1 | 실제 physics/analysis adapter와 worker | S01 golden·직접 엔진 동등성·단위/실패/취소, typecheck | 예정 |
+| CP0 | 사전 점검·실행 기록 | redesign:check, redesign:preflight -- 7 | 원격 보존 완료 |
+| CP1 | 실제 physics/analysis adapter와 worker | S01 golden·직접 엔진 동등성·단위/실패/취소, typecheck | 통과, 원격 보존 준비 |
 | CP2 | Lab 화면·저장·내보내기 수직 절편 | 관련 Vitest, typecheck, build, desktop/mobile/axe/keyboard/visual | 예정 |
 | CP3 | 전체 회귀·보존 증거·review 문서 | 전체 Vitest, dev/production 여정, catalog/inventory | 예정 |
 | STATUS | 완료 상태 별도 commit/push | 구현 원격 확인 후 status 원격 HEAD 확인 | 예정 |
@@ -40,6 +40,9 @@
 
 - 명시적 경로만 stage한다. 모든 구현과 검증이 원격에 존재할 때까지 nextStage=7 유지.
 - 각 checkpoint hash/push 증거는 다음 checkpoint에서 기록하며 최종 status hash는 사용자 보고에 기록한다.
+- CP0: `d00804e97e9848de86c236516b607f45afc5d13e`, push 성공, ls-remote 일치.
+- CP1: physics와 analysis targeted Vitest 및 S01 golden 통과 (`tmp/S07-adapters-vitest.json`), typecheck와 대상 ESLint 통과. 기존 engine/chaos 코드는 변경하지 않았다.
+- CP1 수치 범위: 두 시스템 S01 상태/RHS/에너지 golden, RK4/RK2/Euler 직접 엔진 parity, 단위·모델 버전·자원 한도·실패 rollback, Poincaré 교차/근 인증, 최대 Lyapunov 결정론과 실제 RHS progress, worker 종료/오류/늦은 메시지 무시.
 
 ## 후속
 

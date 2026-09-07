@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "pendulum-redesign-status/v1",
+  "planVersion": 2,
+  "branch": "codex/redesign",
+  "totalStages": 30,
+  "lastCompletedStage": 0,
+  "nextStage": 1,
+  "completedStages": [],
+  "blockedStage": null,
+  "notes": [
+    "Initialization documents are installed. Stage 1 begins the measured baseline and capability inventory.",
+    "Do not mark a stage complete until its required validation passes and its commits are pushed."
+  ]
+}

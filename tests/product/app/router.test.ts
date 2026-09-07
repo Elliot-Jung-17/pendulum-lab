@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createRouter } from '../../../src/product/app/router';
-import type { ProductSpace, RouteModule, RoutePort, RouteView } from '../../../src/product/app/types';
+import { createRouter, type RouterOptions } from '../../../src/product/app/router';
+import type { RouteModule, RoutePort, RouteView } from '../../../src/product/app/types';
 import { createExperimentRoute } from '../../../src/product/persistence/share-route';
 import { experimentFixture } from '../contracts/fixtures';
 
@@ -18,7 +18,7 @@ function makeView(title: string): RouteView {
   return { element: {} as HTMLElement, title, dispose: vi.fn() };
 }
 
-function setup(initialHash = '#/learn', loader?: (space: ProductSpace) => Promise<RouteModule>) {
+function setup(initialHash = '#/learn', loader?: RouterOptions['load']) {
   let hash = initialHash;
   const listeners = new Set<() => void>();
   const unsubscribe = vi.fn();
@@ -73,7 +73,7 @@ describe('product router', () => {
 
     expect(app.port.replaceHash).toHaveBeenCalledExactlyOnceWith('#/learn');
     expect(app.readHash()).toBe('#/learn');
-    expect(app.load).toHaveBeenCalledExactlyOnceWith('learn');
+    expect(app.load).toHaveBeenCalledExactlyOnceWith('learn', { kind: 'learn' });
     expect(app.createView).toHaveBeenCalledExactlyOnceWith({ route: { kind: 'learn' } }, app.document);
     expect(app.presentation.ready).toHaveBeenCalledExactlyOnceWith(app.view, 'learn');
   });
@@ -97,12 +97,14 @@ describe('product router', () => {
     ['#/learn/course-8', 'learn', { kind: 'learn-course', courseId: 'course-8' }],
     ['#/learn/course-8/8.12', 'learn', { kind: 'learn-unit', courseId: 'course-8', unitId: '8.12' }],
     ['#/lab', 'lab', { kind: 'lab' }],
-    ['#/lab/double', 'lab', { kind: 'lab-system', systemId: 'system:double' }]
-  ] as const)('loads only the selected space for reserved route %s', async (hash, space, route) => {
+    ['#/lab/double', 'lab', { kind: 'lab-system', systemId: 'system:double' }],
+    ['#/lab/compound-double', 'lab', { kind: 'lab-system', systemId: 'system:compound-double' }],
+    ['#/lab/spherical', 'lab', { kind: 'lab-system', systemId: 'system:spherical' }]
+  ] as const)('passes the selected space and validated route to the loader for %s', async (hash, space, route) => {
     const app = setup(hash);
     await app.router.start();
 
-    expect(app.load).toHaveBeenCalledExactlyOnceWith(space);
+    expect(app.load).toHaveBeenCalledExactlyOnceWith(space, route);
     expect(app.createView).toHaveBeenCalledExactlyOnceWith({ route }, app.document);
     expect(app.presentation.loading).toHaveBeenCalledExactlyOnceWith(space);
     expect(app.presentation.ready).toHaveBeenCalledExactlyOnceWith(app.view, space);
@@ -116,7 +118,11 @@ describe('product router', () => {
     const app = setup(route.value);
     await app.router.start();
 
-    expect(app.load).toHaveBeenCalledExactlyOnceWith('lab');
+    expect(app.load).toHaveBeenCalledExactlyOnceWith('lab', {
+      kind: 'lab-system',
+      systemId: 'system:double',
+      stateToken: route.value.split('state=')[1]
+    });
     expect(app.createView).toHaveBeenCalledExactlyOnceWith(
       {
         route: { kind: 'lab-system', systemId: 'system:double', stateToken: route.value.split('state=')[1] },
@@ -157,7 +163,10 @@ describe('product router', () => {
     await app.router.start();
     await app.visit('#/lab');
 
-    expect(app.load.mock.calls).toEqual([['learn'], ['lab']]);
+    expect(app.load.mock.calls).toEqual([
+      ['learn', { kind: 'learn' }],
+      ['lab', { kind: 'lab' }]
+    ]);
     expect(learnView.dispose).toHaveBeenCalledTimes(1);
     expect(labView.dispose).not.toHaveBeenCalled();
     expect(app.presentation.ready.mock.calls).toEqual([
@@ -185,6 +194,65 @@ describe('product router', () => {
     expect(staleCreateView).not.toHaveBeenCalled();
     expect(app.presentation.ready).toHaveBeenCalledExactlyOnceWith(labView, 'lab');
     expect(app.presentation.error).not.toHaveBeenCalled();
+  });
+
+  it.each(['resolve', 'reject'] as const)(
+    'ignores a core system load that %ss after returning to the Lab library in the same space',
+    async (outcome) => {
+      const pending = deferred<RouteModule>();
+      const staleCreateView = vi.fn(() => makeView('Stale double pendulum'));
+      const libraryView = makeView('System library');
+      const createLibraryView = vi.fn(() => libraryView);
+      const app = setup('#/lab/double', (_space, route) =>
+        route.kind === 'lab-system' ? pending.promise : Promise.resolve({ createView: createLibraryView })
+      );
+      const firstNavigation = app.router.start();
+      await app.visit('#/lab');
+      if (outcome === 'resolve') pending.resolve({ createView: staleCreateView });
+      else pending.reject(new Error('Stale core chunk failed'));
+      await firstNavigation;
+
+      expect(app.load.mock.calls).toEqual([
+        ['lab', { kind: 'lab-system', systemId: 'system:double' }],
+        ['lab', { kind: 'lab' }]
+      ]);
+      expect(staleCreateView).not.toHaveBeenCalled();
+      expect(createLibraryView).toHaveBeenCalledExactlyOnceWith({ route: { kind: 'lab' } }, app.document);
+      expect(app.presentation.ready).toHaveBeenCalledExactlyOnceWith(libraryView, 'lab');
+      expect(app.presentation.error).not.toHaveBeenCalled();
+      expect(app.readHash()).toBe('#/lab');
+    }
+  );
+
+  it('recovers from a core system chunk failure by opening a mock system in the same Lab space', async () => {
+    const libraryView = makeView('System library');
+    const mockView = makeView('Spherical preview');
+    const app = setup('#/lab', async (_space, route) => {
+      if (route.kind === 'lab') return { createView: () => libraryView };
+      if (route.kind === 'lab-system' && route.systemId === 'system:double') {
+        throw new Error('Core physics chunk unavailable');
+      }
+      return { createView: () => mockView };
+    });
+    await app.router.start();
+    await app.visit('#/lab/double');
+
+    expect(libraryView.dispose).toHaveBeenCalledTimes(1);
+    expect(app.presentation.error).toHaveBeenCalledExactlyOnceWith('chunk-error', 'lab');
+    expect(app.readHash()).toBe('#/lab/double');
+    await app.visit('#/lab/spherical');
+
+    expect(app.load.mock.calls).toEqual([
+      ['lab', { kind: 'lab' }],
+      ['lab', { kind: 'lab-system', systemId: 'system:double' }],
+      ['lab', { kind: 'lab-system', systemId: 'system:spherical' }]
+    ]);
+    expect(app.presentation.ready.mock.calls).toEqual([
+      [libraryView, 'lab'],
+      [mockView, 'lab']
+    ]);
+    expect(mockView.dispose).not.toHaveBeenCalled();
+    expect(app.port.replaceHash).not.toHaveBeenCalled();
   });
 
   it('does not let a pending view overwrite a newer invalid-route error', async () => {
@@ -279,7 +347,7 @@ describe('product router', () => {
     expect(app.presentation.error).toHaveBeenCalledExactlyOnceWith('render-error', 'learn');
     expect(app.load).toHaveBeenCalledTimes(1);
     await app.visit('#/lab');
-    expect(app.load).toHaveBeenLastCalledWith('lab');
+    expect(app.load).toHaveBeenLastCalledWith('lab', { kind: 'lab' });
     expect(app.presentation.ready).toHaveBeenLastCalledWith(app.view, 'lab');
   });
 

@@ -25,7 +25,10 @@ export function mountApplication(root: HTMLElement, window: Window) {
         return () => window.removeEventListener('hashchange', listener);
       }
     },
-    load: (space) => loaders[space](),
+    load: (space, route) =>
+      route.kind === 'lab-system' && ['system:double', 'system:compound-double'].includes(route.systemId)
+        ? import('./views/core-lab')
+        : loaders[space](),
     presentation: {
       loading(space) {
         shell.setSpace(space);

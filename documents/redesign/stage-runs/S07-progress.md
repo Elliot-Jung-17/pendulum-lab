@@ -16,8 +16,9 @@
 |---|---|---|---|
 | CP0 | 사전 점검·실행 기록 | redesign:check, redesign:preflight -- 7 | 원격 보존 완료 |
 | CP1 | 실제 physics/analysis adapter와 worker | S01 golden·직접 엔진 동등성·단위/실패/취소, typecheck | 원격 보존 완료 |
-| CP2 | Lab 화면·저장·내보내기 수직 절편 | 관련 Vitest, typecheck, build, desktop/mobile/axe/keyboard/visual | 통과, 원격 보존 준비 |
-| CP3 | 전체 회귀·보존 증거·review 문서 | 전체 Vitest, dev/production 여정, catalog/inventory | 예정 |
+| CP2 | Lab 화면·저장·내보내기 수직 절편 | 관련 Vitest, typecheck, build, desktop/mobile/axe/keyboard/visual | 원격 보존 완료 |
+| CP2B | 시스템별 지연 로딩 경계 수정 | router 36 tests, 원래 shell 보존 검사, 실제 core 라우트, typecheck/build | 통과, 원격 보존 준비 |
+| CP3 | 전체 회귀·보존 증거·review 문서 | 전체 Vitest, dev/production 여정, catalog/inventory | CP2B 후 candidate-complete 재검증 |
 | STATUS | 완료 상태 별도 commit/push | 구현 원격 확인 후 status 원격 HEAD 확인 | 예정 |
 
 ## 변경 예정 경로
@@ -43,6 +44,8 @@
 - CP2: 초기 Lab chunk와 별도 worker로 build 성공. 기존 catalog 134개, legacy inventory 883개/broken import 0/orphan 0, typecheck·ESLint·Prettier·source policy·module-size 검사 통과.
 - CP2: 독립 코드 검토로 다운로드 URL 해제, 비동기 import 세대 구분, 분석 상태에 따른 버튼 차단, 지원하지 않는 저장 분석의 명시적 복구, 현재 시각의 반복 음성 알림 억제를 점검했다. 이는 사람/전문가 검토가 아니다.
 - CP2 시각 결과: 기본 화면 캡처 6/6, 실제 Lyapunov 분석 화면 비교 4/4 통과. 새 분석 이미지 최초 생성에서는 없는 기준 이미지 4건이 실패로 기록되었고, 생성 이미지를 확인한 뒤 기준 갱신 없이 같은 4개 비교를 재실행해 통과했다. 제품 오류나 수치 golden 변경은 없었다.
+- CP3 최초 전체 browser 회귀에서 dev 110/112, production 98/100이었다. 두 프로젝트의 S04 동일 검사에서 시스템 목록 진입 시 계산 코드가 로드되는 문제가 발견되어 완료 표시를 보류했다. 실패 보고서는 tmp/S07-initial-dev-playwright.json 및 tmp/S07-initial-production-playwright.json에 보존했다.
+- CP2B: router가 검증된 route를 loader에 전달하고, double/compound는 별도 core-lab lazy chunk로 선택하도록 수정했다. 원래 S04 shell E2E는 완화하거나 변경하지 않았다. 기존 지연 로딩·저장 보존 검사 dev 2/2 및 production 2/2 통과, production core 실행·내보내기 4/4와 router 36개 테스트·typecheck·build 통과. 빠른 같은 공간 이동의 늦은 chunk 결과/실패 무시 및 오류 복구를 검증했다.
 
 ## Commit / 원격 증거
 
@@ -52,6 +55,7 @@
 - CP1: physics와 analysis targeted Vitest 및 S01 golden 통과 (`tmp/S07-adapters-vitest.json`), typecheck와 대상 ESLint 통과. 기존 engine/chaos 코드는 변경하지 않았다.
 - CP1 수치 범위: 두 시스템 S01 상태/RHS/에너지 golden, RK4/RK2/Euler 직접 엔진 parity, 단위·모델 버전·자원 한도·실패 rollback, Poincaré 교차/근 인증, 최대 Lyapunov 결정론과 실제 RHS progress, worker 종료/오류/늦은 메시지 무시.
 - CP1: `cbd4efefe9255747d0a43ce44468884edac0adf4`, push 성공, ls-remote 일치. 해당 checkpoint의 85/85 검증은 새 어댑터 72개와 기존 S01 golden 13개다.
+- CP2: `18540b850d91d13a127341d4ab9876951b365195`, push 성공, ls-remote 일치. nextStage=7을 유지한 채 모든 구현이 원격에 존재함을 확인하고 전체 최종 검증을 시작한다.
 
 ## 후속
 

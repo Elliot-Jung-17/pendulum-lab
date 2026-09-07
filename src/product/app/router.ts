@@ -1,11 +1,12 @@
 import { resolveProductRoute } from '../persistence/share-route';
+import type { ProductRoute } from '../contracts/routes';
 import type { ProductSpace, RouteModule, RoutePort, RoutePresentation, RouteView } from './types';
 
 export interface RouterOptions {
   readonly port: RoutePort;
   readonly presentation: RoutePresentation;
   readonly document: Document;
-  readonly load: (space: ProductSpace) => Promise<RouteModule>;
+  readonly load: (space: ProductSpace, route: ProductRoute) => Promise<RouteModule>;
 }
 
 /** Owns navigation generations so an old lazy load can never replace a newer route. */
@@ -55,7 +56,7 @@ export function createRouter({ port, presentation, document, load }: RouterOptio
       presentation.loading(space);
       let module: RouteModule;
       try {
-        module = await load(space);
+        module = await load(space, result.value.route);
       } catch {
         if (!disposed && pending === generation) presentation.error('chunk-error', space);
         return;

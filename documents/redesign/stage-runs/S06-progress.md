@@ -15,8 +15,8 @@
 | ID | 작업 | 검증 | 상태 |
 |---|---|---|---|
 | CP0 | 실행 기록과 activeStage | redesign:check, redesign:preflight -- 6 | 원격 보존 완료 |
-| CP1 | capability selector·mock 상태·실험실 화면·여정 | 관련 Vitest, typecheck, build, Playwright/axe/keyboard/mobile | 구현·통합 검증 완료 |
-| CP2 | 전체 회귀·시각 검증·운영 문서·보존 증거 | 전체 Vitest, dev/production E2E, catalog/inventory | 진행 예정 |
+| CP1 | capability selector·mock 상태·실험실 화면·여정 | 관련 Vitest, typecheck, build, Playwright/axe/keyboard/mobile | 원격 보존 완료 |
+| CP2 | 전체 회귀·시각 검증·운영 문서·보존 증거 | 전체 Vitest, dev/production E2E, catalog/inventory | candidate-complete, 전체 검증 완료 |
 | STATUS | 별도 완료 상태 | 구현 원격 확인, status push 및 원격 HEAD | 진행 예정 |
 
 ## 변경 예정 경로
@@ -43,14 +43,23 @@
 - 새 S06 browser 여정 desktop/mobile 14/14 통과, 지정 WCAG axe 위반 0, 320px·keyboard·CSS zoom 200%·640px reflow 검증. 시각 기준 6개 생성, desktop library/workspace와 mobile dark inspector 이미지를 직접 확인했다.
 - 독립 코드 검토 후 다운로드 Blob URL 지연 해제와 timer 정리, 진행 tick 음성 알림 중복 억제를 적용했다. 사람/전문가 검토로 기록하지 않는다.
 - 시각 기준 갱신 없이 S04/S05/S06 개발 browser 회귀 84/84 통과, 실패·skip·retry 0. 기존 gallery 시각 기준 12개도 그대로 유지했다. S06 정상 여정의 pageerror/console error 0이며 기존 오류 주입 테스트의 의도된 진단 출력만 존재한다.
+- CP2 전체 Vitest: 252개 파일 2,124/2,124 통과, 실패·pending 0. S05 전체 보고서 hash를 대조해 기존 251개 파일·2,101개 테스트가 모두 유지됨을 확인했다. 신규 1개 파일·23개 테스트.
+- CP2 실제 production browser 회귀: 72/72 통과, 실패·skip·retry 0. S04 shell 34 + S05 gallery 24 + S06 Lab 14이며 시각 기준은 갱신하지 않았다. 개발 전용 lifecycle 12개는 dev 회귀에서 별도로 통과했다.
+- [lab-shell-ko.md](../lab-shell-ko.md)의 링크 15개와 code fence를 검사했다. [S06-verification.json](S06-verification.json)에 원시 보고서와 screenshot hash, 기존 test 보존 대조, 입력/데이터/엔진 경계와 한계를 기록했다.
+- CP1 stage secret scan: tracked 1,242개/text 1,194개/binary 48개, 알려진 credential 패턴 0. history/ignored/binary 내용과 임의 비밀값은 범위 밖이다.
+- 보존 경로 Git diff 0: app.html, physics/chaos/research/runtime/workers/validation, 공개 lib, S03 contracts/persistence, package/lockfile, S01 baseline과 characterization. 기존 S04/S05 tests와 gallery baseline도 변경하지 않았다.
+- 최종 바탕화면 사본 hash 일치: roadmap `1d46e04691d4119ced60dacb41945c75d9d1a20f66cbaed2b3664909f47f8995`, 실행 계획 `803b191496edd95ebf2199a8983b920058109bb159d55f8bafeb0737fa735fc5`. 두 원본 계획을 수정하지 않아 다시 쓰지 않았다.
+- CP2에서 외부 stylesheet 연결 방식을 설명하는 CSS 주석만 바로잡았다. 실행 코드와 스타일 규칙은 CP1 검증본과 동일하다.
 
 ## Commit / 원격 증거
 
 - 명시적 경로만 stage한다. 모든 구현 원격 확인 전 nextStage=6을 유지한다.
 - 각 checkpoint commit/push 증거는 후속 checkpoint에 기록한다. 최종 status hash는 사용자 완료 보고에 기록한다.
 - CP0: `22bc16e90d61866894bdc46dcd109bba1a8ed027`, push 성공 및 ls-remote 일치.
+- CP1: `18cfd9aa501136748990677ced1eb4c510ada11b`, 구현 push 성공 및 ls-remote 일치. 원격 nextStage=6 상태에서 전체 회귀를 시작한다.
 
 ## 후속
 
 - S06은 사용자 review gate가 아니다. 사람/전문가 검토 완료를 주장하지 않는다.
 - 롤백 기준: `4933146` 및 기존 app.html. 완료 시 다음 유효 입력: “7단계 실행해줘.”
+- 새로 확인된 미해결 S06 결함은 없다. 실제 물리 실행은 S07, 다른 OS/browser와 실제 screen reader·사람 검토 및 기존 보안 기준선은 남아 있다.

@@ -1,4 +1,4 @@
-/* Loaded only with the laboratory route; existing app and gallery keep their styling. */
+/* Scoped to laboratory classes; the existing app and gallery keep their styling. */
 .lab-library,
 .lab-workspace {
   min-width: 0;

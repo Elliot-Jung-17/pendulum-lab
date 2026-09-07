@@ -16,8 +16,8 @@
 |---|---|---|---|
 | CP0 | 실행 기록과 activeStage | redesign:check, redesign:preflight -- 4 | 원격 보존 완료 |
 | CP1 | 병렬 진입점·공통 셸·라우터·오류 복구·테스트 | 관련 Vitest, typecheck, build, route/keyboard/axe smoke | 원격 보존 완료 |
-| CP2 | 전체 회귀·운영 설명·보존 증거 | C + 핵심 Playwright, 전체 Vitest, inventory/catalog | candidate-complete, 전체 검증 완료 |
-| STATUS | 구현 원격 확인 후 완료 상태 | 별도 status commit/push와 원격 HEAD | 예정 |
+| CP2 | 전체 회귀·운영 설명·보존 증거 | C + 핵심 Playwright, 전체 Vitest, inventory/catalog | candidate-complete, 검증·원격 보존 완료 |
+| STATUS | 구현 원격 확인 후 완료 상태 | 별도 status commit/push와 원격 HEAD | 별도 status commit; 원격 존재 시 S04 완료 |
 
 ## 변경 예정 경로
 
@@ -56,9 +56,12 @@
 - CP0: `3c626180bf0cee9cf6b61b91b1db7fa15931f7c6`, push 성공 및 ls-remote 일치.
 - CP1: `7642e5258008e7f7bfbcd48dfdef56354f37b145`, 구현 push 성공 및 ls-remote 일치. 원격 nextStage=4 유지 후 전체 검증을 시작한다.
 - CP1 명시적 staging 뒤 secret scan의 알려진 패턴 탐지 0. Git history/ignored/binary 내용/임의 비밀값은 검사 범위 밖이다.
+- CP2: `58ecb05a94598387c88afb4bc5a6a6aa52818692`, 문서/검증 증거 push 성공 및 ls-remote 일치. 최종 status commit 전에 모든 구현과 검증 증거의 원격 존재를 확인했다.
+- STATUS: CP2 원격 확인 후 본 기록과 status.json만 별도 commit한다. 최종 status hash와 원격 확인은 사용자 보고에 남긴다. 원격 존재 전에는 로컬 완료 표시가 효력을 갖지 않는다.
 
 ## 후속
 
 - S04는 사용자 review gate가 아니다. 사람/전문가 검토를 수행했다고 표시하지 않는다.
 - 롤백 기준: `543bfc8` 및 계속 제공되는 기존 `app.html`.
 - STATUS 원격 확인 후 다음 유효 단계는 S05이다.
+- 다음 유효 입력은 “5단계 실행해줘.”이다. S04의 신규 확인 미해결 결함은 없으며, 기존 보안 기준선과 이후 UI/실행/교육·PWA 검증 범위는 남아 있다.

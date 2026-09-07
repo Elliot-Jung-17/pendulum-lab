@@ -1,10 +1,13 @@
 # Pendulum Lab 완전 재설계 마스터 로드맵
 
-> 계획 버전: v2
+> 계획 버전: v2.1 안전 보강판
 >
 > 기준일: 2026-09-07
 >
 > 실행 단위: `execution-plan-ko.md`의 30단계
+>
+> 권장 실행 프로필: GPT-6 Astra / Ultra
+>
 > 적용 대상: 기존 `pendulum_lab_modular` 저장소
 
 ## 1. 결론
@@ -29,6 +32,8 @@
 - 새 작업 브랜치: `codex/redesign`
 
 이 수치는 재설계의 출발점이다. S01에서 자동 생성 가능한 인벤토리와 기준 보고서로 다시 고정한다.
+
+사용자는 Git 브랜치를 직접 관리하지 않고 `pendulum_lab_modular` 폴더와 바탕화면의 두 전달용 문서를 첨부한 뒤 단계 번호만 요청할 수 있다. Codex가 `stage-run-protocol-ko.md`에 따라 저장소·브랜치·원격 상태를 자동 확인한다. 저장소 내부 문서가 항상 원본이며 전달용 문서는 이를 대체하지 않는다.
 
 ## 3. 절대 보존할 자산
 
@@ -335,22 +340,26 @@ S28에서 기존 기능 하나마다 새 접근 경로, 결과 동등성, 저장
 | 기존 기능 유실 | 자동 인벤토리와 parity matrix | 소유자 없는 기존 기능 발견 |
 | 수치 결과 변화 | characterization/golden test, adapter 우선 | 허용 오차 밖 결과 |
 | 두 엔진 생성 | Focus Experiment에 계산 코드 금지 | 중복 운동방정식 발견 |
-| 단계가 너무 커짐 | 30개 deliverable, 단계당 1~3 commit | 범위 외 파일 변경 필요 |
+| 단계가 너무 커짐 | 30개 사용자 단계 안에서 bounded checkpoint와 중간 push | checkpoint 없이 대규모 diff 누적 |
 | 데이터 손상 | versioned migration, 원본 보존, round-trip test | 되돌릴 수 없는 변환 |
 | UI 과밀 재발 | capability filter와 progressive disclosure | 비호환 제어 상시 노출 |
 | 느린 분석이 UI 정지 | worker, progress, cancel, resource limit | 취소 불가 장기 작업 |
 | 문서와 구현 불일치 | registry에서 목록/상태 생성 | 수동 중복 목록 증가 |
-| 브랜치/코드 유실 | 장기 브랜치, 명시적 staging, 매 단계 push | dirty tree 또는 push 실패 |
+| 브랜치/코드 유실 | 자동 branch preflight, 명시적 staging, checkpoint push | dirty/diverged tree 또는 push 실패 |
+| 상태와 원격 불일치 | 구현 push 후 별도 status commit과 원격 hash 확인 | 원격에 없는 완료 상태 |
+| 과학 설명 오류 | 자동 식·단위 검사, 출처 대조, 사람 검토 상태 분리 | 출처 없는 공개 단원 |
+| 공급망·입력 보안 | S01/S30 audit와 importer 공격 fixture | 판정되지 않은 high/critical 위험 |
 
 ## 16. Git·작업 운영 규칙
 
-- 모든 단계는 `codex/redesign`에서 실행한다.
-- 실행 전 `git status`, 현재 브랜치, `status.json`, 의존 단계, 원격 동기 상태를 확인한다.
+- 사용자는 세 항목을 첨부하고 번호만 입력할 수 있으며 Codex가 저장소와 `codex/redesign`을 자동으로 찾는다.
+- 실행 전 fetch, `git status`, 현재 브랜치, HEAD/upstream, `status.json`, 의존 단계, 원격 동기 상태를 확인한다.
 - 무관한 변경이 있으면 자동으로 stash/reset하지 않고 중단한다.
-- 한 요청은 한 단계만 수행한다. 단계 내부에서 1~3개의 응집된 커밋을 허용한다.
+- 한 요청은 한 단계만 수행한다. 큰 단계는 progress 문서와 bounded checkpoint commit으로 나누되 사용자의 추가 입력을 요구하지 않는다.
 - `git add -A`를 쓰지 않고 변경한 경로만 명시적으로 stage한다.
 - 검증 실패 상태를 완료로 표시하거나 push하지 않는다.
-- push 성공을 확인한 뒤 사용자에게 commit hash와 다음 번호를 보고한다.
+- 구현 checkpoint를 먼저 push하고 마지막 status commit을 다시 push한다. 원격 hash 확인 전에는 완료가 아니다.
+- S07, S09, S17, S24, S28 뒤에는 사용자 review checklist를 제공하며 다음 번호 요청을 승인으로 기록한다.
 - merge, tag, release, 기존 브랜치 삭제는 별도 승인 없이는 수행하지 않는다.
 
 ## 17. 릴리스 이정표
@@ -368,11 +377,13 @@ S28에서 기존 기능 하나마다 새 접근 경로, 결과 동등성, 저장
 
 - 제품 최상위 구조가 배우기/실험실 두 공간으로 일관된다.
 - 8개 과정·86개 단원이 schema와 콘텐츠 품질 검사를 통과한다.
+- 모든 단원이 최소 `source-checked`이고 `human-reviewed` 여부를 사실대로 구분한다.
 - 각 단원에 계산 엔진을 재사용하는 전용 실험과 실험실 전달이 있다.
 - 모든 기존 시스템·분석·계산·비교·가져오기·내보내기 기능이 새 UI에서 도달 가능하다.
 - 기능 잠금과 audience mode가 없다.
 - 기존 저장 데이터와 공유 링크가 migration 또는 명시적 복구 안내로 처리된다.
 - parity matrix가 100% 통과하고 전체 테스트·E2E·접근성·성능·standalone 검증이 통과한다.
+- dependency·secret·입력 보안 감사에서 high/critical 항목이 해결되거나 근거와 승인 아래 명시적으로 판정된다.
 - `app.html` 전환 뒤에도 rollback이 가능하다.
 - 문서, 상태, Git 기록, 원격 브랜치가 일치한다.
 - Landing Page 재설계를 시작할 수 있는 실제 제품 메시지·화면·라우트 handoff 문서가 있다.

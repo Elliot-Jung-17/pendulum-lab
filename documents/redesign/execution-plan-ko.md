@@ -1,23 +1,32 @@
 # Pendulum Lab 재설계 Codex 실행 계획
 
-> 계획 버전: v2
+> 계획 버전: v2.1 안전 보강판
 >
 > 총 단계: 30
 >
 > 대상 브랜치: `codex/redesign`
+>
+> 권장 실행 프로필: GPT-6 Astra / Ultra
+>
 > 제품 코드 기준 저장소: 현재 `pendulum_lab_modular`
 
 ## 1. 사용법
 
-새 대화에서도 이 저장소와 `codex/redesign` 브랜치를 연 뒤 아래처럼 번호만 말하면 된다.
+새 대화에 다음 세 항목을 첨부한 뒤 번호만 말하면 된다.
+
+1. `pendulum_lab_modular` 폴더
+2. `Pendulum_Lab_Complete_Redesign_Roadmap_KO.md`
+3. `Pendulum_Lab_Codex_Execution_Steps_KO.md`
 
 ```text
 1단계 실행해줘.
 ```
 
-`1단계`, `S01`, `재설계 1단계`도 같은 요청으로 해석한다. 루트 `AGENTS.md`가 이 문서와 `master-roadmap-ko.md`, `curriculum-map-ko.md`, `status.json`을 먼저 읽도록 한다. 사용자가 긴 지시문을 매번 복사할 필요는 없다.
+`1단계`, `S01`, `재설계 1단계`도 같은 요청으로 해석한다. 사용자는 Git 브랜치를 직접 선택할 필요가 없다. Codex가 첨부 폴더의 저장소를 확인하고, 사용자 변경이 없는 경우에만 원격 `codex/redesign`과 일치하도록 자동 준비한다.
 
-한 단계가 큰 경우 Codex 내부 문맥이 갱신되어도 같은 작업을 계속한다. 안전하게 완료할 수 없는 외부 차단 사유가 생기지 않는 한, 사용자에게 하위 단계 번호를 다시 입력하라고 돌려보내지 않는다.
+두 바탕화면 Markdown은 전달용 사본이다. 저장소의 `AGENTS.md`와 `documents/redesign/`가 항상 원본이다. 자세한 branch 선택, 중간 보존, push 복구와 승인 규칙은 `stage-run-protocol-ko.md`를 따른다.
+
+한 단계가 큰 경우 Codex 내부 문맥이 갱신되어도 같은 작업을 계속하고, 내부 checkpoint를 commit/push한다. 안전하게 완료할 수 없는 외부 차단 사유가 생기지 않는 한, 사용자에게 하위 단계 번호를 다시 입력하라고 돌려보내지 않는다.
 
 ## 2. 프로젝트와 Git 정책
 
@@ -25,22 +34,25 @@
 
 모든 단계에서 다음 순서를 지킨다.
 
-1. `git status --short --branch`, 현재 HEAD와 원격을 확인한다.
-2. `status.json`의 `nextStage`가 요청 번호인지 확인한다.
-3. 이전 단계의 commit과 필수 산출물을 확인한다.
-4. 변경 전 관련 기존 코드와 테스트를 읽고 characterization 필요성을 판단한다.
-5. 선택 단계의 범위만 구현한다.
-6. 단계에 지정된 검증과 변경 diff 검토를 완료한다.
-7. 변경 경로만 명시적으로 stage한다. `git add -A`는 사용하지 않는다.
-8. 1~3개의 집중된 commit을 만든다.
-9. 구현과 검증 성공 후 `status.json`을 완료 상태로 갱신해 마지막 commit에 넣는다.
-10. `origin/codex/redesign`에 push하고 성공 여부를 실제 출력으로 확인한다.
+1. 첨부 폴더에서 Git 저장소 루트를 확인한다.
+2. dirty worktree를 검사하고 `origin/codex/redesign`을 fetch한다.
+3. 안전 프로토콜에 따라 redesign 브랜치를 자동 선택하고 로컬/원격 HEAD를 일치시킨다.
+4. `npm run redesign:check`와 `npm run redesign:preflight -- N`을 통과시킨다.
+5. `status.json`의 `nextStage`, 이전 단계의 원격 status commit과 필수 산출물을 확인한다.
+6. 단계 progress 문서에 내부 checkpoint, 보존 계약, 변경 경로와 검증을 먼저 기록하고 `activeStage`만 갱신한다. `nextStage`는 유지한다.
+7. 관련 기존 코드와 테스트를 읽고 characterization test 필요성을 판단한다.
+8. 선택 단계만 checkpoint 단위로 구현·검증·명시적 stage·commit·push한다.
+9. 모든 구현 commit이 원격에 있음을 확인한 뒤 단계 전체 검증을 실행한다.
+10. 마지막에만 `status.json`을 완료 상태로 갱신해 별도 status commit으로 push한다.
+11. 원격 branch가 status commit을 가리킬 때만 단계 완료를 보고한다.
 
 금지 사항:
 
 - `master` 직접 commit/push, force push, 자동 merge
 - dirty worktree의 사용자 변경을 stash/reset/restore/delete
 - 검증 실패를 무시한 완료 표시
+- 원격보다 앞서거나 갈라진 상태에서 다음 단계 시작
+- push되지 않은 로컬 `status.json`을 근거로 다음 단계 시작
 - 기능 동등성 확인 전 기존 진입점·API·저장 형식 삭제
 - 선택한 번호 이후 단계의 선행 구현
 
@@ -83,6 +95,7 @@
 - standalone/PWA/offline smoke
 - 성능·메모리·bundle 회귀
 - migration과 rollback rehearsal
+- dependency/secret/supply-chain 감사와 high/critical 판정 기록
 
 ## 4. 단계 공통 완료 정의
 
@@ -94,7 +107,9 @@
 - 문서와 구현된 registry가 일치한다.
 - 변경 diff에 단계 밖 수정, 비밀정보, 생성 쓰레기가 없다.
 - `status.json`의 `completedStages`, `lastCompletedStage`, `nextStage`, `blockedStage`가 일관된다.
-- 규정된 commit이 만들어지고 원격 push가 성공한다.
+- stage progress 문서에 checkpoint·test·commit·보존 증거가 남아 있다.
+- 모든 구현 commit을 먼저 push한 뒤 별도의 status commit이 원격에 존재한다.
+- review checkpoint 단계에서는 사용자가 확인할 화면과 checklist를 제공한다.
 
 ## 5. 30단계 실행표
 
@@ -102,10 +117,10 @@
 
 - **의존성:** 없음. `status.json.nextStage = 1`이어야 한다.
 - **목표:** 재설계 중 어떤 계산·기능·데이터도 잃지 않도록 현재 상태를 기계적으로 기록한다.
-- **구현:** 시스템, 분석, 적분기, 제어, importer/exporter, 저장 schema, route, worker, public API, 테스트 fixture를 스캔하는 read-only inventory script와 보고서를 만든다. 대표 시스템의 수치 golden fixture, 시작 시간/FPS/메모리/대표 분석 시간 기준도 기록한다. 기존 1,647개 테스트 기준과 실제 현재 결과 차이를 설명한다.
+- **구현:** 시스템, 분석, 적분기, 제어, importer/exporter, 저장 schema, route, worker, public API, 테스트 fixture를 스캔하는 read-only inventory script와 보고서를 만든다. 대표 시스템의 수치 golden fixture, 시작 시간/FPS/메모리/대표 분석 시간 기준도 기록한다. 기존 1,647개 테스트 기준과 실제 현재 결과 차이를 설명한다. lockfile, dependency audit, secret scan과 GitHub의 알려진 보안 경고도 현재 기준선으로 기록하되 자동 upgrade는 하지 않는다.
 - **주요 경로:** `scripts/redesign/`, `documents/redesign/baseline/`, `tests/characterization/`, 기존 module index.
 - **검증:** D + 전체 `npm test`; inventory에서 발견한 모든 항목에 소유 파일과 향후 단계가 있어야 한다.
-- **완료 게이트:** orphan 기능 0개, 깨진 registry import 0개, golden fixture 재실행 가능, baseline 보고서가 commit/환경 정보를 포함한다.
+- **완료 게이트:** orphan 기능 0개, 깨진 registry import 0개, golden fixture 재실행 가능, baseline 보고서가 commit/환경 정보와 해결/미해결 보안 항목을 포함한다.
 - **권장 commit:** `test(redesign): lock simulation behavior baseline`, `docs(redesign): inventory existing capabilities`.
 
 ### S02 — 통합 시스템·분석·적분기 카탈로그
@@ -165,7 +180,7 @@
 - **구현:** double/compound adapter, animation, 상태/시간, 에너지, 위상공간, Poincaré, 최대 Lyapunov, CSV/figure/state export를 연결한다. 물성·초기조건·적분기 schema와 오류/단위 경고, 긴 분석의 progress/cancel을 제공한다.
 - **주요 경로:** `src/product/adapters/physics/`, `src/product/lab/views/`, `src/product/adapters/analysis/`, 관련 tests.
 - **검증:** E + U; S01 golden 결과와 허용 오차 비교.
-- **완료 게이트:** 두 시스템의 save/reload/export round trip, 분석 취소, 기존 결과 동등성, desktop/mobile 여정 통과.
+- **완료 게이트:** 두 시스템의 save/reload/export round trip, 분석 취소, 기존 결과 동등성, desktop/mobile 여정 통과. 완료 보고에 첫 사용자 review checklist와 미리보기 경로를 포함한다.
 - **권장 commit:** `feat(lab): deliver double and compound pendulum slice`, `test(lab): verify core numerical parity`.
 
 ### S08 — 배우기 콘텐츠 파이프라인과 단원 프레임
@@ -185,7 +200,7 @@
 - **구현:** 과정 1의 1.1~1.8 콘텐츠를 완성한다. Focus Experiment runtime은 S07 adapter를 재사용하고 단원별 노출/고정 변수, plot, 관찰 task를 선언으로 구성한다. `실험실에서 계속`은 canonical state와 출처 단원을 전달한다.
 - **주요 경로:** `content/learn/course-1/`, `src/product/experiments/`, 관련 unit/E2E.
 - **검증:** E + U + 8단원 콘텐츠 품질 검사.
-- **완료 게이트:** 8/8 단원 완성, 중복 운동방정식 0, 단원→Lab→뒤로가기 상태 보존, 모든 예상 관찰값 검증.
+- **완료 게이트:** 8/8 단원 완성, 중복 운동방정식 0, 단원→Lab→뒤로가기 상태 보존, 모든 예상 관찰값 검증. 학습 경험 review checklist와 과학 검증 등급을 보고한다.
 - **권장 commit:** `feat(learn): publish double-pendulum course`, `feat(experiments): connect focused experiments to lab`, `test(learn): cover course one journeys`.
 
 ### S10 — 삼중진자·N중 사슬
@@ -265,7 +280,7 @@
 - **구현:** standard-map/QKR/unitary-Floquet adapters, iteration runner, phase cylinder, wavefunction/quasienergy views, normalization/unitarity diagnostics를 추가한다. 시간 적분기 대신 호환 가능한 stepper만 표시한다.
 - **주요 경로:** map/quantum catalog/adapters/views/workers, tests.
 - **검증:** E + U; norm/unitarity, known spectra, deterministic iteration, complex state serialization.
-- **완료 게이트:** 고전/양자 단위와 state 표현 명확, 비호환 연속계 분석 차단, export 복원 가능.
+- **완료 게이트:** 고전/양자 단위와 state 표현 명확, 비호환 연속계 분석 차단, export 복원 가능. 전체 시스템 패밀리 탐색·설정 review checklist를 제공한다.
 - **권장 commit:** `feat(lab): integrate maps and quantum floquet systems`, `test(lab): verify discrete and unitary evolution`.
 
 ### S18 — 핵심 카오스 진단 통합
@@ -335,7 +350,7 @@
 - **구현:** project/session/run/artifact 계층, notebook narrative, figure composer, report, provenance ZIP, reviewer view를 통합한다. 파일명, manifest, checksum, software/schema version, citations를 포함한다. 기존 research export와 호환 adapter를 둔다.
 - **주요 경로:** `src/product/provenance/`, research workspace/export adapters, `reviewer.html`, tests.
 - **검증:** E + U; ZIP manifest/checksum, import round trip, reviewer offline view, unsafe path 검사.
-- **완료 게이트:** 새 환경에서 패키지 검증·열기 가능, figure가 원 run을 추적, 누락 artifact 명시.
+- **완료 게이트:** 새 환경에서 패키지 검증·열기 가능, figure가 원 run을 추적, 누락 artifact 명시. 연구 워크플로 review checklist와 재현 패키지를 제공한다.
 - **권장 commit:** `feat(research): deliver reproducible project workflow`, `test(research): verify provenance packages and reviewer`.
 
 ### S25 — 교육과정 2~3 제작
@@ -362,10 +377,10 @@
 
 - **의존성:** S26.
 - **목표:** 분기, 네트워크·장·양자, 재현 연구 37개 단원을 완성해 총 86개를 닫는다.
-- **구현:** 6.1~6.12, 7.1~7.13, 8.1~8.12를 제작하고 S15~S24 기능을 Focus Experiment로 연결한다. 과정/용어/참고 문헌 index와 추천 경로를 완성한다.
+- **구현:** 6.1~6.12, 7.1~7.13, 8.1~8.12를 제작하고 S15~S24 기능을 Focus Experiment로 연결한다. 과정/용어/참고 문헌 index와 추천 경로를 완성한다. 37개 단원은 과정 또는 4~6개 단원 묶음의 내부 checkpoint로 나누고 각 묶음을 검증·commit·push하여 중간 결과를 보존한다.
 - **주요 경로:** `content/learn/course-6/`~`course-8/`, curriculum index/tests.
 - **검증:** D + E + U; 전체 86개 ID/route/schema/실험/transfer 전수 검사.
-- **완료 게이트:** 정확히 8과정·86단원, broken ref 0, 기능 잠금 0, 모든 전용 실험이 공용 엔진 사용.
+- **완료 게이트:** 정확히 8과정·86단원, broken ref 0, 기능 잠금 0, 모든 전용 실험이 공용 엔진 사용. 모든 단원이 최소 `automated-verified`와 `source-checked` 상태이며 검토자를 가장한 표시는 없다.
 - **권장 commit:** `feat(learn): publish bifurcation and extended-systems curricula`, `feat(learn): publish reproducible-research curriculum`, `test(learn): validate all eighty-six units`.
 
 ### S28 — 저장·공유 migration과 기능 동등성 심사
@@ -375,7 +390,7 @@
 - **구현:** legacy 저장/URL/import/share를 canonical state로 읽는 versioned migration, 백업/preview/오류 복구를 완성한다. S01 inventory의 각 항목에 새 UI 경로, 결과 비교, 테스트, export를 연결하는 parity matrix를 자동 검증한다. landing의 기존 simulator URL 계약도 기록한다.
 - **주요 경로:** persistence migrations, compatibility routes, `documents/redesign/parity/`, tests/fixtures.
 - **검증:** R 중 migration/parity 전체 + 기존/새 E2E 병렬.
-- **완료 게이트:** parity 100%, migration fixture 100%, 원본 손상 0, 미지원 데이터에는 복구 가능한 명시적 안내. 하나라도 미달이면 S29 금지.
+- **완료 게이트:** parity 100%, migration fixture 100%, 원본 손상 0, 미지원 데이터에는 복구 가능한 명시적 안내. cutover review checklist, rollback 절차와 미검토 교육 콘텐츠 상태를 보고한다. 하나라도 미달이면 S29 금지.
 - **권장 commit:** `feat(migration): preserve legacy experiments and links`, `test(redesign): certify complete feature parity`, `docs(redesign): record cutover evidence`.
 
 ### S29 — 새 `app.html` 전환과 audience mode 제거
@@ -392,10 +407,10 @@
 
 - **의존성:** S29.
 - **목표:** 완성 결과를 공개 가능한 품질로 검증하고, 이후 Landing Page 재설계에 정확한 입력을 제공한다.
-- **구현:** 발견된 결함·접근성·반응형·성능·메모리·bundle·오류 문구를 수정한다. 사용자 여정, 86단원, 모든 시스템/분석, migration, offline/standalone, export를 전수 검증한다. 운영/복구/지원 문서와 Landing용 제품 메시지·실제 화면 목록·route/CTA 계약만 작성한다. release/merge 자체는 하지 않는다.
+- **구현:** 발견된 결함·접근성·반응형·성능·메모리·bundle·오류 문구를 수정한다. 사용자 여정, 86단원, 모든 시스템/분석, migration, offline/standalone, export를 전수 검증한다. dependency/secret/supply-chain 감사를 다시 실행하고 high/critical 항목을 해결하거나 영향·완화·승인과 함께 명시적으로 보류한다. 운영/복구/지원 문서와 Landing용 제품 메시지·실제 화면 목록·route/CTA 계약만 작성한다. release/merge 자체는 하지 않는다.
 - **주요 경로:** 전 제품 관련 경로, `documents/redesign/release/`, test reports; Landing 저장소는 변경하지 않음.
 - **검증:** R 전체를 깨끗한 설치와 기준 환경에서 반복; blocker/critical 0.
-- **완료 게이트:** 전체 CI green, parity 100%, 86단원 100%, WCAG 자동 위반 0, 성능 예산 충족 또는 승인된 근거, rollback 검증, release candidate 보고서 완성.
+- **완료 게이트:** 전체 CI green, parity 100%, 86단원 100%, WCAG 자동 위반 0, 성능 예산 충족 또는 승인된 근거, security disposition 완성, 과학 검증 등급 공개, rollback 검증, release candidate 보고서 완성.
 - **권장 commit:** `fix(redesign): resolve release-candidate defects`, `docs(redesign): complete release and landing handoff`, `chore(redesign): mark implementation plan complete`.
 
 ## 6. 단계 번호와 의존성 요약
@@ -437,17 +452,25 @@
 
 ## 7. `status.json` 갱신 규칙
 
-SNN이 성공하면 마지막 commit 직전에 다음처럼 갱신한다.
+구현 checkpoint가 모두 검증되어 원격에 push되기 전에는 `nextStage`를 바꾸지 않는다. 구현 commit의 원격 존재를 확인한 뒤 별도의 status commit에서 다음처럼 갱신한다.
 
 - `lastCompletedStage`: N
 - `nextStage`: N+1, S30 완료 시 `null`
 - `completedStages`: 중복 없이 1부터 N까지의 정수
 - `blockedStage`: `null`
+- `activeStage`: `null`
+- `activeStageCheckpoint`: `null`
 - `notes`: 지속할 위험이나 다음 단계에 필요한 사실만 간결하게 유지
 
-실패하거나 push되지 않은 단계는 완료 목록에 넣지 않는다. 같은 장애가 이어져도 실제 제품 코드를 되돌리지 않고, 오류와 현재 commit 상태를 보고한 뒤 같은 번호에서 재개한다.
+status commit까지 push하고 원격 HEAD를 확인해야 완료다. 최종 push가 실패하면 로컬 완료 표시는 효력이 없으며 다음 요청은 그 push 복구부터 수행한다. 같은 장애가 이어져도 실제 제품 코드를 되돌리지 않고, 오류와 현재 commit 상태를 보고한 뒤 같은 번호에서 재개한다.
 
-## 8. 단계 완료 보고 형식
+## 8. 사용자·과학 검토 게이트
+
+S07, S09, S17, S24, S28은 완료 보고에 사용자가 확인할 화면, 예상 동작, 알려진 차이를 포함한다. 그 보고를 받은 사용자가 다음 단계 번호를 입력하면 직전 checkpoint 승인으로 기록한다. 다음 번호가 아닌 질문이나 수정 요청은 승인으로 간주하지 않는다.
+
+교육 콘텐츠는 `automated-verified`, `source-checked`, `human-reviewed`를 분리한다. AI가 작성하거나 AI만 재검토한 단원에는 `human-reviewed`를 부여하지 않는다. S29 전환 전에는 86개 단원이 최소 `source-checked`여야 하며, 사람의 검토가 남았다면 화면과 release 보고서에 이를 공개한다.
+
+## 9. 단계 완료 보고 형식
 
 Codex는 각 단계 끝에 다음을 한국어로 보고한다.
 
@@ -456,8 +479,9 @@ SNN 완료/미완료
 - 결과: 사용자가 확인할 수 있는 변화
 - 변경: 핵심 파일과 계약
 - 검증: 실행한 명령, 통과/실패 개수
-- Git: commit hash와 origin/codex/redesign push 결과
+- Git: checkpoint/status commit hash와 각각의 origin/codex/redesign push 결과
 - 보존: 기존 엔진/API/데이터에 미친 영향
+- 검토: 사용자 checkpoint, 과학 검증, 보안 상태
 - 남은 위험: 없으면 없음
 - 다음 입력: “N+1단계 실행해줘.”
 ```

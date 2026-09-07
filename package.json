@@ -112,6 +112,8 @@
     "docs:api": "typedoc",
     "preview": "vite preview --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
+    "redesign:check": "tsx scripts/redesign/validate-plan.ts",
+    "redesign:preflight": "tsx scripts/redesign/preflight-stage.ts",
     "lint": "npm run lint:policy && npm run lint:eslint",
     "lint:policy": "tsx scripts/lint-source.ts",
     "lint:eslint": "eslint src scripts tests e2e --max-warnings 0",

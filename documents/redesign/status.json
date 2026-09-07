@@ -1,14 +1,24 @@
 {
-  "schemaVersion": "pendulum-redesign-status/v1",
-  "planVersion": 2,
+  "schemaVersion": "pendulum-redesign-status/v2",
+  "planVersion": "2.1",
   "branch": "codex/redesign",
+  "executionProfile": {
+    "model": "gpt-6-astra",
+    "reasoningEffort": "ultra",
+    "selectedByUser": true
+  },
   "totalStages": 30,
   "lastCompletedStage": 0,
   "nextStage": 1,
   "completedStages": [],
   "blockedStage": null,
+  "activeStage": null,
+  "activeStageCheckpoint": null,
+  "reviewGates": [7, 9, 17, 24, 28],
+  "approvedReviewGates": [],
   "notes": [
-    "Initialization documents are installed. Stage 1 begins the measured baseline and capability inventory.",
-    "Do not mark a stage complete until its required validation passes and its commits are pushed."
+    "Safety plan v2.1 is installed. Stage 1 begins the measured baseline, capability inventory, and security baseline.",
+    "Repository documents are authoritative; desktop documents are transport copies.",
+    "A stage is complete only when its final status commit is verified on origin/codex/redesign."
   ]
 }

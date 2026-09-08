@@ -20,8 +20,8 @@
     7
   ],
   "blockedStage": null,
-  "activeStage": null,
-  "activeStageCheckpoint": null,
+  "activeStage": 8,
+  "activeStageCheckpoint": "CP0",
   "reviewGates": [
     7,
     9,
@@ -29,7 +29,7 @@
     24,
     28
   ],
-  "approvedReviewGates": [],
+  "approvedReviewGates": [7],
   "notes": [
     "S07 connects the existing double and compound-double physics with RK4/RK2/Euler, animation, state/time, energy, phase, Poincare and maximal Lyapunov, worker progress/cancel, explicit save/reload and JSON/CSV/SVG export. See core-lab-ko.md and stage-runs/S07-verification.json. Full Vitest 256 files/2233 tests passed, preserving all previous 2124 tests (five router case titles renamed with stronger route assertions) and adding 109. Dev Chromium desktop/mobile 112/112 and production 100/100 journeys passed with zero failed/skipped/flaky tests; typecheck, build and S01 golden checks passed.",
     "Only double/compound-double now produce real physics in next.html. The other 32 systems retain explicit S06 mock behavior; no S08 content pipeline or later integration was implemented. System library and Learn retain lazy-loading isolation from physics/chaos. A full-browser regression exposed premature loading and was fixed in a separate validated CP2B before completion; the original shell preservation test was unchanged.",

@@ -10,25 +10,11 @@
   "totalStages": 30,
   "lastCompletedStage": 7,
   "nextStage": 8,
-  "completedStages": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-  ],
+  "completedStages": [1, 2, 3, 4, 5, 6, 7],
   "blockedStage": null,
   "activeStage": 8,
-  "activeStageCheckpoint": "CP2",
-  "reviewGates": [
-    7,
-    9,
-    17,
-    24,
-    28
-  ],
+  "activeStageCheckpoint": "CP3",
+  "reviewGates": [7, 9, 17, 24, 28],
   "approvedReviewGates": [7],
   "notes": [
     "S07 connects the existing double and compound-double physics with RK4/RK2/Euler, animation, state/time, energy, phase, Poincare and maximal Lyapunov, worker progress/cancel, explicit save/reload and JSON/CSV/SVG export. See core-lab-ko.md and stage-runs/S07-verification.json. Full Vitest 256 files/2233 tests passed, preserving all previous 2124 tests (five router case titles renamed with stronger route assertions) and adding 109. Dev Chromium desktop/mobile 112/112 and production 100/100 journeys passed with zero failed/skipped/flaky tests; typecheck, build and S01 golden checks passed.",

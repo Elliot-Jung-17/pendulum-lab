@@ -42,4 +42,4 @@ S08 수식은 평가하지 않는 제한된 문자열과 모든 기호의 정의
 
 S07 사용자 구조 승인은 이번 S08 요청으로 기록했다. S08 자체는 별도 사용자 review gate가 아니며 다음 유효 단계는 S09다. 과학 전문가 검토, 실제 screen reader 음성, 다른 OS/브라우저 범위와 전체 release 감사는 수행 범위에 포함되지 않는다. 기존 S01 보안 기준선의 npm high 2/moderate 2, CodeQL 32는 미해결이다. S08 시작 push에서 GitHub가 별도로 default-branch Dependabot high 5를 알렸으며 종전 보고의 high 4와 구분한다. 이번 단계는 취약점 해결이나 위험 수용을 뜻하지 않는다.
 
-검증 수치와 commit/push 증거는 [S08 progress](stage-runs/S08-progress.md)와 최종 검증 JSON에 기록한다.
+검증 수치와 commit/push 증거는 [S08 progress](stage-runs/S08-progress.md)와 [S08 검증 JSON](stage-runs/S08-verification.json)에 기록한다.

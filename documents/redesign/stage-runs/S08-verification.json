@@ -1,0 +1,219 @@
+{
+  "schemaVersion": "pendulum-redesign-verification/v1",
+  "stage": 8,
+  "state": "candidate-complete",
+  "baselineCommit": "acd7f869db182376b726e337606335eeabe0d541",
+  "implementationCommit": "8011ef1e61a19eb06d3c1ad8b218f8ce00784054",
+  "implementationRemoteCommit": "8011ef1e61a19eb06d3c1ad8b218f8ce00784054",
+  "environment": {
+    "platform": "win32",
+    "node": "v26.3.0",
+    "dateUtc": "2026-09-10T03:14:05.002Z",
+    "browserProjects": ["chromium", "mobile-chrome"]
+  },
+  "checks": {
+    "preflight": "Fetch, matching clean branch and redesign:check/preflight -- 8 passed before CP0.",
+    "content": {
+      "tests": 88,
+      "passed": 88,
+      "actualMalformedBuildRejected": true,
+      "courses": 8,
+      "reservedUnits": 86,
+      "samples": 1,
+      "plannedUnits": 85
+    },
+    "progress": {
+      "tests": 82,
+      "passed": 82
+    },
+    "full": {
+      "report": "tmp/S08-full-vitest.json",
+      "sha256": "683c907af5202a1d7ebb65334f62998d96cd805cec33a534e2970f504889bee3",
+      "files": 258,
+      "total": 2403,
+      "passed": 2403,
+      "failed": 0,
+      "pending": 0
+    },
+    "regression": {
+      "previousFiles": 256,
+      "previousTests": 2233,
+      "previousReportSha256": "a7ab5a6e286fe31aeefa4b37f2bed85455e29d9ba08276b4855dc9708601c4c9",
+      "missingPreviousTests": [],
+      "newTests": 170
+    },
+    "devRegression": {
+      "initial": {
+        "report": "tmp/S08-dev-regression-playwright.json",
+        "sha256": "152ee439500c6e973f5a544218c400fef6d4230e6261a1b599ce33e98caa8b2f",
+        "startTime": "2026-09-10T02:31:56.670Z",
+        "duration": 1059943.3630000001,
+        "expected": 108,
+        "skipped": 0,
+        "unexpected": 4,
+        "flaky": 0
+      },
+      "frozenRecovery": {
+        "report": "tmp/S08-dev-recovery-playwright.json",
+        "sha256": "12fc7dc46d6ed8318c59d12e0fcb04578bfbfea3b363cff2821a50638b83cdf1",
+        "startTime": "2026-09-10T02:51:09.761Z",
+        "duration": 108014.93900000001,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "aggregateAccessibility": {
+        "report": "tmp/S08-dev-a11y-playwright.json",
+        "sha256": "b7615d5ea2985b63873dd553f90765a6ff6b490760206ee569567b0207b04923",
+        "startTime": "2026-09-10T03:05:08.235Z",
+        "duration": 217220.796,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "isolatedAccessibility": {
+        "report": "tmp/S08-dev-a11y-isolated-playwright.json",
+        "sha256": "75b1cbced1504624f8b816a0e44267043c69d658d751a86a0b876aee1dd86c77",
+        "startTime": "2026-09-10T03:09:29.318Z",
+        "duration": 34030.695,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0,
+        "errors": 0
+      },
+      "timeoutDiagnosis": {
+        "trace": "test-results/s08-dev-recovery/redesign-core-pendulum-S07-6f060-flow-with-accessible-panels-chromium/trace.zip",
+        "traceSha256": "1ede5d707ee41f02cfea7cbd814bb9a77652bbe0d5fa97b88874a3e9e8ab94ca",
+        "resultPageCreationMs": [5073, 5087, 5031],
+        "runPartialMsRange": [101, 154],
+        "finishRunMsRange": [30, 41],
+        "aggregateTimeoutMs": {
+          "before": 30000,
+          "after": 60000
+        },
+        "axePassesPerCase": 10,
+        "limitation": "Trace identifies delayed Chromium page creation, but does not establish its underlying cause."
+      },
+      "totalUniqueCases": 112,
+      "latestPassed": 112,
+      "initialFailures": [
+        "redesign/core-pendulum.spec.ts::double: supports keyboard operation, 320px and 200% reflow with accessible panels::chromium",
+        "redesign/core-pendulum.spec.ts::compound-double: supports keyboard operation, 320px and 200% reflow with accessible panels::chromium",
+        "redesign/core-pendulum.spec.ts::compound-double: reviews a deterministic real workspace and dark inspector::chromium",
+        "redesign/lab-shell.spec.ts::supports keyboard panel navigation and 320px/200% reflow with no axe violations::chromium"
+      ],
+      "unresolved": [],
+      "reason": "Initial run overlapped live source edits and concurrent browser work. Trace showed Vite reconnects resetting dark inspector to initial light workspace. Frozen serial recovery passed four cases, but the double ten-audit aggregate still exceeded 30s. Trace call@35/@119/@187 were BrowserContext.newPage calls lasting 5073/5087/5031ms; installed @axe-core/playwright finishRun creates a result page per audit. Only this ten-audit test aggregate timeout was raised to 60s; all assertions, ten axe scans, 5s expectation limits and historical snapshots remain unchanged. The four-case replay passed three; compound desktop encountered Vite connection loss, a reconnect SharedWorker CSP error from /@vite/client:1062 and 23s fixture page creation before timeout. It then passed on a fresh independent dev port in 34s with identical assertions, video and trace settings. All 112 unique regression cases have a final passing outcome; this is consolidated evidence, not one clean 112-case run. Original failures remain recorded; no in-run retries and no CSP relaxation."
+    },
+    "devLearn": {
+      "report": "tmp/S08-dev-learn-playwright.json",
+      "sha256": "8929aba175429a2ec691fa7d5d4e4c3da85987d33497bf6cb2406b03436c9b4d",
+      "startTime": "2026-09-10T02:36:54.349Z",
+      "duration": 337989.84900000005,
+      "expected": 34,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "errors": 0
+    },
+    "production": {
+      "report": "tmp/S08-production-playwright.json",
+      "sha256": "db382a0fc8fe38ae3beb936d4d05576679a4b63f312b74db230feaddcf5151ef",
+      "startTime": "2026-09-10T02:57:10.136Z",
+      "duration": 459601.19800000003,
+      "expected": 68,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "errors": 0
+    },
+    "typecheck": "passed",
+    "build": "passed with Learn gate and separate unit chunk",
+    "lint": "changed TS ESLint, Prettier, source policy and module-size passed",
+    "catalog": {
+      "definitions": 134,
+      "preserved": true
+    },
+    "inventory": {
+      "files": 883,
+      "brokenImports": 0,
+      "orphans": 0,
+      "preserved": true
+    },
+    "secretScan": {
+      "report": "tmp/S08-secrets.json",
+      "sha256": "f1962cc7cf05bca25a106a3a8a2067a4842b11dc4d8b9a8aa2031bcc09d8726c",
+      "trackedFiles": 1313,
+      "findings": []
+    },
+    "desktopCopies": [
+      {
+        "source": "documents/redesign/master-roadmap-ko.md",
+        "copy": "C:/Users/junge/Desktop/Pendulum_Lab_Complete_Redesign_Roadmap_KO.md",
+        "sha256": "1d46e04691d4119ced60dacb41945c75d9d1a20f66cbaed2b3664909f47f8995",
+        "identical": true
+      },
+      {
+        "source": "documents/redesign/execution-plan-ko.md",
+        "copy": "C:/Users/junge/Desktop/Pendulum_Lab_Codex_Execution_Steps_KO.md",
+        "sha256": "803b191496edd95ebf2199a8983b920058109bb159d55f8bafeb0737fa735fc5",
+        "identical": true
+      }
+    ],
+    "visuals": {
+      "newSnapshots": 12,
+      "inspected": 12,
+      "originalS05S06S07SnapshotsChanged": false
+    }
+  },
+  "preservation": {
+    "protectedPaths": [
+      "app.html",
+      "src/physics",
+      "src/chaos",
+      "src/research",
+      "src/runtime",
+      "src/workers",
+      "src/validation",
+      "src/lib",
+      "src/lib.ts",
+      "src/product/contracts",
+      "src/product/persistence",
+      "src/product/adapters",
+      "src/product/lab",
+      "src/product/catalog",
+      "package-lock.json",
+      "documents/redesign/baseline",
+      "tests/characterization"
+    ],
+    "protectedChanges": [],
+    "oldStorage": "No old namespaces read or written; new per-unit versioned Learn progress only; no visit-time writes",
+    "routes": "S03 route contracts unchanged",
+    "numerical": "No equations of motion added; static sample position fixture calls shared S07 adapter; full S01 golden tests retained"
+  },
+  "git": {
+    "cp0": "534005755504c3d7784279ce30de1ce08e552d4a",
+    "cp1": "ba5b79f7661ebaa1fc21ad4894b35195cb07ed7d",
+    "cp2": "8011ef1e61a19eb06d3c1ad8b218f8ce00784054",
+    "implementationPush": "origin/codex/redesign verified before final status; nextStage remained 8"
+  },
+  "review": {
+    "approvedUserGate": 7,
+    "approvalBasis": "User requested S08 after S07 report under stage protocol",
+    "stage8RequiresUserGate": false,
+    "sampleSourceChecked": true,
+    "scientificFocusFixturesComplete": false,
+    "humanOrExpertReview": false
+  },
+  "limitations": [
+    "One S08 frame sample; remaining 85 planned. S09 full course and Focus Experiment/Lab transfer not implemented.",
+    "Windows Chromium desktop/mobile emulation, 320px and CSS zoom2; no screen-reader audio or other browser/OS audit.",
+    "Content structure and static position fixture verified; full scientific automatic/human grades not claimed.",
+    "localStorage same-unit truly simultaneous writes are last-writer-wins; original corrupt data preserved and explicit reset is guarded.",
+    "S01 npm high2/moderate2 and CodeQL32 unresolved. S08 GitHub push now reports separate default-branch Dependabot high5. No new audit/remediation/risk acceptance.",
+    "No legacy migration, cutover, master merge, release or landing changes."
+  ]
+}

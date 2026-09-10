@@ -3,6 +3,8 @@ import type { CanonicalUnit } from '../contracts/quantities';
 
 export const LEARN_COURSE_SCHEMA = 'pendulum-learn-course/v1' as const;
 export const LEARN_UNIT_SCHEMA = 'pendulum-learn-unit/v1' as const;
+/** Shared authoring/storage limit: every validated unit must fit the progress model. */
+export const MAX_LEARN_CHECKPOINTS = 64;
 export type LearnLocale = 'ko' | 'en';
 export interface LearnText {
   readonly key: string;

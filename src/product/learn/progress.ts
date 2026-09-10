@@ -1,8 +1,14 @@
 import { parseContractJson } from '../persistence/json';
+import { MAX_LEARN_CHECKPOINTS } from './schema';
 
 export const LEARN_PROGRESS_KEY_PREFIX = 'pendulum-product/learn-progress/v1/';
 export const LEARN_PROGRESS_SCHEMA = 'pendulum-learn-progress/v1';
-export const LEARN_PROGRESS_LIMITS = Object.freeze({ bytes: 65_536, versions: 32, checks: 64, attempts: 1_000_000 });
+export const LEARN_PROGRESS_LIMITS = Object.freeze({
+  bytes: 65_536,
+  versions: 32,
+  checks: MAX_LEARN_CHECKPOINTS,
+  attempts: 1_000_000
+});
 
 /** A deliberately small storage boundary: no legacy namespace discovery or migration. */
 export interface LearnProgressStorage {

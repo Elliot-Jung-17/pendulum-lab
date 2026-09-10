@@ -20,6 +20,8 @@ import { loadLearnUnit } from '../../../src/product/learn/loader';
 import { validateCurriculumMap, validateLearnContent } from '../../../scripts/redesign/validate-learn';
 import { defaultPlanarConfig } from '../../../src/product/adapters/physics/planar-schema';
 import { planarPositions } from '../../../src/product/adapters/physics/planar';
+import { emptyLearnProgress, LEARN_PROGRESS_LIMITS } from '../../../src/product/learn/progress';
+import { learnText, MAX_LEARN_CHECKPOINTS, type ChoiceCheckpoint } from '../../../src/product/learn/schema';
 
 function replace(path: string, value: unknown): unknown {
   const fixture = structuredClone(sample);
@@ -29,6 +31,20 @@ function replace(path: string, value: unknown): unknown {
   if (value === undefined) delete cursor[parts.at(-1)!];
   else cursor[parts.at(-1)!] = value;
   return fixture;
+}
+
+function checkpointCountFixture(count: number) {
+  const checks = Array.from({ length: count }, (_, index): ChoiceCheckpoint => {
+    const text = (part: string) => learnText(`learn.course-1.1.1.limit-${index}.${part}`, '확인', 'Check');
+    return {
+      id: `limit-${index}`,
+      prompt: text('prompt'),
+      explanation: text('explanation'),
+      correctOptionId: 'yes',
+      options: ['yes', 'no'].map((id) => ({ id, label: text(`${id}-label`), feedback: text(`${id}-feedback`) }))
+    };
+  });
+  return { ...sample, checks };
 }
 
 const fixtures: string[] = [];
@@ -77,6 +93,46 @@ describe('Learn content schema and authoritative curriculum', () => {
   it('validates all registered modules, disk coverage, titles and Markdown order', async () => {
     expect(await validateLearnContent(process.cwd())).toEqual([]);
     expect(validateLearnUnit(sample)).toEqual({ ok: true, value: sample });
+  });
+
+  it('accepts the exact shared 64-checkpoint boundary in both content and progress contracts', () => {
+    expect(MAX_LEARN_CHECKPOINTS).toBe(64);
+    expect(LEARN_PROGRESS_LIMITS.checks).toBe(MAX_LEARN_CHECKPOINTS);
+    const unit = checkpointCountFixture(MAX_LEARN_CHECKPOINTS);
+    expect(validateLearnUnit(unit)).toEqual({ ok: true, value: unit });
+    expect(emptyLearnProgress(unit)).toMatchObject({ status: 'not-started', totalChecks: 64, completedChecks: 0 });
+  });
+
+  it('rejects a 65-checkpoint unit during content validation before progress creation can fail', () => {
+    const result = validateLearnUnit(checkpointCountFixture(MAX_LEARN_CHECKPOINTS + 1));
+    expect(result).toEqual({ ok: false, errors: ['unit.checks: Expected array of 1–64 entries.'] });
+  });
+
+  it('rejects a reserved checkpoint ID during content validation', () => {
+    const result = validateLearnUnit(replace('checks.0.id', 'constructor'));
+    expect(result).toEqual({
+      ok: false,
+      errors: ['unit.checks[0].id: Expected a non-reserved block or option identifier.']
+    });
+  });
+
+  it('rejects a reserved option ID during content validation', () => {
+    const result = validateLearnUnit(replace('checks.0.options.0.id', 'prototype'));
+    expect(result).toEqual({
+      ok: false,
+      errors: ['unit.checks[0].options[0].id: Expected a non-reserved block or option identifier.']
+    });
+  });
+
+  it('rejects own fields named after inherited Object members at root and nested content boundaries', () => {
+    expect(validateLearnUnit(replace('toString', 'unrecognized'))).toEqual({
+      ok: false,
+      errors: ['unit.toString: Unknown field.']
+    });
+    expect(validateLearnUnit(replace('summary.valueOf', 'unrecognized'))).toEqual({
+      ok: false,
+      errors: ['unit.summary.valueOf: Unknown field.']
+    });
   });
 
   it('runs the CLI in a fresh process and reports content validation instead of silently succeeding', () => {

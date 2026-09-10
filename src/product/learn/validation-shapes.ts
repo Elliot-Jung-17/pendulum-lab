@@ -1,4 +1,5 @@
 import { CANONICAL_UNITS } from '../contracts/quantities';
+import { MAX_LEARN_CHECKPOINTS } from './schema';
 
 export type ContentErrors = string[];
 type Check = (value: unknown, path: string, errors: ContentErrors) => void;
@@ -20,7 +21,11 @@ export const integer = test(
 const finite = test((v) => typeof v === 'number' && Number.isFinite(v), 'Expected finite number.');
 const normalized = test((v) => typeof v === 'number' && v >= 0 && v <= 1, 'Expected normalized coordinate in [0, 1].');
 const bool = enumeration(true, false);
-export const id = pattern(/^[a-z][a-z0-9-]{0,63}$/);
+export const id = test(
+  (value) =>
+    typeof value === 'string' && /^[a-z][a-z0-9-]{0,63}$/.test(value) && !['constructor', 'prototype'].includes(value),
+  'Expected a non-reserved block or option identifier.'
+);
 export const courseId = pattern(/^course-[1-8]$/);
 export const unitId = pattern(/^[1-8]\.[1-9][0-9]?$/);
 const fieldId = pattern(/^[a-z][a-zA-Z0-9_]{0,63}$/);
@@ -41,7 +46,8 @@ export function object(shape: Readonly<Record<string, Check>>): Check {
       return;
     }
     const record = value as Record<string, unknown>;
-    for (const key of Object.keys(record)) if (!(key in shape)) reject(errors, `${path}.${key}`, 'Unknown field.');
+    for (const key of Object.keys(record))
+      if (!Object.hasOwn(shape, key)) reject(errors, `${path}.${key}`, 'Unknown field.');
     for (const [key, check] of Object.entries(shape)) check(record[key], `${path}.${key}`, errors);
   };
 }
@@ -110,7 +116,8 @@ export const unitShape = object({
       explanation: textShape,
       options: array(object({ id, label: textShape, feedback: textShape }), 2, 8)
     }),
-    1
+    1,
+    MAX_LEARN_CHECKPOINTS
   ),
   focusExperiment: object({
     status: enumeration('planned'),

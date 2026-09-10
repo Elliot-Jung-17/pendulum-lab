@@ -21,7 +21,7 @@
   ],
   "blockedStage": null,
   "activeStage": 8,
-  "activeStageCheckpoint": "CP1",
+  "activeStageCheckpoint": "CP2",
   "reviewGates": [
     7,
     9,

@@ -289,6 +289,8 @@ test.describe('S07 real planar pendulum laboratory', () => {
     });
 
     test(`${slug}: supports keyboard operation, 320px and 200% reflow with accessible panels`, async ({ page }) => {
+      // Ten axe passes each open a result page; allow their combined setup time.
+      test.setTimeout(60_000);
       await page.setViewportSize({ width: 320, height: 800 });
       await openSystem(page, slug);
       await page.getByRole('tab', { name: '작업 공간', exact: true }).focus();

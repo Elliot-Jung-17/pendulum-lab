@@ -18,8 +18,8 @@
 | CP0 | 사전 점검·범위·진행 기록 | redesign:check, redesign:preflight -- 8 | 원격 보존 완료 |
 | CP1 | 콘텐츠 계약·loader·검증, 진도 저장 모델 | schema/ID/참조/오류/복원 tests, typecheck, build 콘텐츠 게이트 | 원격 보존 완료 |
 | CP2 | 과정/단원 UI와 접근성·진도 여정 | 관련 Vitest, build, Learn desktop/mobile/axe/keyboard/visual | 원격 보존 완료 |
-| CP3 | 회귀·문서·보존 증거 | 전체 Vitest, redesign browser regression, catalog/inventory/secret 검사 | candidate-complete, 검증 완료 |
-| STATUS | 별도 완료 commit/push | 구현 원격 확인 후 최종 status 원격 HEAD 확인 | 대기 |
+| CP3 | 회귀·문서·보존 증거 | 전체 Vitest, redesign browser regression, catalog/inventory/secret 검사 | 원격 보존 완료 |
+| STATUS | 별도 완료 commit/push | 구현 원격 확인 후 최종 status 원격 HEAD 확인 | 이 완료 commit의 원격 HEAD 일치로 확정 |
 
 ## 변경 예정 경로
 
@@ -57,4 +57,14 @@
 - CP0: `534005755504c3d7784279ce30de1ce08e552d4a`, push 및 git ls-remote 일치 확인.
 - CP1: `ba5b79f7661ebaa1fc21ad4894b35195cb07ed7d`, push 및 git ls-remote 일치 확인.
 - CP2: `8011ef1e61a19eb06d3c1ad8b218f8ce00784054`, push 및 git ls-remote 일치 확인. 이때 nextStage는 8을 유지했다.
-- CP3 및 status push 증거는 각 checkpoint 완료 후 기록한다.
+- CP3: `8c34d8cb990dbddb8e08fea0f0561a44b67073df`, push 및 git ls-remote 일치 확인. clean 상태의 redesign:check와 redesign:preflight -- 8도 통과했다.
+- STATUS: 모든 구현·검증 commit의 원격 일치를 확인한 뒤 별도 status commit에서 S08 완료·nextStage 9·activeStage null로 전환한다. 이 commit의 push 성공과 원격 HEAD 일치를 최종 응답으로 보고하며, 일치 전에는 완료로 간주하지 않는다.
+
+## 완료 범위와 다음 단계
+
+- S08 산출물과 모든 필수 검증을 완료했다. 기존 엔진·Lab·공개 계약·사용자 데이터·보안 정책과 이전 시각 baseline은 변경하지 않았다.
+- 새 콘텐츠 본문은 샘플 1개다. 나머지 85단원, Focus Experiment와 과정 1 전체는 이후 요청 범위다.
+- S07 구조 승인은 이번 요청으로 기록했다. S08 별도 사용자 gate는 없으며, 과학 전문가 검토를 주장하지 않는다.
+- 남은 한계: 같은 단원 동시 저장의 last-writer-wins, Windows Chromium 모바일 에뮬레이션 외 환경과 실제 음성 미검증, 기존 보안 경고 미해결, 개발 브라우저 초기화 지연 원인 미확정.
+- 기존 앱 복귀는 `/app.html`이며, 복구 기준 commit은 시작점 `acd7f869db182376b726e337606335eeabe0d541`이다. 자동 rollback·master merge·배포는 하지 않았다.
+- 최종 status 원격 확인 후 다음 유효 요청: **9단계 실행해줘.**

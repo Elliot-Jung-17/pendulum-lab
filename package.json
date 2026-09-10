@@ -117,6 +117,7 @@
     "typecheck": "tsc --noEmit",
     "redesign:check": "tsx scripts/redesign/validate-plan.ts",
     "redesign:catalog:check": "tsx scripts/redesign/validate-catalog.ts",
+    "redesign:learn:check": "tsx scripts/redesign/validate-learn.ts",
     "redesign:preflight": "tsx scripts/redesign/preflight-stage.ts",
     "redesign:inventory": "tsx scripts/redesign/inventory.ts",
     "redesign:inventory:check": "tsx scripts/redesign/inventory.ts --check",

@@ -4,12 +4,14 @@ import { catalog, allDefinitions } from '../../src/product/catalog';
 import { validateBaselineCoverage, type CatalogBaseline } from './catalog-coverage';
 import { validateCatalogSources } from './validate-catalog-sources';
 import { validateSourceScopes } from './catalog-source-scopes';
+import { validateLearnContent } from './validate-learn';
 
 const baseline = JSON.parse(readFileSync('documents/redesign/baseline/inventory.json', 'utf8')) as CatalogBaseline;
 const errors = [
   ...validateBaselineCoverage(catalog, baseline),
   ...validateSourceScopes(catalog),
-  ...validateCatalogSources(process.cwd(), catalog)
+  ...validateCatalogSources(process.cwd(), catalog),
+  ...(await validateLearnContent(process.cwd()))
 ];
 if (errors.length) {
   console.error(`catalog check FAILED:\n${errors.join('\n')}`);
